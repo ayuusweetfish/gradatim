@@ -40,6 +40,7 @@ struct orion {
     unsigned char is_playing;
     struct orion_track track[ORION_NUM_TRACKS];
     SDL_SpinLock lock;
+    SDL_Thread *playback_thread;
 };
 
 struct orion orion_create(int srate, int nch);

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 int main()
 {
@@ -14,6 +15,15 @@ int main()
     }
 
     orion_apply_lowpass(&o, 0, 1, 880);
+
+    int i;
+    for (i = 0; i <= 1; ++i) {
+        orion_overall_play(&o);
+        orion_play_once(&o, i);
+        sleep(1);
+        orion_overall_pause(&o);
+        sleep(1);
+    }
 
     return 0;
 }

@@ -2,6 +2,7 @@
 
 #include <vorbis/vorbisfile.h>
 #include <SDL2/SDL.h>
+#include <portaudio.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -164,10 +165,104 @@ void orion_ramp(struct orion *o, int tid, float secs, float dst)
     SDL_AtomicUnlock(&o->lock);
 }
 
+/* The callback invoked by PortAudio.
+ * Fills the buffer according to the pointers in the struct. */
+static int _orion_portaudio_callback(
+    const void *ibuf, void *_obuf, unsigned long nframes,
+    const PaStreamCallbackTimeInfo *time,
+    PaStreamCallbackFlags flags, void *_o)
+{
+    struct orion *o = (struct orion *)_o;
+    orion_smp *obuf = (orion_smp *)_obuf;
+    SDL_AtomicLock(&o->lock);
+    int nch = o->nch;
+    SDL_AtomicUnlock(&o->lock);
+    int i, j;
+    for (i = 0; i < nframes; ++i)
+        for (j = 0; j < nch; ++j) {
+            *obuf++ = (((j ^ i) & 1) ? i * 100 : 0);
+        }
+    return 0;
+}
+
+/* The subroutine that (re-)initializes PortAudio and starts playback. */
+static int _orion_playback_routine(void *_o)
+{
+    struct orion *o = (struct orion *)_o;
+    PaError pa_err;
+
+    pa_err = Pa_Initialize();
+    if (pa_err != paNoError)
+        return 1;   /* Do not goto err as Pa_Terminate() needn't be called */
+
+    /* Retrieve parameters */
+    SDL_AtomicLock(&o->lock);
+    int srate = o->srate, nch = o->nch;
+    SDL_AtomicUnlock(&o->lock);
+
+    /* PortAudio setup */
+    PaStreamParameters param;
+    PaStream *stream;
+    param.device = Pa_GetDefaultOutputDevice();
+    if (param.device == paNoDevice) goto err;
+    param.channelCount = nch;
+    param.sampleFormat = paInt16;   /* FIXME: Keep in sync with orion_smp */
+    param.suggestedLatency =
+        Pa_GetDeviceInfo(param.device)->defaultLowOutputLatency;
+    param.hostApiSpecificStreamInfo = NULL;
+
+    /* TODO: Make framesPerBuffer (64) configurable */
+    pa_err = Pa_OpenStream(
+        &stream, NULL, &param, srate, 64,
+        paNoFlag, _orion_portaudio_callback, _o);
+    if (pa_err != paNoError) goto err;
+    pa_err = Pa_StartStream(stream);
+    if (pa_err != paNoError) goto err;
+
+    /* Enter the loop */
+    static const int SLEEP_INTV = 10;
+    unsigned char running = 1;
+    while (running) {
+        Pa_Sleep(SLEEP_INTV);
+        SDL_AtomicLock(&o->lock);
+        running = o->is_playing;
+        SDL_AtomicUnlock(&o->lock);
+    }
+
+    Pa_Terminate();
+    return 0;
+
+err:
+    Pa_Terminate();
+    /* XXX: Do something else? */
+    return 0;
+}
+
 void orion_overall_play(struct orion *o)
 {
+    SDL_AtomicLock(&o->lock);
+    if (o->is_playing) goto exit;
+
+    /* Create the thread; it will start running right away */
+    SDL_Thread *th = SDL_CreateThread(
+        _orion_playback_routine, "Orion playback", o
+    );
+    if (th == NULL) goto exit;  /* XXX: Inform the caller? */
+
+    /* Update the struct */
+    o->is_playing = 1;
+    o->playback_thread = th;
+
+exit:
+    SDL_AtomicUnlock(&o->lock);
 }
 
 void orion_overall_pause(struct orion *o)
 {
+    SDL_AtomicLock(&o->lock);
+    if (!o->is_playing) goto exit;
+    o->is_playing = 0;
+exit:
+    SDL_AtomicUnlock(&o->lock);
+    /* This will cause the thread to exit automatically */
 }
