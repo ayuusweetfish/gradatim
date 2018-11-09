@@ -262,7 +262,9 @@ void orion_overall_pause(struct orion *o)
     SDL_AtomicLock(&o->lock);
     if (!o->is_playing) goto exit;
     o->is_playing = 0;
+    SDL_Thread *th = o->playback_thread;
 exit:
     SDL_AtomicUnlock(&o->lock);
-    /* This will cause the thread to exit automatically */
+    /* This thread will exit automatically; however we'd like to ensure that */
+    SDL_WaitThread(th, NULL);
 }
