@@ -62,7 +62,7 @@ const char *orion_load_ogg(struct orion *o, int tid, const char *path)
      * we store the address and defer the memory deallocation */
     orion_smp *free_ptr = o->track[tid].pcm;
     o->track[tid].nch = nch;
-    o->track[tid].len = buf_ptr;
+    o->track[tid].len = buf_ptr / nch / sizeof(orion_smp);
     o->track[tid].pcm = (orion_smp *)buf;
     o->track[tid].state = ORION_STOPPED;
     SDL_AtomicUnlock(&o->lock);
