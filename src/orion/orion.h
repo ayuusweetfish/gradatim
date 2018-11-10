@@ -3,7 +3,7 @@
 
 #include "libs_wrapper.h"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 /* Type of samples */
 typedef signed short orion_smp;

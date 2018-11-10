@@ -1,7 +1,7 @@
 #include "orion.h"
 
 #include <vorbis/vorbisfile.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <portaudio.h>
 
 #include <stdlib.h>

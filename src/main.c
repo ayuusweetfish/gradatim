@@ -1,7 +1,7 @@
 /* gcc main.c orion/orion.c orion/libs_wrapper.o -O2 -F /Library/Frameworks -framework SDL2 -lvorbisfile -lsoundtouch -liir -lportaudio -lc++ */
 #include "orion/orion.h"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <stdbool.h>
 
