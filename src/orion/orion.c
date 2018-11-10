@@ -163,8 +163,8 @@ void orion_seek(struct orion *o, int tid, int pos)
     SDL_AtomicLock(&o->lock);
     if (o->track[tid].state <= ORION_STOPPED) goto unlock_ret;
     /* Past-the-end positions will be fixed at next playback frame */
-    if (pos < 0) pos = o->track[tid].len + pos;
-    if (pos < 0) pos = 0;
+    int l = o->track[tid].len;
+    pos = ((pos % l) + l) % l;
     o->track[tid].play_pos = pos;
 unlock_ret:
     SDL_AtomicUnlock(&o->lock);
