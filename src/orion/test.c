@@ -19,8 +19,9 @@ int main()
     int i;
     for (i = 0; i <= 1; ++i) {
         orion_overall_play(&o);
-        orion_play_once(&o, i);
-        sleep(1);
+        orion_play_loop(&o, i, 0, 44100, 88200);
+        sleep(5);
+        orion_pause(&o, i);
         orion_overall_pause(&o);
         sleep(1);
     }

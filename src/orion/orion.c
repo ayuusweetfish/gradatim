@@ -165,6 +165,31 @@ void orion_ramp(struct orion *o, int tid, float secs, float dst)
     SDL_AtomicUnlock(&o->lock);
 }
 
+static void _orion_track_step(struct orion_track *t, orion_smp *buf, int nch, int nsmp)
+{
+    if (t->state <= ORION_STOPPED) return;
+    int i, j;
+    int p = t->play_pos;
+    float v = t->volume;
+    /* At the end of the following loop,
+     * the updated play position will have been stored in `p` */
+    for (i = 0; i < nsmp; ++i) {
+        /* Write to the buffer */
+        for (j = 0; j < nch; ++j) {
+            buf[i * nch + j] += (short)(t->pcm[p * nch + j] * v + 0.5);
+        }
+        /* Update playback position */
+        if (++p >= t->loop_end) {
+            p = t->loop_start;  /* This will be -1 in case of `ORION_ONCE` */
+            if (t->state == ORION_ONCE) {
+                t->state = ORION_STOPPED;
+                break;
+            }
+        }
+    }
+    t->play_pos = p;
+}
+
 /* The callback invoked by PortAudio.
  * Fills the buffer according to the pointers in the struct. */
 static int _orion_portaudio_callback(
@@ -174,14 +199,17 @@ static int _orion_portaudio_callback(
 {
     struct orion *o = (struct orion *)_o;
     orion_smp *obuf = (orion_smp *)_obuf;
+    int i, j;
+
+    /* XXX: Shorten the lock holding duration if not performant */
     SDL_AtomicLock(&o->lock);
     int nch = o->nch;
+    memset(obuf, 0, nframes * nch * sizeof(orion_smp));
+    for (i = 0; i < ORION_NUM_TRACKS; ++i)
+        if (o->track[i].state > ORION_STOPPED)
+            _orion_track_step(&o->track[i], obuf, nch, nframes);
     SDL_AtomicUnlock(&o->lock);
-    int i, j;
-    for (i = 0; i < nframes; ++i)
-        for (j = 0; j < nch; ++j) {
-            *obuf++ = (((j ^ i) & 1) ? i * 100 : 0);
-        }
+
     return 0;
 }
 
