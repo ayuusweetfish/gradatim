@@ -53,6 +53,8 @@ void orion_play_once(struct orion *o, int tid);
 void orion_play_loop(struct orion *o, int tid, int intro_pos, int start_pos, int end_pos);
 void orion_pause(struct orion *o, int tid);
 void orion_resume(struct orion *o, int tid);
+void orion_seek(struct orion *o, int tid, int pos);
+int orion_tell(struct orion *o, int tid);
 void orion_ramp(struct orion *o, int tid, float secs, float dst);
 void orion_overall_play(struct orion *o);
 void orion_overall_pause(struct orion *o);

@@ -19,8 +19,18 @@ int main()
     int i;
     for (i = 0; i <= 1; ++i) {
         orion_overall_play(&o);
-        orion_play_loop(&o, i, 0, 44100, 88200);
-        sleep(5);
+        if (i == 0) {
+            orion_play_once(&o, i);
+            sleep(2);
+            orion_seek(&o, i, -44100 * 3);
+            sleep(1);
+            printf("%d\n", orion_tell(&o, i));
+            sleep(1);
+            printf("%d\n", orion_tell(&o, i));
+        } else {
+            orion_play_loop(&o, i, 0, 44100, 88200);
+            sleep(5);
+        }
         orion_pause(&o, i);
         orion_overall_pause(&o);
         sleep(1);
