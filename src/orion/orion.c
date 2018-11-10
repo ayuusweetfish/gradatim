@@ -111,20 +111,21 @@ void orion_apply_stretch(struct orion *o, int tid, int did, double delta_pc)
 void orion_play_once(struct orion *o, int tid)
 {
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state != ORION_STOPPED) return;
+    if (o->track[tid].state != ORION_STOPPED) goto unlock_ret;
     o->track[tid].play_pos = 0;
     o->track[tid].volume = 1;
     o->track[tid].loop_start = -1;
     o->track[tid].loop_end = o->track[tid].len;
     o->track[tid].ramp_slope = 0;
     o->track[tid].state = ORION_ONCE;
+unlock_ret:
     SDL_AtomicUnlock(&o->lock);
 }
 
 void orion_play_loop(struct orion *o, int tid, int intro_pos, int start_pos, int end_pos)
 {
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state != ORION_STOPPED) return;
+    if (o->track[tid].state != ORION_STOPPED) goto unlock_ret;
     o->track[tid].play_pos = intro_pos;
     o->track[tid].volume = 1;
     int l = o->track[tid].len;
@@ -134,34 +135,38 @@ void orion_play_loop(struct orion *o, int tid, int intro_pos, int start_pos, int
     o->track[tid].loop_end = end_pos;
     o->track[tid].ramp_slope = 0;
     o->track[tid].state = ORION_LOOP;
+unlock_ret:
     SDL_AtomicUnlock(&o->lock);
 }
 
 void orion_pause(struct orion *o, int tid)
 {
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state <= ORION_STOPPED) return;
+    if (o->track[tid].state <= ORION_STOPPED) goto unlock_ret;
     o->track[tid].state = ORION_STOPPED;
+unlock_ret:
     SDL_AtomicUnlock(&o->lock);
 }
 
 void orion_resume(struct orion *o, int tid)
 {
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state != ORION_STOPPED) return;
+    if (o->track[tid].state != ORION_STOPPED) goto unlock_ret;
     o->track[tid].state =
         (o->track[tid].loop_start == -1) ? ORION_ONCE : ORION_LOOP;
+unlock_ret:
     SDL_AtomicUnlock(&o->lock);
 }
 
 void orion_seek(struct orion *o, int tid, int pos)
 {
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state <= ORION_STOPPED) return;
+    if (o->track[tid].state <= ORION_STOPPED) goto unlock_ret;
     /* Past-the-end positions will be fixed at next playback frame */
     if (pos < 0) pos = o->track[tid].len + pos;
     if (pos < 0) pos = 0;
     o->track[tid].play_pos = pos;
+unlock_ret:
     SDL_AtomicUnlock(&o->lock);
 }
 
@@ -178,11 +183,12 @@ int orion_tell(struct orion *o, int tid)
 void orion_ramp(struct orion *o, int tid, float secs, float dst)
 {
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state != ORION_STOPPED) return;
+    if (o->track[tid].state != ORION_STOPPED) goto unlock_ret;
     int smps = secs * o->srate;
     float cur_vol = o->track[tid].volume;
     o->track[tid].ramp_end = smps;
     o->track[tid].ramp_slope = (double)(dst - cur_vol) / smps;
+unlock_ret:
     SDL_AtomicUnlock(&o->lock);
 }
 

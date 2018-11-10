@@ -23,9 +23,9 @@ int main()
             orion_play_once(&o, i);
             sleep(2);
             orion_seek(&o, i, -44100 * 3);
-            sleep(1);
+            sleep(2);
             printf("%d\n", orion_tell(&o, i));
-            sleep(1);
+            sleep(2);
             printf("%d\n", orion_tell(&o, i));
         } else {
             orion_play_loop(&o, i, 0, 44100, 88200);
