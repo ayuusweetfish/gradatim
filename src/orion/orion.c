@@ -131,6 +131,11 @@ void orion_play_loop(struct orion *o, int tid, int intro_pos, int start_pos, int
     int l = o->track[tid].len;
     start_pos = ((start_pos % l) + l) % l;
     end_pos = ((end_pos % l) + l) % l;
+    if (end_pos < start_pos) {
+        int t = end_pos;
+        end_pos = start_pos;
+        start_pos = t;
+    }
     o->track[tid].loop_start = start_pos;
     o->track[tid].loop_end = end_pos;
     o->track[tid].ramp_slope = 0;
@@ -206,7 +211,16 @@ static void _orion_track_step(struct orion_track *t, orion_smp *buf, int nch, in
     double rslope = t->ramp_slope;
     /* At the end of the following loop,
      * the updated play position will have been stored in `p` */
-    for (i = 0; i < nsmp; ++i) {
+    for (i = 0; i <= nsmp; ++i) {
+        /* Sanitize the playback position */
+        if (p >= t->loop_end) {
+            p = t->loop_start;  /* This will be -1 in case of `ORION_ONCE` */
+            if (t->state == ORION_ONCE) {
+                t->state = ORION_STOPPED;
+                break;
+            }
+        }
+        if (i == nsmp) break;
         /* Write to the buffer */
         for (j = 0; j < nch; ++j) {
             buf[i * nch + j] += (short)(t->pcm[p * nch + j] * v + 0.5);
@@ -217,14 +231,8 @@ static void _orion_track_step(struct orion_track *t, orion_smp *buf, int nch, in
             if (rtime > rend) rtime = rend;
             v = t->volume + rtime * rslope;
         }
-        /* Update playback position */
-        if (++p >= t->loop_end) {
-            p = t->loop_start;  /* This will be -1 in case of `ORION_ONCE` */
-            if (t->state == ORION_ONCE) {
-                t->state = ORION_STOPPED;
-                break;
-            }
-        }
+        /* Update playback position; sanitization happens later */
+        ++p;
     }
     t->play_pos = p;
     t->volume = v;
@@ -332,8 +340,10 @@ void orion_overall_pause(struct orion *o)
     if (!o->is_playing) goto exit;
     o->is_playing = 0;
     SDL_Thread *th = o->playback_thread;
-exit:
     SDL_AtomicUnlock(&o->lock);
     /* This thread will exit automatically; however we'd like to ensure that */
     SDL_WaitThread(th, NULL);
+    return;
+exit:
+    SDL_AtomicUnlock(&o->lock);
 }

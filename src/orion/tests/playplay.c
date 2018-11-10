@@ -1,5 +1,5 @@
-/* gcc orion.c test.c libs_wrapper.o -O2 -F /Library/Frameworks -framework SDL2 -lvorbisfile -lsoundtouch -liir -lc++ */
-#include "orion.h"
+/* gcc tests/playplay.c orion.c libs_wrapper.o -O2 -F /Library/Frameworks -framework SDL2 -lvorbisfile -lsoundtouch -liir -lportaudio -lc++ */
+#include "../orion.h"
 
 #include <stdio.h>
 #include <stdlib.h>
