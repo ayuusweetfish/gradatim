@@ -16,11 +16,25 @@ int main()
 
     orion_apply_lowpass(&o, 0, 1, 880);
 
+    orion_overall_play(&o);
+    orion_play_once(&o, 0);
+    orion_play_once(&o, 1);
+    orion_ramp(&o, 1, 0.0, 0.0);
+    sleep(12.0 / 3);
+    orion_ramp(&o, 0, 0.3, 0.0);
+    orion_ramp(&o, 1, 0.3, 1.0);
+    sleep(12.0 / 3);
+    orion_pause(&o, 0);
+    orion_pause(&o, 1);
+    orion_overall_pause(&o);
+
     int i;
     for (i = 0; i <= 1; ++i) {
         orion_overall_play(&o);
         if (i == 0) {
             orion_play_once(&o, i);
+            sleep(2);
+            orion_ramp(&o, i, 1.0, 0.5);
             sleep(2);
             orion_seek(&o, i, -44100 * 3);
             sleep(2);

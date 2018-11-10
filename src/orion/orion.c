@@ -183,11 +183,15 @@ int orion_tell(struct orion *o, int tid)
 void orion_ramp(struct orion *o, int tid, float secs, float dst)
 {
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state != ORION_STOPPED) goto unlock_ret;
-    int smps = secs * o->srate;
-    float cur_vol = o->track[tid].volume;
-    o->track[tid].ramp_end = smps;
-    o->track[tid].ramp_slope = (double)(dst - cur_vol) / smps;
+    if (o->track[tid].state <= ORION_STOPPED) goto unlock_ret;
+    if (secs <= 0) {
+        o->track[tid].volume = dst;
+    } else {
+        int smps = secs * o->srate;
+        float cur_vol = o->track[tid].volume;
+        o->track[tid].ramp_end = smps;
+        o->track[tid].ramp_slope = (double)(dst - cur_vol) / smps;
+    }
 unlock_ret:
     SDL_AtomicUnlock(&o->lock);
 }
@@ -198,12 +202,20 @@ static void _orion_track_step(struct orion_track *t, orion_smp *buf, int nch, in
     int i, j;
     int p = t->play_pos;
     float v = t->volume;
+    int rend = t->ramp_end, rtime;
+    double rslope = t->ramp_slope;
     /* At the end of the following loop,
      * the updated play position will have been stored in `p` */
     for (i = 0; i < nsmp; ++i) {
         /* Write to the buffer */
         for (j = 0; j < nch; ++j) {
             buf[i * nch + j] += (short)(t->pcm[p * nch + j] * v + 0.5);
+        }
+        /* Update volume */
+        if (rslope != 0) {
+            rtime = i + 1;
+            if (rtime > rend) rtime = rend;
+            v = t->volume + rtime * rslope;
         }
         /* Update playback position */
         if (++p >= t->loop_end) {
@@ -215,6 +227,8 @@ static void _orion_track_step(struct orion_track *t, orion_smp *buf, int nch, in
         }
     }
     t->play_pos = p;
+    t->volume = v;
+    if ((t->ramp_end -= rtime) == 0) t->ramp_slope = 0;
 }
 
 /* The callback invoked by PortAudio.
