@@ -75,16 +75,24 @@ const char *orion_load_ogg(struct orion *o, int tid, const char *path)
 void orion_apply_lowpass(struct orion *o, int tid, int did, double cutoff)
 {
     char *buf;
-    iir_lowpass(
-        o->srate, cutoff, o->track[tid].nch,
-        o->track[tid].len * o->track[tid].nch,
-        (char *)o->track[tid].pcm, &buf);
+    orion_smp *free_ptr = NULL;
 
     SDL_AtomicLock(&o->lock);
-    orion_smp *free_ptr = o->track[did].pcm;
+    if (o->track[tid].state > ORION_STOPPED) goto unlock_ret;
+    int srate = o->srate;
+    int nch = o->track[tid].nch;
+    int orig_len = o->track[tid].len * o->track[tid].nch;
+    char *orig_buf = (char *)o->track[tid].pcm;
+    SDL_AtomicUnlock(&o->lock);
+
+    iir_lowpass(srate, cutoff, nch, orig_len, orig_buf, &buf);
+
+    SDL_AtomicLock(&o->lock);
+    free_ptr = o->track[did].pcm;
     o->track[did] = o->track[tid];
     o->track[did].pcm = (orion_smp *)buf;
     o->track[did].state = ORION_STOPPED;
+unlock_ret:
     SDL_AtomicUnlock(&o->lock);
     if (free_ptr != NULL) free(free_ptr);
 }
@@ -93,17 +101,25 @@ void orion_apply_stretch(struct orion *o, int tid, int did, double delta_pc)
 {
     int len;
     char *buf;
-    st_change_tempo(
-        o->srate, delta_pc, o->track[tid].nch,
-        o->track[tid].len * o->track[tid].nch,
-        (char *)o->track[tid].pcm, &len, &buf);
+    orion_smp *free_ptr = NULL;
 
     SDL_AtomicLock(&o->lock);
-    orion_smp *free_ptr = o->track[did].pcm;
+    if (o->track[tid].state > ORION_STOPPED) goto unlock_ret;
+    int srate = o->srate;
+    int nch = o->track[tid].nch;
+    int orig_len = o->track[tid].len * o->track[tid].nch;
+    char *orig_buf = (char *)o->track[tid].pcm;
+    SDL_AtomicUnlock(&o->lock);
+
+    st_change_tempo(srate, delta_pc, nch, orig_len, orig_buf, &len, &buf);
+
+    SDL_AtomicLock(&o->lock);
+    free_ptr = o->track[did].pcm;
     o->track[did] = o->track[tid];
     o->track[did].len = len / o->track[tid].nch;
     o->track[did].pcm = (orion_smp *)buf;
     o->track[did].state = ORION_STOPPED;
+unlock_ret:
     SDL_AtomicUnlock(&o->lock);
     if (free_ptr != NULL) free(free_ptr);
 }
