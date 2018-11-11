@@ -7,5 +7,5 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 
-add_executable(g main.c)
+add_executable(g main.c scene.c)
 target_link_libraries(g orion ${SDL2_LIBRARY})
