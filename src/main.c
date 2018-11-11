@@ -48,7 +48,7 @@ int main()
             if (e.type == SDL_QUIT) running = false;
             else if (e.type == SDL_KEYDOWN) {
                 g_stage = transition_slidedown_create(
-                    g_renderer, &g_stage,
+                    g_window, g_renderer, &g_stage,
                     colour_scene_create(g_renderer, 255, 192, 192), 1.0
                 );
             }
