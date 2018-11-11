@@ -13,7 +13,7 @@ static scene *g_stage;
 static void draw_loop()
 {
     SDL_RenderClear(g_renderer);
-    g_stage->draw(g_stage);
+    scene_draw(g_stage);
     SDL_RenderPresent(g_renderer);
 }
 

@@ -18,6 +18,9 @@ typedef struct _scene {
     scene_draw_func draw;
 } scene;
 
+#define scene_tick(__sp, __dt)  ((__sp)->tick(__sp, __dt))
+#define scene_draw(__sp)        ((__sp)->draw(__sp))
+
 typedef struct _colour_scene {
     scene _base;
     unsigned char r, g, b;
