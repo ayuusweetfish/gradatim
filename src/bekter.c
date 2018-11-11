@@ -23,9 +23,16 @@ void bekter_ensure_space(bekter *b, size_t bytes)
     size_t s = bekter_size(*b), c = bekter_capacity(*b);
     if (s + bytes > c) {
         char *ptr = *b - 2 * sizeof(size_t);
-        ptr = (char *)realloc(ptr, 2 * sizeof(size_t) + c * 2);
+        size_t new_size = c * 2;
+        if (new_size < s + bytes) new_size = s + bytes;
+        ptr = (char *)realloc(ptr, 2 * sizeof(size_t) + new_size);
+        if (ptr == NULL) {
+            free(*b - 2 * sizeof(size_t));
+            *b = NULL;
+            return;
+        }
         ptr += 2 * sizeof(size_t);
-        bekter_capacity(ptr) = c * 2;
+        bekter_capacity(ptr) = new_size;
         *b = ptr;
     }
 }

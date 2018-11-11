@@ -2,11 +2,22 @@
 #include "bekter.h"
 #include <stdio.h>
 
+struct big_data {
+    int val, unused[10];
+};
+
 int main()
 {
-    bekter b = bekter_create();
+    bekter(int / struct big_data) b = bekter_create();
 
     int i, x;
+    struct big_data y;
+
+    for (i = 0; i < 1000; ++i)
+        bekter_pushback(b, ((struct big_data){i, 0, i + 10}));
+    for bekter_each(b, i, y) printf("%d %d\n", y.val, y.unused[1]);
+    bekter_clear(b);
+
     for (i = 0; i < 1000; ++i) {
         bekter_pushback(b, i);
         if (i * (i + 1) % 10 == 0) {

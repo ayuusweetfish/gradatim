@@ -12,6 +12,8 @@ void bekter_drop(bekter b);
 
 void bekter_ensure_space(bekter *b, size_t bytes);
 
+#define bekter(...) bekter
+
 #define bekter_size(__b)        (((size_t *)(__b))[-1])
 #define bekter_capacity(__b)    (((size_t *)(__b))[-2])
 
@@ -26,6 +28,8 @@ void bekter_ensure_space(bekter *b, size_t bytes);
     bekter_size(__b) -= sizeof(__v); \
     (__v) = *(typeof(__v) *)((__b) + bekter_size(__b)); \
 } while (0)
+
+#define bekter_clear(__b) (bekter_size(__b) = 0)
 
 #define bekter_each(__b, __i, __v) \
     ((__i) = 0; (__v) = *(typeof(__v) *)((__b) + (__i)), \
