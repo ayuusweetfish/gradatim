@@ -29,6 +29,9 @@ typedef struct _scene {
     free(__sp); \
 } while (0)
 
+void scene_handle_mousemove(scene *this, SDL_MouseMotionEvent *ev);
+void scene_handle_mousedown(scene *this, SDL_MouseButtonEvent *ev);
+void scene_handle_mouseup(scene *this, SDL_MouseButtonEvent *ev);
 void scene_clear_children(scene *this);
 
 typedef struct _colour_scene {

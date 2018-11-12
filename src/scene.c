@@ -9,6 +9,42 @@ static void draw_elements(scene *this)
     for bekter_each(this->children, i, e) element_draw(e);
 }
 
+static SDL_Point mouse_event_coordinate(SDL_Event *ev, int x, int y)
+{
+    SDL_Window *window =
+        SDL_GetWindowFromID(((SDL_MouseMotionEvent *)ev)->windowID);
+    int real_w, real_h;
+    SDL_GetWindowSize(window, &real_w, &real_h);
+    SDL_Point p;
+    p.x = round((double)x / real_w * WIN_W);
+    p.y = round((double)y / real_h * WIN_H);
+    return p;
+}
+
+void scene_handle_mousemove(scene *this, SDL_MouseMotionEvent *ev)
+{
+    if (this->children == NULL) return;
+    SDL_Point p = mouse_event_coordinate((SDL_Event *)ev, ev->x, ev->y);
+    int i; element *e;
+    for bekter_each(this->children, i, e)
+        e->mouse_in = SDL_PointInRect(&p, &e->dim);
+}
+
+void scene_handle_mousebutton(scene *this, SDL_MouseButtonEvent *ev)
+{
+    if (this->children == NULL) return;
+    SDL_Point p = mouse_event_coordinate((SDL_Event *)ev, ev->x, ev->y);
+    int i; element *e;
+    if (ev->state == SDL_PRESSED) {
+        for bekter_each(this->children, i, e)
+            if (SDL_PointInRect(&p, &e->dim))
+                e->mouse_down = true;
+    } else {
+        for bekter_each(this->children, i, e)
+            e->mouse_down = false;
+    }
+}
+
 void scene_clear_children(scene *this)
 {
     if (this->children == NULL) return;

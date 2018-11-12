@@ -4,6 +4,7 @@
 #define _ELEMENT_H
 
 #include <SDL.h>
+#include <stdbool.h>
 
 struct _element;
 typedef void (*element_tick_func)(struct _element *this, double dt);
@@ -13,6 +14,8 @@ typedef void (*element_drop_func)(struct _element *this);
 typedef struct _element {
     SDL_Renderer *renderer;
     SDL_Rect dim;
+
+    bool mouse_in, mouse_down;
 
     element_tick_func tick;
     element_draw_func draw;

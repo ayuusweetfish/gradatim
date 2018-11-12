@@ -21,7 +21,8 @@ static void sprite_tick(sprite *this, double dt)
 
 static void sprite_draw(sprite *this)
 {
-    SDL_RenderCopy(this->_base.renderer, this->tex, NULL, &this->_base.dim);
+    if (this->_base.mouse_in && !this->_base.mouse_down)
+        SDL_RenderCopy(this->_base.renderer, this->tex, NULL, &this->_base.dim);
 }
 
 static void sprite_drop(sprite *this)
@@ -33,6 +34,7 @@ element *sprite_create(SDL_Renderer *rdr, const char *path)
 {
     sprite *ret = malloc(sizeof(sprite));
     ret->_base.renderer = rdr;
+    ret->_base.mouse_in = false;
     ret->_base.tick = (element_tick_func)sprite_tick;
     ret->_base.draw = (element_draw_func)sprite_draw;
     ret->_base.drop = (element_drop_func)sprite_drop;

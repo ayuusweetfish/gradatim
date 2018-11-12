@@ -55,14 +55,21 @@ int main()
 
     while (running) {
         while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) running = false;
-            else if (e.type == SDL_KEYDOWN) {
+            if (e.type == SDL_QUIT) {
+                running = false;
+            } else if (e.type == SDL_KEYDOWN) {
                 g_stage = transition_slidedown_create(
                     &g_stage,
                     colour_scene_create(g_renderer, f ? 0 : 255, 192, f ? 255 : 192),
                     0.5
                 );
                 f = !f;
+            } else if (e.type == SDL_MOUSEMOTION) {
+                scene_handle_mousemove(g_stage, &e.motion);
+            } else if (e.type == SDL_MOUSEBUTTONDOWN ||
+                e.type == SDL_MOUSEBUTTONUP)
+            {
+                scene_handle_mousebutton(g_stage, &e.button);
             }
         }
         draw_loop();
