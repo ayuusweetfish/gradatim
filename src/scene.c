@@ -88,7 +88,7 @@ static void colour_scene_key_handler(colour_scene *this, SDL_KeyboardEvent *ev)
 static void cb(void *ud)
 {
     colour_scene *this = (colour_scene *)ud;
-    g_stage = transition_slidedown_create(
+    g_stage = transition_slideup_create(
         &g_stage, colour_scene_create(this->g, this->b, this->r), 0.5);
 }
 

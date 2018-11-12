@@ -19,5 +19,6 @@ typedef struct _transition_scene {
 } transition_scene;
 
 scene *transition_slidedown_create(scene **a, scene *b, double dur);
+scene *transition_slideup_create(scene **a, scene *b, double dur);
 
 #endif

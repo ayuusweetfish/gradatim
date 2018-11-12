@@ -56,11 +56,11 @@ static void transition_slidedown_draw(transition_scene *this)
     double p = this->elapsed / this->duration;
     double q = 0.5 * (1 - cos(p * M_PI));
     SDL_RenderCopy(g_renderer, this->a_tex,
-        &((SDL_Rect){0, 0, WIN_W, round((1 - q) * WIN_H)}),
-        &((SDL_Rect){0, round(q * WIN_H), WIN_W, round((1 - q) * WIN_H)}));
+        &(SDL_Rect){0, 0, WIN_W, round((1 - q) * WIN_H)},
+        &(SDL_Rect){0, round(q * WIN_H), WIN_W, round((1 - q) * WIN_H)});
     SDL_RenderCopy(g_renderer, this->b_tex,
-        &((SDL_Rect){0, round((1 - q) * WIN_H), WIN_W, round(q * WIN_H)}),
-        &((SDL_Rect){0, 0, WIN_W, round(q * WIN_H)}));
+        &(SDL_Rect){0, round((1 - q) * WIN_H), WIN_W, round(q * WIN_H)},
+        &(SDL_Rect){0, 0, WIN_W, round(q * WIN_H)});
 }
 
 scene *transition_slidedown_create(scene **a, scene *b, double dur)
@@ -68,5 +68,25 @@ scene *transition_slidedown_create(scene **a, scene *b, double dur)
     transition_scene *ret = transition_create(a, b, dur);
     if (ret == NULL) return NULL;
     ret->t_draw = transition_slidedown_draw;
+    return (scene *)ret;
+}
+
+static void transition_slideup_draw(transition_scene *this)
+{
+    double p = this->elapsed / this->duration;
+    double q = 0.5 * (1 - cos(p * M_PI));
+    SDL_RenderCopy(g_renderer, this->a_tex,
+        &(SDL_Rect){0, round(q * WIN_H), WIN_W, round((1 - q) * WIN_H)},
+        &(SDL_Rect){0, 0, WIN_W, round((1 - q) * WIN_H)});
+    SDL_RenderCopy(g_renderer, this->b_tex,
+        &(SDL_Rect){0, 0, WIN_W, round(q * WIN_H)},
+        &(SDL_Rect){0, round((1 - q) * WIN_H), WIN_W, round(q * WIN_H)});
+}
+
+scene *transition_slideup_create(scene **a, scene *b, double dur)
+{
+    transition_scene *ret = transition_create(a, b, dur);
+    if (ret == NULL) return NULL;
+    ret->t_draw = transition_slideup_draw;
     return (scene *)ret;
 }
