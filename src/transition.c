@@ -1,4 +1,5 @@
 #include "transition.h"
+#include "global.h"
 
 void transition_tick(transition_scene *this, double dt)
 {
@@ -26,11 +27,10 @@ scene *transition_slidedown_create(scene **a, scene *b, double dur)
     ret->elapsed = 0;
     ret->orig_target = SDL_GetRenderTarget(rdr);
 
-    int w = 800, h = 600;
     ret->a_tex = SDL_CreateTexture(rdr,
-        SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, w, h),
+        SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H),
     ret->b_tex = SDL_CreateTexture(rdr,
-        SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, w, h);
+        SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
 
     return (scene *)ret;
 }

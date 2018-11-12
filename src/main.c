@@ -1,4 +1,5 @@
 #include "orion/orion.h"
+#include "global.h"
 #include "scene.h"
 #include "transition.h"
 
@@ -12,7 +13,7 @@ static scene *g_stage;
 
 static void draw_loop()
 {
-    SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
     SDL_RenderClear(g_renderer);
     scene_tick(g_stage, 1.0 / 60);
     scene_draw(g_stage);
@@ -25,13 +26,13 @@ int main()
 
     g_window = SDL_CreateWindow("",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        1080, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+        WIN_W, WIN_H, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (g_window == NULL) return 1;
 
     g_renderer = SDL_CreateRenderer(
         g_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
     if (g_renderer == NULL) return 1;
-    SDL_RenderSetLogicalSize(g_renderer, 1080, 720);
+    SDL_RenderSetLogicalSize(g_renderer, WIN_W, WIN_H);
 
     /*struct orion o = orion_create(44100, 2);
     orion_load_ogg(&o, 0, "sketchch.ogg");

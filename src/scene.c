@@ -19,6 +19,6 @@ void colour_scene_tick(colour_scene *this, double dt)
 void colour_scene_draw(colour_scene *this)
 {
     SDL_SetRenderDrawColor(this->_base.renderer, this->r, this->g, this->b, 255);
-    SDL_RenderClear(this->_base.renderer);
+    SDL_RenderFillRect(this->_base.renderer, NULL);
 }
 
