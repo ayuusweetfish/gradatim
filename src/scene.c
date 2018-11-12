@@ -18,10 +18,6 @@ void scene_clear_children(scene *this)
     bekter_drop(this->children);
 }
 
-static void colour_scene_tick(colour_scene *this, double dt)
-{
-}
-
 static void colour_scene_draw(colour_scene *this)
 {
     SDL_SetRenderDrawColor(this->_base.renderer, 0, 0, 0, 255);
@@ -36,19 +32,14 @@ static void colour_scene_draw(colour_scene *this)
     draw_elements((scene *)this);
 }
 
-static void colour_scene_drop(colour_scene *this)
-{
-    free(this);
-}
-
 scene *colour_scene_create(SDL_Renderer *rdr, int r, int g, int b)
 {
     colour_scene *ret = malloc(sizeof(colour_scene));
     ret->_base.renderer = rdr;
     ret->_base.children = bekter_create();
-    ret->_base.tick = (scene_tick_func)colour_scene_tick;
+    ret->_base.tick = NULL;
     ret->_base.draw = (scene_draw_func)colour_scene_draw;
-    ret->_base.drop = (scene_drop_func)colour_scene_drop;
+    ret->_base.drop = NULL;
     ret->r = r;
     ret->g = g;
     ret->b = b;

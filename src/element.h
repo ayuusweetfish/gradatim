@@ -19,9 +19,12 @@ typedef struct _element {
     element_drop_func drop;
 } element;
 
-#define element_tick(__sp, __dt)    ((__sp)->tick(__sp, __dt))
-#define element_draw(__sp)          ((__sp)->draw(__sp))
-#define element_drop(__sp)          ((__sp)->drop(__sp))
+#define element_tick(__sp, __dt)    if ((__sp)->tick) ((__sp)->tick(__sp, __dt))
+#define element_draw(__sp)          if ((__sp)->draw) ((__sp)->draw(__sp))
+#define element_drop(__sp) do { \
+    if (((element *)(__sp))->drop) (((element *)__sp)->drop((element *)__sp)); \
+    free(__sp); \
+} while (0)
 
 void element_place(element *e, int x, int y);
 void element_place_anchored(element *e, float x, float y, float ax, float ay);

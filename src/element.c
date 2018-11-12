@@ -27,7 +27,6 @@ static void sprite_draw(sprite *this)
 static void sprite_drop(sprite *this)
 {
     SDL_DestroyTexture(this->tex);
-    free(this);
 }
 
 element *sprite_create(SDL_Renderer *rdr, const char *path)

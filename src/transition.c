@@ -27,7 +27,6 @@ static void transition_drop(transition_scene *this)
 {
     SDL_DestroyTexture(this->a_tex);
     SDL_DestroyTexture(this->b_tex);
-    free(this);
 }
 
 static transition_scene *transition_create(scene **a, scene *b, double dur)
