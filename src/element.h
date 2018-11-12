@@ -12,7 +12,6 @@ typedef void (*element_draw_func)(struct _element *this);
 typedef void (*element_drop_func)(struct _element *this);
 
 typedef struct _element {
-    SDL_Renderer *renderer;
     SDL_Rect dim;
 
     bool mouse_in, mouse_down;
@@ -37,6 +36,6 @@ typedef struct _sprite {
     SDL_Texture *tex;
 } sprite;
 
-element *sprite_create(SDL_Renderer *rdr, const char *path);
+element *sprite_create(const char *path);
 
 #endif

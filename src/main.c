@@ -9,10 +9,6 @@
 
 #include <stdbool.h>
 
-static SDL_Window *g_window;
-static SDL_Renderer *g_renderer;
-static scene *g_stage;
-
 static void draw_loop()
 {
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
@@ -47,7 +43,7 @@ int main()
     orion_play_loop(&o, 1, 0, 0, -1);
     orion_overall_play(&o);*/
 
-    g_stage = colour_scene_create(g_renderer, 0, 192, 255);
+    g_stage = colour_scene_create(0, 192, 255);
 
     bool running = true;
     SDL_Event e;

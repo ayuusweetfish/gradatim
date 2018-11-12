@@ -14,7 +14,6 @@ typedef struct _transition_scene {
     double duration, elapsed;
 
     SDL_Texture *a_tex, *b_tex;
-    SDL_Texture *orig_target;   /* Original render target */
 
     transition_draw_func t_draw;
 } transition_scene;

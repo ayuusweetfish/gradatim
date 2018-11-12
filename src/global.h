@@ -5,11 +5,17 @@
 
 #include <SDL.h>
 
+#include "scene.h"
+
 #define WIN_W   1080
 #define WIN_H   720
 
 #define round(__x)  ((int)(__x + 0.5))
 
-SDL_Texture *load_texture(SDL_Renderer *rdr, const char *path, int *w, int *h);
+extern SDL_Window *g_window;
+extern SDL_Renderer *g_renderer;
+extern scene *g_stage;
+
+SDL_Texture *load_texture(const char *path, int *w, int *h);
 
 #endif

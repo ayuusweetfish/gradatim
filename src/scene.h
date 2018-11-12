@@ -14,7 +14,6 @@ typedef void (*scene_drop_func)(struct _scene *this);
 typedef void (*scene_key_func)(struct _scene *this, SDL_KeyboardEvent *ev);
 
 typedef struct _scene {
-    SDL_Renderer *renderer;
     bekter(element *) children;
 
     scene_tick_func tick;
@@ -48,6 +47,6 @@ typedef struct _colour_scene {
     unsigned char r, g, b;
 } colour_scene;
 
-scene *colour_scene_create(SDL_Renderer *rdr, int r, int g, int b);
+scene *colour_scene_create(int r, int g, int b);
 
 #endif

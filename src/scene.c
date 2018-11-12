@@ -64,14 +64,14 @@ void scene_clear_children(scene *this)
 
 static void colour_scene_draw(colour_scene *this)
 {
-    SDL_SetRenderDrawColor(this->_base.renderer, 0, 0, 0, 255);
-    SDL_RenderClear(this->_base.renderer);
-    SDL_SetRenderDrawColor(this->_base.renderer, this->r, this->g, this->b, 128);
-    SDL_RenderFillRect(this->_base.renderer, NULL);
-    SDL_RenderFillRect(this->_base.renderer,
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+    SDL_RenderClear(g_renderer);
+    SDL_SetRenderDrawColor(g_renderer, this->r, this->g, this->b, 128);
+    SDL_RenderFillRect(g_renderer, NULL);
+    SDL_RenderFillRect(g_renderer,
         &(SDL_Rect){WIN_W / 8, WIN_H / 8, WIN_W * 3 / 4, WIN_H * 3 / 4});
-    SDL_SetRenderDrawColor(this->_base.renderer, this->r, this->g, this->b, 255);
-    SDL_RenderFillRect(this->_base.renderer,
+    SDL_SetRenderDrawColor(g_renderer, this->r, this->g, this->b, 255);
+    SDL_RenderFillRect(g_renderer,
         &(SDL_Rect){WIN_W / 4, WIN_H / 4, WIN_W / 2, WIN_H / 2});
     draw_elements((scene *)this);
 }
@@ -88,10 +88,9 @@ static void cb()
     puts("Hello world!");
 }
 
-scene *colour_scene_create(SDL_Renderer *rdr, int r, int g, int b)
+scene *colour_scene_create(int r, int g, int b)
 {
     colour_scene *ret = malloc(sizeof(colour_scene));
-    ret->_base.renderer = rdr;
     ret->_base.children = bekter_create();
     ret->_base.tick = NULL;
     ret->_base.draw = (scene_draw_func)colour_scene_draw;
@@ -100,7 +99,7 @@ scene *colour_scene_create(SDL_Renderer *rdr, int r, int g, int b)
     ret->r = r;
     ret->g = g;
     ret->b = b;
-    element *s = button_create(rdr, cb, "1.png", "2.png", "3.png", 1.05, 0.98);
+    element *s = button_create(cb, "1.png", "2.png", "3.png", 1.05, 0.98);
     element_place_anchored(s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
     return (scene *)ret;
