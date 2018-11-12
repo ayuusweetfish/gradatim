@@ -3,17 +3,17 @@
 
 #include <math.h>
 
-static void _transition_tick(transition_scene *this, double dt)
+static void transition_tick(transition_scene *this, double dt)
 {
     this->elapsed += dt;
     if (this->elapsed >= this->duration) {
         *(this->p) = this->b;
-        SDL_DestroyTexture(this->a_tex);
-        SDL_DestroyTexture(this->b_tex);
+        scene_drop(this->a);
+        scene_drop(this);
     }
 }
 
-static void _transition_draw(transition_scene *this)
+static void transition_draw(transition_scene *this)
 {
     SDL_SetRenderTarget(this->_base.renderer, this->a_tex);
     scene_draw(this->a);
@@ -23,15 +23,24 @@ static void _transition_draw(transition_scene *this)
     this->t_draw(this);
 }
 
-static transition_scene *_transition_create(scene **a, scene *b, double dur)
+static void transition_drop(transition_scene *this)
+{
+    SDL_DestroyTexture(this->a_tex);
+    SDL_DestroyTexture(this->b_tex);
+    free(this);
+}
+
+static transition_scene *transition_create(scene **a, scene *b, double dur)
 {
     SDL_Renderer *rdr = (*a)->renderer;
     if (b->renderer != rdr) return NULL;
 
     transition_scene *ret = malloc(sizeof(transition_scene));
     ret->_base.renderer = rdr;
-    ret->_base.tick = (scene_tick_func)_transition_tick;
-    ret->_base.draw = (scene_draw_func)_transition_draw;
+    ret->_base.children = NULL;
+    ret->_base.tick = (scene_tick_func)transition_tick;
+    ret->_base.draw = (scene_draw_func)transition_draw;
+    ret->_base.drop = (scene_drop_func)transition_drop;
     ret->a = *a;
     ret->b = b;
     ret->p = a;
@@ -47,7 +56,7 @@ static transition_scene *_transition_create(scene **a, scene *b, double dur)
     return ret;
 }
 
-static void _transition_slidedown_draw(transition_scene *this)
+static void transition_slidedown_draw(transition_scene *this)
 {
     double p = this->elapsed / this->duration;
     double q = 0.5 * (1 - cos(p * M_PI));
@@ -61,8 +70,8 @@ static void _transition_slidedown_draw(transition_scene *this)
 
 scene *transition_slidedown_create(scene **a, scene *b, double dur)
 {
-    transition_scene *ret = _transition_create(a, b, dur);
+    transition_scene *ret = transition_create(a, b, dur);
     if (ret == NULL) return NULL;
-    ret->t_draw = _transition_slidedown_draw;
+    ret->t_draw = transition_slidedown_draw;
     return (scene *)ret;
 }
