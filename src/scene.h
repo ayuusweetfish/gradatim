@@ -11,6 +11,7 @@ struct _scene;
 typedef void (*scene_tick_func)(struct _scene *this, double dt);
 typedef void (*scene_draw_func)(struct _scene *this);
 typedef void (*scene_drop_func)(struct _scene *this);
+typedef void (*scene_key_func)(struct _scene *this, SDL_KeyboardEvent *ev);
 
 typedef struct _scene {
     SDL_Renderer *renderer;
@@ -19,6 +20,8 @@ typedef struct _scene {
     scene_tick_func tick;
     scene_draw_func draw;
     scene_drop_func drop;
+
+    scene_key_func key_handler;
 } scene;
 
 #define scene_tick(__sp, __dt) do { \
@@ -33,6 +36,8 @@ typedef struct _scene {
     free(__sp); \
 } while (0)
 
+#define scene_handle_key(__sp, __ev) \
+    if ((__sp)->key_handler) ((__sp)->key_handler(__sp, __ev))
 void scene_handle_mousemove(scene *this, SDL_MouseMotionEvent *ev);
 void scene_handle_mousebutton(scene *this, SDL_MouseButtonEvent *ev);
 void scene_tick_children(scene *this, double dt);

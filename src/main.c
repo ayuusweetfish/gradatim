@@ -47,7 +47,6 @@ int main()
     orion_play_loop(&o, 1, 0, 0, -1);
     orion_overall_play(&o);*/
 
-    bool f = false;
     g_stage = colour_scene_create(g_renderer, 0, 192, 255);
 
     bool running = true;
@@ -60,12 +59,7 @@ int main()
             if (e.type == SDL_QUIT) {
                 running = false;
             } else if (e.type == SDL_KEYDOWN) {
-                g_stage = transition_slidedown_create(
-                    &g_stage,
-                    colour_scene_create(g_renderer, f ? 0 : 255, 192, f ? 255 : 192),
-                    0.5
-                );
-                f = !f;
+                scene_handle_key(g_stage, &e.key);
             } else if (e.type == SDL_MOUSEMOTION) {
                 scene_handle_mousemove(g_stage, &e.motion);
             } else if (e.type == SDL_MOUSEBUTTONDOWN ||

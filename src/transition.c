@@ -40,6 +40,7 @@ static transition_scene *transition_create(scene **a, scene *b, double dur)
     ret->_base.tick = (scene_tick_func)transition_tick;
     ret->_base.draw = (scene_draw_func)transition_draw;
     ret->_base.drop = (scene_drop_func)transition_drop;
+    ret->_base.key_handler = NULL;
     ret->a = *a;
     ret->b = b;
     ret->p = a;

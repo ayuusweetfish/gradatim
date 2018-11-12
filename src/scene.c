@@ -76,6 +76,13 @@ static void colour_scene_draw(colour_scene *this)
     draw_elements((scene *)this);
 }
 
+static void colour_scene_key_handler(colour_scene *this, SDL_KeyboardEvent *ev)
+{
+    if (ev->keysym.sym == SDLK_n) {
+        puts("Yay");
+    }
+}
+
 static void cb()
 {
     puts("Hello world!");
@@ -89,6 +96,7 @@ scene *colour_scene_create(SDL_Renderer *rdr, int r, int g, int b)
     ret->_base.tick = NULL;
     ret->_base.draw = (scene_draw_func)colour_scene_draw;
     ret->_base.drop = NULL;
+    ret->_base.key_handler = (scene_key_func)colour_scene_key_handler;
     ret->r = r;
     ret->g = g;
     ret->b = b;
