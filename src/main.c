@@ -47,6 +47,8 @@ int main()
     bool running = true;
     SDL_Event e;
 
+    unsigned int fps_last_flush = 0, fps_frame_count = 0;
+
     while (running) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) running = false;
@@ -60,6 +62,12 @@ int main()
             }
         }
         draw_loop();
+        ++fps_frame_count;
+        if (fps_last_flush / 1000 != SDL_GetTicks() / 1000) {
+            printf("%d FPS\n", fps_frame_count);
+            fps_frame_count = 0;
+        }
+        fps_last_flush = SDL_GetTicks();
     }
 
     /*orion_drop(&o);*/
