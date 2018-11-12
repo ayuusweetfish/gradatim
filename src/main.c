@@ -28,6 +28,8 @@ int main()
     int img_init = IMG_INIT_PNG;
     if ((IMG_Init(img_init) & img_init) != img_init) return 1;
 
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
     g_window = SDL_CreateWindow("",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         WIN_W, WIN_H, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
