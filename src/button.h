@@ -17,6 +17,10 @@ typedef struct _button {
     SDL_Texture *tex[3];
     SDL_Point sz[3];
     char last_s;
+
+    SDL_Point agl_sz, cur_sz;
+    char agl_s;
+    unsigned agl_time;
 } button;
 
 element *button_create(SDL_Renderer *rdr, button_callback cb,

@@ -92,7 +92,7 @@ scene *colour_scene_create(SDL_Renderer *rdr, int r, int g, int b)
     ret->r = r;
     ret->g = g;
     ret->b = b;
-    element *s = button_create(rdr, cb, "1.png", NULL, NULL, 1.1, 0.95);
+    element *s = button_create(rdr, cb, "1.png", "2.png", "3.png", 1.05, 0.98);
     element_place_anchored(s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
     return (scene *)ret;
