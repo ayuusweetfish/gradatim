@@ -10,14 +10,13 @@ typedef struct _transition_scene {
     scene *a, *b, **p;
     double duration, elapsed;
 
-    SDL_Renderer *a_rdr, *b_rdr;
     SDL_Texture *a_tex, *b_tex;
+    SDL_Texture *orig_target;   /* Original render target */
 } transition_scene;
 
 void transition_tick(transition_scene *this, double dt);
 
-scene *transition_slidedown_create(
-    SDL_Window *win, SDL_Renderer *rdr, scene **a, scene *b, double dur);
+scene *transition_slidedown_create(scene **a, scene *b, double dur);
 void transition_slidedown_draw(transition_scene *this);
 
 #endif
