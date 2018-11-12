@@ -5,6 +5,9 @@
 
 #include "scene.h"
 
+struct _transition_scene;
+typedef void (*transition_draw_func)(struct _transition_scene *this);
+
 typedef struct _transition_scene {
     scene _base;
     scene *a, *b, **p;
@@ -12,11 +15,10 @@ typedef struct _transition_scene {
 
     SDL_Texture *a_tex, *b_tex;
     SDL_Texture *orig_target;   /* Original render target */
+
+    transition_draw_func t_draw;
 } transition_scene;
 
-void transition_tick(transition_scene *this, double dt);
-
 scene *transition_slidedown_create(scene **a, scene *b, double dur);
-void transition_slidedown_draw(transition_scene *this);
 
 #endif
