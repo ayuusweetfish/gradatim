@@ -1,6 +1,8 @@
 #include "transition.h"
 #include "global.h"
 
+#include <math.h>
+
 static void _transition_tick(transition_scene *this, double dt)
 {
     this->elapsed += dt;
@@ -47,9 +49,14 @@ static transition_scene *_transition_create(scene **a, scene *b, double dur)
 
 static void _transition_slidedown_draw(transition_scene *this)
 {
-    SDL_RenderCopy(this->_base.renderer,
-        this->elapsed < this->duration / 2 ? this->b_tex : this->a_tex,
-        NULL, NULL);
+    double p = this->elapsed / this->duration;
+    double q = 0.5 * (1 - cos(p * M_PI));
+    SDL_RenderCopy(this->_base.renderer, this->a_tex,
+        &((SDL_Rect){0, 0, WIN_W, round((1 - q) * WIN_H)}),
+        &((SDL_Rect){0, round(q * WIN_H), WIN_W, round((1 - q) * WIN_H)}));
+    SDL_RenderCopy(this->_base.renderer, this->b_tex,
+        &((SDL_Rect){0, round((1 - q) * WIN_H), WIN_W, round(q * WIN_H)}),
+        &((SDL_Rect){0, 0, WIN_W, round(q * WIN_H)}));
 }
 
 scene *transition_slidedown_create(scene **a, scene *b, double dur)

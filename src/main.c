@@ -53,7 +53,7 @@ int main()
                 g_stage = transition_slidedown_create(
                     &g_stage,
                     colour_scene_create(g_renderer, f ? 0 : 255, 192, f ? 255 : 192),
-                    1.0
+                    0.5
                 );
                 f = !f;
             }
