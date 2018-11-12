@@ -1,9 +1,11 @@
 #include "orion/orion.h"
 #include "global.h"
+#include "element.h"
 #include "scene.h"
 #include "transition.h"
 
 #include <SDL.h>
+#include <SDL_image.h>
 
 #include <stdbool.h>
 
@@ -23,6 +25,8 @@ static void draw_loop()
 int main()
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) return 1;
+    int img_init = IMG_INIT_PNG;
+    if ((IMG_Init(img_init) & img_init) != img_init) return 1;
 
     g_window = SDL_CreateWindow("",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,

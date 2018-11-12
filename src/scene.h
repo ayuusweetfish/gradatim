@@ -13,6 +13,7 @@ typedef void (*scene_draw_func)(struct _scene *this);
 
 typedef struct _scene {
     SDL_Renderer *renderer;
+    bekter(element *) children;
 
     scene_tick_func tick;
     scene_draw_func draw;
