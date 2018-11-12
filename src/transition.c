@@ -40,9 +40,9 @@ static transition_scene *_transition_create(scene **a, scene *b, double dur)
     ret->orig_target = SDL_GetRenderTarget(rdr);
 
     ret->a_tex = SDL_CreateTexture(rdr,
-        SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H),
+        SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H),
     ret->b_tex = SDL_CreateTexture(rdr,
-        SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
+        SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
 
     return ret;
 }
