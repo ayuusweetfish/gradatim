@@ -3,12 +3,17 @@
 
 #include <math.h>
 
+void transition_set_preservative(transition_scene *this)
+{
+    this->preserves_a = true;
+}
+
 static void transition_tick(transition_scene *this, double dt)
 {
     this->elapsed += dt;
     if (this->elapsed >= this->duration) {
         *(this->p) = this->b;
-        scene_drop(this->a);
+        if (!this->preserves_a) scene_drop(this->a);
         scene_drop(this);
     }
 }
@@ -40,6 +45,7 @@ static transition_scene *transition_create(scene **a, scene *b, double dur)
     ret->a = *a;
     ret->b = b;
     ret->p = a;
+    ret->preserves_a = false;
     ret->duration = dur;
     ret->elapsed = 0;
 
