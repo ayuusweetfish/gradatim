@@ -21,7 +21,11 @@ typedef struct _scene {
     scene_drop_func drop;
 } scene;
 
-#define scene_tick(__sp, __dt)  if ((__sp)->tick) ((__sp)->tick(__sp, __dt))
+#define scene_tick(__sp, __dt) do { \
+    scene_tick_children((scene *)(__sp), __dt); \
+    if (((scene *)(__sp))->tick) \
+        (((scene *)(__sp))->tick((scene *)(__sp), __dt)); \
+} while (0)
 #define scene_draw(__sp)        if ((__sp)->draw) ((__sp)->draw(__sp))
 #define scene_drop(__sp) do { \
     scene_clear_children((scene *)(__sp)); \
@@ -30,8 +34,8 @@ typedef struct _scene {
 } while (0)
 
 void scene_handle_mousemove(scene *this, SDL_MouseMotionEvent *ev);
-void scene_handle_mousedown(scene *this, SDL_MouseButtonEvent *ev);
-void scene_handle_mouseup(scene *this, SDL_MouseButtonEvent *ev);
+void scene_handle_mousebutton(scene *this, SDL_MouseButtonEvent *ev);
+void scene_tick_children(scene *this, double dt);
 void scene_clear_children(scene *this);
 
 typedef struct _colour_scene {

@@ -34,17 +34,10 @@ element *sprite_create(SDL_Renderer *rdr, const char *path)
 {
     sprite *ret = malloc(sizeof(sprite));
     ret->_base.renderer = rdr;
-    ret->_base.mouse_in = false;
+    ret->_base.mouse_in = ret->_base.mouse_down = false;
     ret->_base.tick = (element_tick_func)sprite_tick;
     ret->_base.draw = (element_draw_func)sprite_draw;
     ret->_base.drop = (element_drop_func)sprite_drop;
-
-    SDL_Surface *sfc = IMG_Load(path);
-    if (sfc == NULL) return NULL;
-    SDL_Texture *tex = SDL_CreateTextureFromSurface(rdr, sfc);
-    SDL_FreeSurface(sfc);
-    SDL_QueryTexture(tex, NULL, NULL, &ret->_base.dim.w, &ret->_base.dim.h);
-    ret->tex = tex;
-
+    ret->tex = load_texture(rdr, path, &ret->_base.dim.w, &ret->_base.dim.h);
     return (element *)ret;
 }

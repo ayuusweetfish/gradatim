@@ -1,6 +1,7 @@
 #include "scene.h"
 #include "global.h"
 #include "element.h"
+#include "button.h"
 
 static void draw_elements(scene *this)
 {
@@ -45,6 +46,13 @@ void scene_handle_mousebutton(scene *this, SDL_MouseButtonEvent *ev)
     }
 }
 
+void scene_tick_children(scene *this, double dt)
+{
+    if (this->children == NULL) return;
+    int i; element *e;
+    for bekter_each(this->children, i, e) if (e->tick) e->tick(e, dt);
+}
+
 void scene_clear_children(scene *this)
 {
     if (this->children == NULL) return;
@@ -68,6 +76,11 @@ static void colour_scene_draw(colour_scene *this)
     draw_elements((scene *)this);
 }
 
+static void cb()
+{
+    puts("Hello world!");
+}
+
 scene *colour_scene_create(SDL_Renderer *rdr, int r, int g, int b)
 {
     colour_scene *ret = malloc(sizeof(colour_scene));
@@ -79,7 +92,7 @@ scene *colour_scene_create(SDL_Renderer *rdr, int r, int g, int b)
     ret->r = r;
     ret->g = g;
     ret->b = b;
-    sprite *s = sprite_create(rdr, "1.png");
+    element *s = button_create(rdr, cb, "1.png", NULL, NULL, 1.1, 0.95);
     element_place_anchored(s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
     return (scene *)ret;

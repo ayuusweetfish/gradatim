@@ -9,5 +9,5 @@ include_directories(${SDL2_INCLUDE_DIR})
 find_package(SDL2_image REQUIRED)
 include_directories(${SDL2_IMAGE_INCLUDE_DIR})
 
-add_executable(g main.c bekter.c element.c scene.c transition.c)
+add_executable(g global.c main.c bekter.c element.c button.c scene.c transition.c)
 target_link_libraries(g orion ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
