@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "global.h"
+#include "transition.h"
 #include "element.h"
 #include "button.h"
 
@@ -79,13 +80,16 @@ static void colour_scene_draw(colour_scene *this)
 static void colour_scene_key_handler(colour_scene *this, SDL_KeyboardEvent *ev)
 {
     if (ev->keysym.sym == SDLK_n) {
-        puts("Yay");
+        g_stage = transition_slidedown_create(
+            &g_stage, colour_scene_create(this->b, this->r, this->g), 0.5);
     }
 }
 
-static void cb()
+static void cb(void *ud)
 {
-    puts("Hello world!");
+    colour_scene *this = (colour_scene *)ud;
+    g_stage = transition_slidedown_create(
+        &g_stage, colour_scene_create(this->g, this->b, this->r), 0.5);
 }
 
 scene *colour_scene_create(int r, int g, int b)
@@ -99,7 +103,7 @@ scene *colour_scene_create(int r, int g, int b)
     ret->r = r;
     ret->g = g;
     ret->b = b;
-    element *s = button_create(cb, "1.png", "2.png", "3.png", 1.05, 0.98);
+    element *s = button_create(cb, ret, "1.png", "2.png", "3.png", 1.05, 0.98);
     element_place_anchored(s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
     return (scene *)ret;

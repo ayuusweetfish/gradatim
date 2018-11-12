@@ -7,11 +7,12 @@
 
 #include <SDL.h>
 
-typedef void (*button_callback)();
+typedef void (*button_callback)(void *ud);
 
 typedef struct _button {
     element _base;
     button_callback cb;
+    void *ud;
 
     /* For idle, focus, and down */
     SDL_Texture *tex[3];
@@ -23,7 +24,7 @@ typedef struct _button {
     unsigned agl_time;
 } button;
 
-element *button_create(button_callback cb,
+element *button_create(button_callback cb, void *ud,
     const char *img_idle, const char *img_focus, const char *img_down,
     float scale_focus, float scale_down);
 

@@ -7,7 +7,7 @@ static void button_tick(button *this, double dt)
 {
     char s = (this->_base.mouse_in ? (this->_base.mouse_down ? 2 : 1) : 0);
     if (s == 1 && this->last_s == 2)
-        if (this->cb) this->cb();
+        if (this->cb) this->cb(this->ud);
     unsigned now = SDL_GetTicks();
     if (this->last_s != s) {
         this->agl_s = this->last_s;
@@ -61,7 +61,7 @@ static void button_drop(button *this)
         SDL_DestroyTexture(this->tex[2]);
 }
 
-element *button_create(button_callback cb,
+element *button_create(button_callback cb, void *ud,
     const char *img_idle, const char *img_focus, const char *img_down,
     float scale_focus, float scale_down)
 {
@@ -71,6 +71,7 @@ element *button_create(button_callback cb,
     ret->_base.draw = (element_draw_func)button_draw;
     ret->_base.drop = (element_drop_func)button_drop;
     ret->cb = cb;
+    ret->ud = ud;
     int w, h;
     ret->tex[0] = load_texture(img_idle, &w, &h);
     ret->sz[0] = (SDL_Point){w, h};
