@@ -21,8 +21,7 @@ static void sprite_tick(sprite *this, double dt)
 
 static void sprite_draw(sprite *this)
 {
-    if (this->_base.mouse_in && !this->_base.mouse_down)
-        SDL_RenderCopy(g_renderer, this->tex, NULL, &this->_base.dim);
+    SDL_RenderCopy(g_renderer, this->tex, NULL, &this->_base.dim);
 }
 
 static void sprite_drop(sprite *this)

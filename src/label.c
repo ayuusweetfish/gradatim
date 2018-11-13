@@ -12,17 +12,16 @@ static void label_render_text(label *this)
     );
     this->_base.tex = SDL_CreateTextureFromSurface(g_renderer, sf);
     SDL_FreeSurface(sf);
-    SDL_QueryTexture(this->_base.tex, NULL, NULL, NULL, &this->_base._base.dim.h);
+    SDL_QueryTexture(this->_base.tex, NULL, NULL,
+        &this->_base._base.dim.w, &this->_base._base.dim.h);
 }
 
-element *label_create(const char *path, int pts,
-    SDL_Color cl, int wid, const char *text)
+element *label_create(const char *path, int pts, SDL_Color cl, const char *text)
 {
     label *ret = (label *)sprite_create_empty();
     ret = realloc(ret, sizeof(label));
     ret->font = load_font(path, pts);
     ret->cl = cl;
-    ret->_base._base.dim.w = wid;
     ret->text = text;
     label_render_text(ret);
     return (element *)ret;
