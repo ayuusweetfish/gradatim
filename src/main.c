@@ -50,6 +50,9 @@ int main()
     bool running = true;
     SDL_Event e;
 
+    scene *last_stage;
+    SDL_Event last_mousemove;
+
     unsigned int fps_last_flush = 0, fps_frame_count = 0;
 
     while (running) {
@@ -60,11 +63,16 @@ int main()
                 scene_handle_key(g_stage, &e.key);
             } else if (e.type == SDL_MOUSEMOTION) {
                 scene_handle_mousemove(g_stage, &e.motion);
+                last_mousemove = e;
             } else if (e.type == SDL_MOUSEBUTTONDOWN ||
                 e.type == SDL_MOUSEBUTTONUP)
             {
                 scene_handle_mousebutton(g_stage, &e.button);
             }
+        }
+        if (last_stage != g_stage) {
+            last_stage = g_stage;
+            scene_handle_mousemove(g_stage, &last_mousemove);
         }
         draw_loop();
         ++fps_frame_count;
