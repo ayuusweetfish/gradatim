@@ -76,6 +76,8 @@ int main()
     }
 
     /*orion_drop(&o);*/
+    TTF_Quit();
+    IMG_Quit();
     SDL_Quit();
 
     return 0;
