@@ -36,6 +36,7 @@ typedef struct _sprite {
     SDL_Texture *tex;
 } sprite;
 
+element *sprite_create_empty();
 element *sprite_create(const char *path);
 
 #endif

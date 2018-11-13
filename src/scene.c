@@ -3,6 +3,7 @@
 #include "transition.h"
 #include "element.h"
 #include "button.h"
+#include "label.h"
 
 static void draw_elements(scene *this)
 {
@@ -105,6 +106,10 @@ scene *colour_scene_create(int r, int g, int b)
     ret->b = b;
     element *s = button_create(cb, ret, "1.png", "2.png", "3.png", 1.05, 0.98);
     element_place_anchored(s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
+    bekter_pushback(ret->_base.children, s);
+    s = label_create("KiteOne-Regular.ttf", 48,
+        (SDL_Color){0, 0, 0}, 480, "Hi there!");
+    element_place_anchored(s, WIN_W / 2, WIN_H * 3 / 4, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
     return (scene *)ret;
 }

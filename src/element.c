@@ -30,13 +30,20 @@ static void sprite_drop(sprite *this)
     SDL_DestroyTexture(this->tex);
 }
 
-element *sprite_create(const char *path)
+element *sprite_create_empty()
 {
     sprite *ret = malloc(sizeof(sprite));
     ret->_base.mouse_in = ret->_base.mouse_down = false;
     ret->_base.tick = (element_tick_func)sprite_tick;
     ret->_base.draw = (element_draw_func)sprite_draw;
     ret->_base.drop = (element_drop_func)sprite_drop;
+    ret->tex = NULL;
+    return (element *)ret;
+}
+
+element *sprite_create(const char *path)
+{
+    sprite *ret = (sprite *)sprite_create_empty();
     ret->tex = load_texture(path, &ret->_base.dim.w, &ret->_base.dim.h);
     return (element *)ret;
 }

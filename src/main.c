@@ -6,6 +6,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 
 #include <stdbool.h>
 
@@ -23,6 +24,7 @@ int main()
     if (SDL_Init(SDL_INIT_VIDEO) < 0) return 1;
     int img_init = IMG_INIT_PNG;
     if ((IMG_Init(img_init) & img_init) != img_init) return 1;
+    if (TTF_Init() < 0) return 1;
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 

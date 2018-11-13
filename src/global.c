@@ -6,6 +6,8 @@ SDL_Window *g_window;
 SDL_Renderer *g_renderer;
 scene *g_stage;
 
+/* TODO: Add caching for resources */
+
 SDL_Texture *load_texture(const char *path, int *w, int *h)
 {
     SDL_Surface *sfc = IMG_Load(path);
@@ -14,4 +16,9 @@ SDL_Texture *load_texture(const char *path, int *w, int *h)
     SDL_FreeSurface(sfc);
     SDL_QueryTexture(tex, NULL, NULL, w, h);
     return tex;
+}
+
+TTF_Font *load_font(const char *path, int pts)
+{
+    return TTF_OpenFont(path, pts);
 }
