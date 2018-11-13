@@ -12,8 +12,11 @@ typedef struct _label {
     TTF_Font *font;
     SDL_Color cl;
     const char *text;
+    int wid;
+    unsigned long last_hash;
 } label;
 
-element *label_create(const char *path, int pts, SDL_Color cl, const char *text);
+element *label_create(const char *path, int pts,
+    SDL_Color cl, int wid, const char *text);
 
 #endif

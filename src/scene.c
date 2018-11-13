@@ -108,7 +108,7 @@ scene *colour_scene_create(int r, int g, int b)
     element_place_anchored(s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
     s = label_create("KiteOne-Regular.ttf", 48,
-        (SDL_Color){0, 0, 0}, "Hi there!");
+        (SDL_Color){0, 0, 0}, 480, "The spectacle before us was indeed sublime.");
     element_place_anchored(s, WIN_W / 2, WIN_H * 3 / 4, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
     return (scene *)ret;
