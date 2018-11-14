@@ -56,7 +56,7 @@ void load_images()
     load_image("3.png");
 }
 
-void finalize_images()
+void release_images()
 {
     int i, j;
     SDL_Texture *p;

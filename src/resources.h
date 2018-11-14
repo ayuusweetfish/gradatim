@@ -20,7 +20,7 @@ typedef struct _texture_kvpair {
 } _texture_kvpair;
 
 void load_images();
-void finalize_images();
+void release_images();
 texture retrieve_texture(const char *name);
 texture temp_texture(SDL_Texture *sdl_tex);
 void render_texture(texture t, SDL_Rect *dim);

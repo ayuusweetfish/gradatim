@@ -87,6 +87,7 @@ int main()
     }
 
     /*orion_drop(&o);*/
+    release_images();
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();
