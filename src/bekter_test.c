@@ -26,6 +26,7 @@ int main()
         }
     }
     for bekter_each(b, i, x) printf("%d\n", x);
+    printf("%d\n", bekter_at(b, 19, int));
 
     return 0;
 }
