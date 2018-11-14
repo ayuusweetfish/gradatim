@@ -4,6 +4,7 @@
 #define _BUTTON_H
 
 #include "element.h"
+#include "resources.h"
 
 #include <SDL.h>
 
@@ -15,7 +16,7 @@ typedef struct _button {
     void *ud;
 
     /* For idle, focus, and down */
-    SDL_Texture *tex[3];
+    texture tex[3];
     SDL_Point sz[3];
     char last_s;
 

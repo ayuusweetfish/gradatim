@@ -3,6 +3,7 @@
 #include "element.h"
 #include "scene.h"
 #include "transition.h"
+#include "resources.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -38,6 +39,8 @@ int main()
     if (g_renderer == NULL) return 1;
     SDL_RenderSetLogicalSize(g_renderer, WIN_W, WIN_H);
     SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
+
+    load_images();
 
     /*struct orion o = orion_create(44100, 2);
     orion_load_ogg(&o, 0, "sketchch.ogg");
