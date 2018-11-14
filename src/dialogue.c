@@ -5,6 +5,29 @@
 
 static const double DELAY_PER_CHAR = 0.025;
 
+static void preprocess_text(char *str, TTF_Font *font, int wrap_w)
+{
+    int len = strlen(str);
+    int pos = 0;
+    int w;
+    while (pos < len) {
+        int lo = pos + 1, hi = len + 1, mid;
+        while (lo < hi - 1) {
+            mid = (lo + hi) >> 1;
+            char tmp = str[mid];
+            str[mid] = '\0';
+            if (TTF_SizeText(font, str + pos, &w, NULL) != 0) return;
+            str[mid] = tmp;
+            if (w > wrap_w) hi = mid; else lo = mid;
+        }
+        if (lo == len) break;
+        while (!isspace(str[lo]) && lo > pos) --lo;
+        if (lo == pos) return;
+        str[lo] = '\n';
+        pos = lo + 1;
+    }
+}
+
 static void dialogue_tick(dialogue_scene *this, double dt)
 {
     scene_tick(this->bg, dt);
@@ -102,14 +125,6 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
     ret->entry_lasted = 0;
     ret->last_textpos = -1;
 
-    int i;
-    dialogue_entry *entry;
-    for bekter_each_ptr(ret->script, i, entry) {
-        entry->name = strdup(entry->name);
-        entry->text = strdup(entry->text);
-        entry->text_len = strlen(entry->text);
-    }
-
     ret->bg_tex = SDL_CreateTexture(g_renderer,
         SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
 
@@ -129,6 +144,15 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
         (SDL_Color){255, 255, 255}, WIN_W * 50 / 72, "");
     ret->text_disp = l;
     bekter_pushback(ret->_base.children, l);
+
+    int i;
+    dialogue_entry *entry;
+    for bekter_each_ptr(ret->script, i, entry) {
+        entry->name = strdup(entry->name);
+        entry->text = strdup(entry->text);
+        entry->text_len = strlen(entry->text);
+        preprocess_text(entry->text, l->font, l->wid);
+    }
 
     update_children(ret);
 
