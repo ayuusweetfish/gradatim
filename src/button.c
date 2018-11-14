@@ -52,7 +52,7 @@ static void button_draw(button *this)
     }, alpha);
 }
 
-element *button_create(button_callback cb, void *ud,
+button *button_create(button_callback cb, void *ud,
     const char *img_idle, const char *img_focus, const char *img_down,
     float scale_focus, float scale_down)
 {
@@ -79,5 +79,5 @@ element *button_create(button_callback cb, void *ud,
     ret->last_s = 0;
     ret->cur_sz = ret->sz[0];
     ret->agl_s = -1;
-    return (element *)ret;
+    return ret;
 }

@@ -30,7 +30,7 @@ static void label_render_text(label *this)
     this->_base._base.dim.h = this->_base.tex.range.h;
 }
 
-element *label_create(const char *path, int pts,
+label *label_create(const char *path, int pts,
     SDL_Color cl, int wid, const char *text)
 {
     label *ret = (label *)sprite_create_empty();
@@ -41,5 +41,5 @@ element *label_create(const char *path, int pts,
     ret->wid = wid;
     ret->last_hash = 0;
     label_render_text(ret);
-    return (element *)ret;
+    return ret;
 }

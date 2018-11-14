@@ -48,13 +48,13 @@ int main()
     orion_play_loop(&o, 1, 0, 0, -1);
     orion_overall_play(&o);*/
 
-    g_stage = colour_scene_create(0, 192, 255);
+    g_stage = (scene *)colour_scene_create(0, 192, 255);
 
     bool running = true;
     SDL_Event e;
 
     scene *last_stage;
-    SDL_Event last_mousemove;
+    SDL_MouseMotionEvent last_mousemove;
 
     unsigned int fps_last_flush = 0, fps_frame_count = 0;
 
@@ -66,7 +66,7 @@ int main()
                 scene_handle_key(g_stage, &e.key);
             } else if (e.type == SDL_MOUSEMOTION) {
                 scene_handle_mousemove(g_stage, &e.motion);
-                last_mousemove = e;
+                last_mousemove = e.motion;
             } else if (e.type == SDL_MOUSEBUTTONDOWN ||
                 e.type == SDL_MOUSEBUTTONUP)
             {

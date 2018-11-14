@@ -47,6 +47,6 @@ typedef struct _colour_scene {
     unsigned char r, g, b;
 } colour_scene;
 
-scene *colour_scene_create(int r, int g, int b);
+colour_scene *colour_scene_create(int r, int g, int b);
 
 #endif

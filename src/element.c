@@ -24,7 +24,7 @@ static void sprite_draw(sprite *this)
     render_texture(this->tex, &this->_base.dim);
 }
 
-element *sprite_create_empty()
+sprite *sprite_create_empty()
 {
     sprite *ret = malloc(sizeof(sprite));
     ret->_base.mouse_in = ret->_base.mouse_down = false;
@@ -32,14 +32,14 @@ element *sprite_create_empty()
     ret->_base.draw = (element_draw_func)sprite_draw;
     ret->_base.drop = NULL;
     ret->tex = (texture){0};
-    return (element *)ret;
+    return ret;
 }
 
-element *sprite_create(const char *path)
+sprite *sprite_create(const char *path)
 {
     sprite *ret = (sprite *)sprite_create_empty();
     ret->tex = retrieve_texture(path);
     ret->_base.dim.w = ret->tex.range.w;
     ret->_base.dim.h = ret->tex.range.h;
-    return (element *)ret;
+    return ret;
 }

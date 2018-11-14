@@ -25,7 +25,7 @@ typedef struct _button {
     unsigned agl_time;
 } button;
 
-element *button_create(button_callback cb, void *ud,
+button *button_create(button_callback cb, void *ud,
     const char *img_idle, const char *img_focus, const char *img_down,
     float scale_focus, float scale_down);
 

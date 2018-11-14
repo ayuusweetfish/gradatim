@@ -81,19 +81,19 @@ static void colour_scene_draw(colour_scene *this)
 static void colour_scene_key_handler(colour_scene *this, SDL_KeyboardEvent *ev)
 {
     if (ev->keysym.sym == SDLK_n) {
-        g_stage = transition_slidedown_create(
-            &g_stage, colour_scene_create(this->b, this->r, this->g), 0.5);
+        g_stage = transition_slidedown_create(&g_stage,
+            (scene *)colour_scene_create(this->b, this->r, this->g), 0.5);
     }
 }
 
 static void cb(void *ud)
 {
     colour_scene *this = (colour_scene *)ud;
-    g_stage = transition_slideup_create(
-        &g_stage, colour_scene_create(this->g, this->b, this->r), 0.5);
+    g_stage = transition_slideup_create(&g_stage,
+        (scene *)colour_scene_create(this->g, this->b, this->r), 0.5);
 }
 
-scene *colour_scene_create(int r, int g, int b)
+colour_scene *colour_scene_create(int r, int g, int b)
 {
     colour_scene *ret = malloc(sizeof(colour_scene));
     ret->_base.children = bekter_create();
@@ -104,12 +104,12 @@ scene *colour_scene_create(int r, int g, int b)
     ret->r = r;
     ret->g = g;
     ret->b = b;
-    element *s = button_create(cb, ret, "1.png", "2.png", "3.png", 1.05, 0.98);
-    element_place_anchored(s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
+    button *s = button_create(cb, ret, "1.png", "2.png", "3.png", 1.05, 0.98);
+    element_place_anchored((element *)s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
-    s = label_create("KiteOne-Regular.ttf", 48,
+    label *l = label_create("KiteOne-Regular.ttf", 48,
         (SDL_Color){0, 0, 0}, 480, "The spectacle before us was indeed sublime.");
-    element_place_anchored(s, WIN_W / 2, WIN_H * 3 / 4, 0.5, 0.5);
-    bekter_pushback(ret->_base.children, s);
-    return (scene *)ret;
+    element_place_anchored((element *)l, WIN_W / 2, WIN_H * 3 / 4, 0.5, 0.5);
+    bekter_pushback(ret->_base.children, l);
+    return ret;
 }

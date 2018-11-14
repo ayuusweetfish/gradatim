@@ -38,7 +38,7 @@ typedef struct _sprite {
     texture tex;
 } sprite;
 
-element *sprite_create_empty();
-element *sprite_create(const char *path);
+sprite *sprite_create_empty();
+sprite *sprite_create(const char *path);
 
 #endif

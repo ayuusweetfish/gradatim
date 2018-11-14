@@ -16,7 +16,7 @@ typedef struct _label {
     unsigned long last_hash;
 } label;
 
-element *label_create(const char *path, int pts,
+label *label_create(const char *path, int pts,
     SDL_Color cl, int wid, const char *text);
 
 #endif
