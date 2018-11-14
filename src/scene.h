@@ -39,6 +39,7 @@ typedef struct _scene {
     if ((__sp)->key_handler) ((__sp)->key_handler(__sp, __ev))
 void scene_handle_mousemove(scene *this, SDL_MouseMotionEvent *ev);
 void scene_handle_mousebutton(scene *this, SDL_MouseButtonEvent *ev);
+void scene_draw_children(scene *this);
 void scene_tick_children(scene *this, double dt);
 void scene_clear_children(scene *this);
 

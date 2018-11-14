@@ -43,3 +43,9 @@ label *label_create(const char *path, int pts,
     label_render_text(ret);
     return ret;
 }
+
+void label_set_text(label *this, const char *text)
+{
+    this->text = text;
+    label_render_text(this);
+}

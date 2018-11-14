@@ -1,11 +1,12 @@
 #include "scene.h"
 #include "global.h"
+#include "dialogue.h"
 #include "transition.h"
 #include "element.h"
 #include "button.h"
 #include "label.h"
 
-static void draw_elements(scene *this)
+void scene_draw_children(scene *this)
 {
     int i;
     element *e;
@@ -75,7 +76,7 @@ static void colour_scene_draw(colour_scene *this)
     SDL_SetRenderDrawColor(g_renderer, this->r, this->g, this->b, 255);
     SDL_RenderFillRect(g_renderer,
         &(SDL_Rect){WIN_W / 4, WIN_H / 4, WIN_W / 2, WIN_H / 2});
-    draw_elements((scene *)this);
+    scene_draw_children((scene *)this);
 }
 
 static void colour_scene_key_handler(colour_scene *this, SDL_KeyboardEvent *ev)
@@ -89,8 +90,26 @@ static void colour_scene_key_handler(colour_scene *this, SDL_KeyboardEvent *ev)
 static void cb(void *ud)
 {
     colour_scene *this = (colour_scene *)ud;
-    g_stage = transition_slideup_create(&g_stage,
-        (scene *)colour_scene_create(this->g, this->b, this->r), 0.5);
+    if ((scene *)this != g_stage) return;
+
+    bekter(dialogue_entry) script = bekter_create();
+    bekter_pushback(script, ((dialogue_entry){
+        retrieve_texture("1.png"), "RAM 1",
+        "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    }));
+    bekter_pushback(script, ((dialogue_entry){
+        retrieve_texture("2.png"), "RAM 2",
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+    }));
+    bekter_pushback(script, ((dialogue_entry){
+        retrieve_texture("3.png"), "RAM 3",
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+    }));
+    bekter_pushback(script, ((dialogue_entry){
+        retrieve_texture("1.png"), "RAM 1",
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    }));
+    g_stage = (scene *)dialogue_create(&g_stage, script);
 }
 
 colour_scene *colour_scene_create(int r, int g, int b)

@@ -11,5 +11,5 @@ include_directories(${SDL2_IMAGE_INCLUDE_DIR})
 find_package(SDL2_ttf REQUIRED)
 include_directories(${SDL2_TTF_INCLUDE_DIR})
 
-add_executable(g global.c resources.c main.c bekter.c element.c button.c label.c scene.c transition.c)
+add_executable(g global.c resources.c main.c bekter.c element.c button.c label.c scene.c dialogue.c transition.c)
 target_link_libraries(g orion ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_TTF_LIBRARY})
