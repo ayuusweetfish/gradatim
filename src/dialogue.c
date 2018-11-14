@@ -3,6 +3,8 @@
 
 #include <string.h>
 
+static const double CTNR_FADE_DUR = 0.2;
+static const double AVAT_FADE_DUR = 0.1;
 static const double DELAY_PER_CHAR = 0.025;
 
 static void preprocess_text(char *str, TTF_Font *font, int wrap_w)
@@ -31,44 +33,44 @@ static void preprocess_text(char *str, TTF_Font *font, int wrap_w)
 static void dialogue_tick(dialogue_scene *this, double dt)
 {
     scene_tick(this->bg, dt);
+    this->entry_lasted += dt;
+
     if (this->script_idx >= this->script_len) {
-        *(this->bg_ptr) = this->bg;
-        scene_drop(this);
+        if (this->entry_lasted >= AVAT_FADE_DUR + CTNR_FADE_DUR) {
+            *(this->bg_ptr) = this->bg;
+            scene_drop(this);
+        }
         return;
     }
 
     dialogue_entry entry =
         bekter_at(this->script, this->script_idx, dialogue_entry);
-    this->entry_lasted += dt;
-    int textpos = (int)(this->entry_lasted / DELAY_PER_CHAR);
-    if (textpos > entry.text_len) textpos = entry.text_len;
-    if (this->last_textpos != textpos) {
-        this->last_textpos = textpos;
-        char t = entry.text[textpos];
-        entry.text[textpos] = '\0';
-        label_set_text(this->text_disp, entry.text);
-        entry.text[textpos] = t;
+    if (this->entry_lasted >= AVAT_FADE_DUR) {
+        int textpos = (this->entry_lasted - AVAT_FADE_DUR * 2) / DELAY_PER_CHAR;
+        if (textpos > entry.text_len) textpos = entry.text_len;
+        if (textpos < 0) textpos = 0;
+        if (this->last_textpos != textpos) {
+            this->last_textpos = textpos;
+            char t = entry.text[textpos];
+            entry.text[textpos] = '\0';
+            label_set_text(this->text_disp, entry.text);
+            entry.text[textpos] = t;
+        }
     }
-}
 
-static void update_children(dialogue_scene *this)
-{
-    dialogue_entry entry =
-        bekter_at(this->script, this->script_idx, dialogue_entry);
+    /* Update display for animations */
+    if (this->last_tick < AVAT_FADE_DUR && this->entry_lasted >= AVAT_FADE_DUR) {
+        this->avatar_disp->tex = entry.avatar;
+        this->avatar_disp->_base.dim.w = 192;
+        this->avatar_disp->_base.dim.h = 192;
+        element_place_anchored((element *)this->avatar_disp,
+            WIN_W / 8, WIN_H * 50 / 72, 0.5, 0.5);
 
-    this->avatar_disp->tex = entry.avatar;
-    this->avatar_disp->_base.dim.w = 192;
-    this->avatar_disp->_base.dim.h = 192;
-    element_place_anchored((element *)this->avatar_disp,
-        WIN_W / 8, WIN_H * 50 / 72, 0.5, 0.5);
-
-    label_set_text(this->name_disp, entry.name);
-    element_place_anchored((element *)this->name_disp,
-        WIN_W / 8, WIN_H * 60 / 72, 0.5, 0);
-
-    label_set_text(this->text_disp, "");
-    element_place_anchored((element *)this->text_disp,
-        WIN_W / 4, WIN_H * 50 / 72, 0, 0);
+        label_set_text(this->name_disp, entry.name);
+        element_place_anchored((element *)this->name_disp,
+            WIN_W / 8, WIN_H * 60 / 72, 0.5, 0);
+    }
+    this->last_tick = this->entry_lasted;
 }
 
 static void dialogue_draw(dialogue_scene *this)
@@ -79,13 +81,41 @@ static void dialogue_draw(dialogue_scene *this)
     SDL_SetRenderTarget(g_renderer, NULL);
     SDL_RenderCopy(g_renderer, this->bg_tex, NULL, NULL);
 
-    /* Text background */
-    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 192);
-    SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-        0, WIN_H * 2 / 3, WIN_W, WIN_H / 3
-    });
+    bool past_the_end = this->script_idx >= this->script_len;
 
-    /* All children; they should have been properly placed beforehand */
+    /* Text's background */
+    if (this->entry_lasted < 0 ||
+        (past_the_end && this->entry_lasted >= AVAT_FADE_DUR &&
+        this->entry_lasted < AVAT_FADE_DUR + CTNR_FADE_DUR))
+    {
+        double p;
+        if (this->entry_lasted < 0)
+            p = 1 + this->entry_lasted / CTNR_FADE_DUR;
+        else p = 1 - (this->entry_lasted - AVAT_FADE_DUR) / CTNR_FADE_DUR;
+        p = 1 - (1 - p) * (1 - p) * (1 - p);
+        int opacity = round(192 * p);
+        int height = WIN_H * 3 / 12 + round(WIN_H / 12 * p);
+        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, opacity);
+        SDL_RenderFillRect(g_renderer, &(SDL_Rect){
+            0, WIN_H - height, WIN_W, height
+        });
+    } else {
+        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 192);
+        SDL_RenderFillRect(g_renderer, &(SDL_Rect){
+            0, WIN_H * 2 / 3, WIN_W, WIN_H / 3
+        });
+    }
+
+    /* Avatar & name */
+    int opacity;
+    if (this->entry_lasted < AVAT_FADE_DUR)
+        opacity = round(255 * (1 - this->entry_lasted / AVAT_FADE_DUR));
+    else if (!past_the_end && this->entry_lasted < 2 * AVAT_FADE_DUR)
+        opacity = round(255 * (this->entry_lasted / AVAT_FADE_DUR - 1));
+    else opacity = past_the_end ? 0 : 255;
+    this->avatar_disp->alpha = opacity;
+    this->name_disp->_base.alpha = opacity;
+    this->text_disp->_base.alpha = opacity;
     scene_draw_children((scene *)this);
 }
 
@@ -100,12 +130,13 @@ static void dialogue_key_handler(dialogue_scene *this, SDL_KeyboardEvent *ev)
     if (ev->keysym.sym != SDLK_RETURN) return;
     dialogue_entry entry =
         bekter_at(this->script, this->script_idx, dialogue_entry);
-    int textpos = (int)(this->entry_lasted / DELAY_PER_CHAR);
+    int textpos = (this->entry_lasted - AVAT_FADE_DUR * 2) / DELAY_PER_CHAR;
     if (textpos < entry.text_len) {
-        this->entry_lasted += entry.text_len * DELAY_PER_CHAR;
-    } else if (++this->script_idx < this->script_len) {
-        update_children(this);
-        this->entry_lasted = 0;
+        this->entry_lasted +=
+            CTNR_FADE_DUR + AVAT_FADE_DUR * 2 + entry.text_len * DELAY_PER_CHAR;
+    } else {
+        ++this->script_idx;
+        this->last_tick = this->entry_lasted = 0;
     }
 }
 
@@ -122,7 +153,7 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
     ret->script = script;
     ret->script_idx = 0;
     ret->script_len = bekter_size(script) / sizeof(dialogue_entry);
-    ret->entry_lasted = 0;
+    ret->last_tick = ret->entry_lasted = -CTNR_FADE_DUR;
     ret->last_textpos = -1;
 
     ret->bg_tex = SDL_CreateTexture(g_renderer,
@@ -144,6 +175,7 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
         (SDL_Color){255, 255, 255}, WIN_W * 50 / 72, "");
     ret->text_disp = l;
     bekter_pushback(ret->_base.children, l);
+    element_place((element *)l, WIN_W / 4, WIN_H * 50 / 72);
 
     int i;
     dialogue_entry *entry;
@@ -153,8 +185,6 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
         entry->text_len = strlen(entry->text);
         preprocess_text(entry->text, l->font, l->wid);
     }
-
-    update_children(ret);
 
     return ret;
 }

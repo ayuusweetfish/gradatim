@@ -36,6 +36,7 @@ void element_place_anchored(element *e, float x, float y, float ax, float ay);
 typedef struct _sprite {
     element _base;
     texture tex;
+    unsigned char alpha;
 } sprite;
 
 sprite *sprite_create_empty();

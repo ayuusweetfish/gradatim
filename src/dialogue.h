@@ -22,7 +22,7 @@ typedef struct _dialogue_scene {
 
     SDL_Texture *bg_tex;
     int script_idx, script_len;
-    double entry_lasted;
+    double entry_lasted, last_tick;
     int last_textpos;
 
     /* Children for easy access */

@@ -21,7 +21,10 @@ static void sprite_tick(sprite *this, double dt)
 
 static void sprite_draw(sprite *this)
 {
-    render_texture(this->tex, &this->_base.dim);
+    if (this->alpha == 255)
+        render_texture(this->tex, &this->_base.dim);
+    else
+        render_texture_alpha(this->tex, &this->_base.dim, this->alpha);
 }
 
 sprite *sprite_create_empty()
@@ -32,6 +35,7 @@ sprite *sprite_create_empty()
     ret->_base.draw = (element_draw_func)sprite_draw;
     ret->_base.drop = NULL;
     ret->tex = (texture){0};
+    ret->alpha = 255;
     return ret;
 }
 
@@ -41,5 +45,6 @@ sprite *sprite_create(const char *path)
     ret->tex = retrieve_texture(path);
     ret->_base.dim.w = ret->tex.range.w;
     ret->_base.dim.h = ret->tex.range.h;
+    ret->alpha = 255;
     return ret;
 }
