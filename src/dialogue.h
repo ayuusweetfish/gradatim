@@ -10,8 +10,9 @@
 
 typedef struct dialogue_entry {
     texture avatar;
-    const char *name;
-    const char *text;
+    char *name;
+    char *text;
+    int text_len;
 } dialogue_entry;
 
 typedef struct _dialogue_scene {
@@ -21,6 +22,8 @@ typedef struct _dialogue_scene {
 
     SDL_Texture *bg_tex;
     int script_idx, script_len;
+    double entry_lasted;
+    int last_textpos;
 
     /* Children for easy access */
     sprite *avatar_disp;
