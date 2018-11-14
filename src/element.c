@@ -21,12 +21,7 @@ static void sprite_tick(sprite *this, double dt)
 
 static void sprite_draw(sprite *this)
 {
-    SDL_RenderCopy(g_renderer, this->tex, NULL, &this->_base.dim);
-}
-
-static void sprite_drop(sprite *this)
-{
-    SDL_DestroyTexture(this->tex);
+    render_texture(this->tex, &this->_base.dim);
 }
 
 element *sprite_create_empty()
@@ -35,14 +30,16 @@ element *sprite_create_empty()
     ret->_base.mouse_in = ret->_base.mouse_down = false;
     ret->_base.tick = (element_tick_func)sprite_tick;
     ret->_base.draw = (element_draw_func)sprite_draw;
-    ret->_base.drop = (element_drop_func)sprite_drop;
-    ret->tex = NULL;
+    ret->_base.drop = NULL;
+    ret->tex = (texture){0};
     return (element *)ret;
 }
 
 element *sprite_create(const char *path)
 {
     sprite *ret = (sprite *)sprite_create_empty();
-    ret->tex = load_texture(path, &ret->_base.dim.w, &ret->_base.dim.h);
+    ret->tex = retrieve_texture(path);
+    ret->_base.dim.w = ret->tex.range.w;
+    ret->_base.dim.h = ret->tex.range.h;
     return (element *)ret;
 }

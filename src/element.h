@@ -3,6 +3,8 @@
 #ifndef _ELEMENT_H
 #define _ELEMENT_H
 
+#include "resources.h"
+
 #include <SDL.h>
 #include <stdbool.h>
 
@@ -33,7 +35,7 @@ void element_place_anchored(element *e, float x, float y, float ax, float ay);
 
 typedef struct _sprite {
     element _base;
-    SDL_Texture *tex;
+    texture tex;
 } sprite;
 
 element *sprite_create_empty();

@@ -17,16 +17,17 @@ static void label_render_text(label *this)
     if (hash == this->last_hash) return;
     this->last_hash = hash;
 
-    if (this->_base.tex != NULL)
-        SDL_DestroyTexture(this->_base.tex);
+    if (this->_base.tex.sdl_tex != NULL)
+        SDL_DestroyTexture(this->_base.tex.sdl_tex);
 
     SDL_Surface *sf = TTF_RenderText_Blended_Wrapped(
         this->font, this->text, this->cl, this->wid
     );
-    this->_base.tex = SDL_CreateTextureFromSurface(g_renderer, sf);
+    this->_base.tex =
+        temp_texture(SDL_CreateTextureFromSurface(g_renderer, sf));
     SDL_FreeSurface(sf);
-    SDL_QueryTexture(this->_base.tex, NULL, NULL,
-        &this->_base._base.dim.w, &this->_base._base.dim.h);
+    this->_base._base.dim.w = this->_base.tex.range.w;
+    this->_base._base.dim.h = this->_base.tex.range.h;
 }
 
 element *label_create(const char *path, int pts,
