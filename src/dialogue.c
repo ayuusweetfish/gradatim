@@ -60,15 +60,17 @@ static void dialogue_tick(dialogue_scene *this, double dt)
 
     /* Update display for animations */
     if (this->last_tick < AVAT_FADE_DUR && this->entry_lasted >= AVAT_FADE_DUR) {
-        this->avatar_disp->tex = entry.avatar;
-        this->avatar_disp->_base.dim.w = 192;
-        this->avatar_disp->_base.dim.h = 192;
-        element_place_anchored((element *)this->avatar_disp,
-            WIN_W / 8, WIN_H * 50 / 72, 0.5, 0.5);
+        if (entry.name != NULL) {
+            this->avatar_disp->tex = entry.avatar;
+            this->avatar_disp->_base.dim.w = 192;
+            this->avatar_disp->_base.dim.h = 192;
+            element_place_anchored((element *)this->avatar_disp,
+                WIN_W / 8, WIN_H * 50 / 72, 0.5, 0.5);
 
-        label_set_text(this->name_disp, entry.name);
-        element_place_anchored((element *)this->name_disp,
-            WIN_W / 8, WIN_H * 60 / 72, 0.5, 0);
+            label_set_text(this->name_disp, entry.name);
+            element_place_anchored((element *)this->name_disp,
+                WIN_W / 8, WIN_H * 60 / 72, 0.5, 0);
+        }
     }
     this->last_tick = this->entry_lasted;
 }
@@ -82,6 +84,8 @@ static void dialogue_draw(dialogue_scene *this)
     SDL_RenderCopy(g_renderer, this->bg_tex, NULL, NULL);
 
     bool past_the_end = this->script_idx >= this->script_len;
+    bool character_same = !past_the_end &&
+        bekter_at(this->script, this->script_idx, dialogue_entry).name == NULL;
 
     /* Text's background */
     if (this->entry_lasted < 0 ||
@@ -113,8 +117,8 @@ static void dialogue_draw(dialogue_scene *this)
     else if (!past_the_end && this->entry_lasted < 2 * AVAT_FADE_DUR)
         opacity = round(255 * (this->entry_lasted / AVAT_FADE_DUR - 1));
     else opacity = past_the_end ? 0 : 255;
-    this->avatar_disp->alpha = opacity;
-    this->name_disp->_base.alpha = opacity;
+    this->avatar_disp->alpha = character_same ? 255 : opacity;
+    this->name_disp->_base.alpha = character_same ? 255 : opacity;
     this->text_disp->_base.alpha = opacity;
     scene_draw_children((scene *)this);
 }
@@ -179,8 +183,12 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
 
     int i;
     dialogue_entry *entry;
+    char *last_name = NULL;
     for bekter_each_ptr(ret->script, i, entry) {
-        entry->name = strdup(entry->name);
+        if (i != 0 && strcmp(last_name, entry->name) == 0)
+            entry->name = NULL;
+        else
+            last_name = entry->name = strdup(entry->name);
         entry->text = strdup(entry->text);
         entry->text_len = strlen(entry->text);
         preprocess_text(entry->text, l->font, l->wid);

@@ -102,11 +102,11 @@ static void cb(void *ud)
         "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
     }));
     bekter_pushback(script, ((dialogue_entry){
-        retrieve_texture("3.png"), "RAM 3",
+        retrieve_texture("2.png"), "RAM 2",
         "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
     }));
     bekter_pushback(script, ((dialogue_entry){
-        retrieve_texture("1.png"), "RAM 1",
+        retrieve_texture("3.png"), "RAM 3",
         "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     }));
     g_stage = (scene *)dialogue_create(&g_stage, script);

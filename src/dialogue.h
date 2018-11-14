@@ -29,6 +29,7 @@ typedef struct _dialogue_scene {
     sprite *avatar_disp;
     label *name_disp;
     label *text_disp;
+    sprite *cont_mark;
 } dialogue_scene;
 
 /* `script` will be taken care of by the scene and doesn't need to be freed */
