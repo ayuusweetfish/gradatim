@@ -6,10 +6,10 @@
 #include "../bekter.h"
 #include "sobj.h"
 
-extern const double SIM_GRAVITY;
+extern const double SIM_GRAVITY;    /* Gravity in units/beat^2 */
+extern const double SIM_STEPLEN;    /* Step length in beats */
 
 typedef struct _sim {
-    double step;        /* Step length in units */
     sobj prot;          /* Protagonist */
     int grows, gcols;   /* Dimensions of the grid */
     sobj *grid;         /* Map grid */

@@ -12,6 +12,7 @@ typedef struct _gameplay_scene {
     scene *bg, **bg_ptr;
 
     sim *simulator;
+    double rem_time;
 
     texture prot_tex;
     texture grid_tex[256];

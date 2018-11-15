@@ -8,14 +8,31 @@ static const float UNIT_PX = 64;
 static const float WIN_W_UNITS = (float)WIN_W / UNIT_PX;
 static const float WIN_H_UNITS = (float)WIN_H / UNIT_PX;
 
+static const double BEAT = 60.0 / 132;  /* Temporary */
+
 static inline float clamp(float x, float l, float u)
 {
     return (x < l ? l : (x > u ? u : x));
 }
 
+static double accum = 0;
+
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
-    sim_tick(this->simulator);
+    if (accum == 0) {
+        this->simulator->prot.ay = 0;
+        this->simulator->prot.vy = -SIM_GRAVITY;
+    } else if (accum >= BEAT * 2) {
+        this->simulator->prot.ay = -SIM_GRAVITY;
+        this->simulator->prot.vy = 0;
+    }
+    accum += dt;
+    double rt = this->rem_time + dt / BEAT;
+    while (rt >= SIM_STEPLEN) {
+        sim_tick(this->simulator);
+        rt -= SIM_STEPLEN;
+    }
+    this->rem_time = rt;
 
     /* Move the camera */
     float dest_x = clamp(this->simulator->prot.x,
@@ -27,7 +44,6 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
     float rate = (dt > 0.1 ? 0.1 : dt) * 10;
     this->cam_x += rate * cam_dx;
     this->cam_y += rate * cam_dy;
-    this->simulator->prot.x += 3 * dt;
 }
 
 static void gameplay_scene_draw(gameplay_scene *this)
@@ -67,6 +83,7 @@ static void gameplay_scene_drop(gameplay_scene *this)
 
 static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *ev)
 {
+    if (accum >= BEAT * 2) accum = 0;
 }
 
 gameplay_scene *gameplay_scene_create(scene **bg)
@@ -81,6 +98,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->bg_ptr = bg;
 
     ret->simulator = sim_create(128, 128);
+    ret->rem_time = 0;
     ret->prot_tex = retrieve_texture("1.png");
     ret->grid_tex[1] = retrieve_texture("4.png");
     ret->cam_x = ret->cam_y = 100.0;
@@ -88,8 +106,11 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     int i;
     for (i = 50; i < 120; ++i)
         sim_grid(ret->simulator, 107, i).tag = (i != 110);
-    ret->simulator->prot.x = ret->simulator->prot.y = 105;
+    for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
+    for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
+    ret->simulator->prot.x = ret->simulator->prot.y = 108;
     ret->simulator->prot.w = ret->simulator->prot.h = 0.9;
+    ret->simulator->prot.ay = -SIM_GRAVITY;
 
     return ret;
 }
