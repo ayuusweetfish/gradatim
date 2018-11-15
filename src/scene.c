@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "global.h"
+#include "gameplay.h"
 #include "dialogue.h"
 #include "transition.h"
 #include "element.h"
@@ -91,6 +92,11 @@ static void cb(void *ud)
 {
     colour_scene *this = (colour_scene *)ud;
     if ((scene *)this != g_stage) return;
+
+    if (this->r == 255) {
+        g_stage = (scene *)gameplay_scene_create(&g_stage);
+        return;
+    }
 
     bekter(dialogue_entry) script = bekter_create();
     bekter_pushback(script, ((dialogue_entry){
