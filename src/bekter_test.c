@@ -26,7 +26,13 @@ int main()
         }
     }
     for bekter_each(b, i, x) printf("%d\n", x);
-    printf("%d\n", bekter_at(b, 19, int));
+    printf("%d %zu\n", bekter_at(b, 19, int), bekter_size(b));
+    bekter_remove_at(b, 10, int);
+    printf("%d %zu\n", bekter_at(b, 19, int), bekter_size(b));
+    bekter_remove_at(b, 19, int);
+    printf("%d %zu\n", bekter_at(b, 19, int), bekter_size(b));
+    bekter_remove_at(b, 19, int);
+    printf("%d %zu\n", bekter_at(b, 19, int), bekter_size(b));
 
     return 0;
 }
