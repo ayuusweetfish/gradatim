@@ -1,12 +1,63 @@
 #include "gameplay.h"
 
+#include "global.h"
+
+#include <math.h>
+
+static const float UNIT_PX = 64;
+static const float WIN_W_UNITS = (float)WIN_W / UNIT_PX;
+static const float WIN_H_UNITS = (float)WIN_H / UNIT_PX;
+
+static inline float clamp(float x, float l, float u)
+{
+    return (x < l ? l : (x > u ? u : x));
+}
+
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
     sim_tick(this->simulator);
+
+    /* Move the camera */
+    float dest_x = clamp(this->simulator->prot.x,
+        WIN_W_UNITS / 2, this->simulator->gcols - WIN_W_UNITS / 2);
+    float dest_y = clamp(this->simulator->prot.y,
+        WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2);
+    float cam_dx = dest_x - (this->cam_x + WIN_W_UNITS / 2);
+    float cam_dy = dest_y - (this->cam_y + WIN_H_UNITS / 2);
+    float rate = (dt > 0.1 ? 0.1 : dt) * 10;
+    this->cam_x += rate * cam_dx;
+    this->cam_y += rate * cam_dy;
+    this->simulator->prot.x += 3 * dt;
 }
 
 static void gameplay_scene_draw(gameplay_scene *this)
 {
+    SDL_SetRenderDrawColor(g_renderer, 216, 224, 255, 255);
+    SDL_RenderClear(g_renderer);
+
+    int rmin = floorf(this->cam_y),
+        rmax = ceilf(this->cam_y + WIN_H_UNITS),
+        cmin = floorf(this->cam_x),
+        cmax = ceilf(this->cam_x + WIN_W_UNITS);
+    int r, c;
+    for (r = rmin; r < rmax; ++r)
+        for (c = cmin; c < cmax; ++c) {
+            sobj *o = &sim_grid(this->simulator, r, c);
+            if (o->tag != 0) {
+                render_texture(this->grid_tex[o->tag], &(SDL_Rect){
+                    (c - this->cam_x) * UNIT_PX,
+                    (r - this->cam_y) * UNIT_PX,
+                    UNIT_PX, UNIT_PX
+                });
+            }
+        }
+
+    render_texture(this->prot_tex, &(SDL_Rect){
+        (this->simulator->prot.x - this->cam_x) * UNIT_PX,
+        (this->simulator->prot.y - this->cam_y) * UNIT_PX,
+        round(this->simulator->prot.w * UNIT_PX),
+        round(this->simulator->prot.h * UNIT_PX)
+    });
 }
 
 static void gameplay_scene_drop(gameplay_scene *this)
@@ -28,6 +79,17 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->_base.key_handler = (scene_key_func)gameplay_scene_key_handler;
     ret->bg = *bg;
     ret->bg_ptr = bg;
+
     ret->simulator = sim_create(128, 128);
+    ret->prot_tex = retrieve_texture("1.png");
+    ret->grid_tex[1] = retrieve_texture("4.png");
+    ret->cam_x = ret->cam_y = 100.0;
+
+    int i;
+    for (i = 50; i < 120; ++i)
+        sim_grid(ret->simulator, 107, i).tag = (i != 110);
+    ret->simulator->prot.x = ret->simulator->prot.y = 105;
+    ret->simulator->prot.w = ret->simulator->prot.h = 0.9;
+
     return ret;
 }

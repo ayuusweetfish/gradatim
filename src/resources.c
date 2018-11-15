@@ -54,6 +54,7 @@ void load_images()
     load_image("1.png");
     load_image("2.png");
     load_image("3.png");
+    load_image("4.png");
 }
 
 void release_images()

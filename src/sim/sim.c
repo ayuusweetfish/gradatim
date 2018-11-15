@@ -19,9 +19,6 @@ void sim_drop(sim *this)
     free(this);
 }
 
-#define sim_grid(__this, __r, __c) \
-    ((__this)->grid[(__this)->gcols * (__r) + (__c)])
-
 void sim_tick(sim *this)
 {
 }
