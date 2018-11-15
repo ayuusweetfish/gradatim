@@ -60,13 +60,12 @@ static void dialogue_tick(dialogue_scene *this, double dt)
 
     /* Update display for animations */
     if (this->last_tick < AVAT_FADE_DUR && this->entry_lasted >= AVAT_FADE_DUR) {
+        this->avatar_disp->tex = entry.avatar;
+        this->avatar_disp->_base.dim.w = 192;
+        this->avatar_disp->_base.dim.h = 192;
+        element_place_anchored((element *)this->avatar_disp,
+            WIN_W / 8, WIN_H * 50 / 72, 0.5, 0.5);
         if (entry.name != NULL) {
-            this->avatar_disp->tex = entry.avatar;
-            this->avatar_disp->_base.dim.w = 192;
-            this->avatar_disp->_base.dim.h = 192;
-            element_place_anchored((element *)this->avatar_disp,
-                WIN_W / 8, WIN_H * 50 / 72, 0.5, 0.5);
-
             label_set_text(this->name_disp, entry.name);
             element_place_anchored((element *)this->name_disp,
                 WIN_W / 8, WIN_H * 60 / 72, 0.5, 0);
