@@ -128,6 +128,8 @@ static inline void process_crits(float x)
             p[n++] = (struct point){x, r[rn ^ 1][j++]};
             debug("Emit %.4f %.4f\n", x, p[n - 1].y);
         } else if (r[rn][i] == r[rn ^ 1][j]) {
+            if ((i & 1) ^ (j & 1))
+                p[n++] = (struct point){x, r[rn][i]};
             i++; j++;
         }
     }

@@ -14,6 +14,8 @@ inline void reg(float _x, float _y)
 
 int main()
 {
+    if (false < true) puts("A");
+    if (true < false) puts("B");
     schnitt_apply(-0.5, -0.5, 0.5, 0.5);
     n = 0;
     reg(0, 0.5);
@@ -62,7 +64,7 @@ int main()
     reg(.5, 1);
     reg(0, 1);
     reg(0, .5);
-    //reg(.5, .5);
+    reg(.5, .5);
     reg(.5, 0);
     reg(1, 0);
     reg(1, .5);
@@ -74,10 +76,10 @@ int main()
     n = 0;
     reg(0, 1);
     reg(0, .3);
-    //reg(.3, .3);
+    reg(.3, .3);
     reg(.3, 0);
     reg(.3, .7);
-    //reg(.7, .7);
+    reg(.7, .7);
     reg(.7, .3);
     reg(.7, 1);
     reg(1, 0);
