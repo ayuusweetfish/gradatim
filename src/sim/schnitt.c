@@ -1,14 +1,13 @@
 #include "schnitt.h"
-#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
 #ifdef SCHNITT_TEST
+    #include <assert.h>
     #include <stdio.h>
-    #define debug(...) printf(__VA_ARGS__)
 #else
-    #define debug(...)
+    #define assert(__x)
 #endif
 
 /* These assume that argument expressions have no side effects */
@@ -48,7 +47,8 @@ static int vert_seg_cmp(const void *_a, const void *_b)
     return (a->x == b->x ? (int)a->tag - (int)b->tag : sign(a->x - b->x));
 }
 
-/* Temporary store for the sweepline; tag = 0/1 denotes upper/lower borders */
+/* Temporary store for all critical points' vertical coordinates at current `x`
+ * tag = 0/1 denotes upper/lower borders */
 static int t;
 static struct crit_pt {
     float y;
@@ -89,6 +89,9 @@ static float r[2][MAX_RECTS * 2];
  * and create turning points in the output list `p` */
 static inline void process_crits(float x)
 {
+    /* Firstly, find out the ranges of the current vertcal line
+     * whose right neighbourhoods are covered by some rectangle.
+     * These are stored in `r[rn]`. */
     int i, layers = 1;
     float y_in = 0;
     rcnt[rn] = 0;
@@ -100,9 +103,7 @@ static inline void process_crits(float x)
             }
             y_in = -1;  /* Prevent [+    -+-+-+    -] */
         }
-        debug("> %.4lf %d->", q[i].y, layers);
         layers += (q[i].tag ? +1 : -1);
-        debug("%d\n", layers);
         if (layers == 1 && y_in == -1) y_in = q[i].y;
     }
     assert(layers == 1);
@@ -111,23 +112,18 @@ static inline void process_crits(float x)
         r[rn][rcnt[rn]++] = 1;
     }
 
-    /* Calculate the difference with merge sort;
-     * here all elements are granted to be distinct */
+    /* The difference between two lists (`r`) is the set of turning points.
+     * This is calculated with merge sort;
+     * here all elements are granted to be distinct in each list. */
     int j;
-    debug("x = %.4f\nCurr: ", x);
-    for (i = 0; i < rcnt[rn]; ++i) debug(" %.4f", r[rn][i]);
-    debug("\nLast: ");
-    for (i = 0; i < rcnt[rn ^ 1]; ++i) debug(" %.4f", r[rn ^ 1][i]);
-    debug("\n");
     i = j = 0;
     while (i < rcnt[rn] || j < rcnt[rn ^ 1]) {
         if (j == rcnt[rn ^ 1] || (i != rcnt[rn] && r[rn][i] < r[rn ^ 1][j])) {
             p[n++] = (struct point){x, r[rn][i++]};
-            debug("Emit %.4f %.4f\n", x, p[n - 1].y);
         } else if (i == rcnt[rn] || (j != rcnt[rn ^ 1] && r[rn][i] > r[rn ^ 1][j])) {
             p[n++] = (struct point){x, r[rn ^ 1][j++]};
-            debug("Emit %.4f %.4f\n", x, p[n - 1].y);
         } else if (r[rn][i] == r[rn ^ 1][j]) {
+            /* See test case #8 in `schnitt_test.c` */
             if ((i & 1) ^ (j & 1))
                 p[n++] = (struct point){x, r[rn][i]};
             i++; j++;
@@ -162,10 +158,12 @@ void schnitt_flush()
         if (v[i].x != next_x)
             process_crits(v[i].x);
     }
+    /* At x = 1, the vertical line's right neighbourhood won't be covered
+     * by any line, therefore `q` should be cleared (set `t` to 0). */
     t = 0;
     process_crits(1);
 
-    /* Finalize */
+    /* Cleanup */
     m = 0;
 }
 
