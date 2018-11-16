@@ -104,7 +104,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
 
     ret->simulator = sim_create(128, 128);
     ret->rem_time = 0;
-    ret->prot_tex = retrieve_texture("1.png");
+    ret->prot_tex = retrieve_texture("4.png");
     ret->grid_tex[1] = retrieve_texture("4.png");
     ret->cam_x = ret->cam_y = 100.0;
 
@@ -114,7 +114,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
     ret->simulator->prot.x = ret->simulator->prot.y = 104;
-    ret->simulator->prot.w = ret->simulator->prot.h = 0.8;
+    ret->simulator->prot.w = ret->simulator->prot.h = 0.6;
 
     return ret;
 }

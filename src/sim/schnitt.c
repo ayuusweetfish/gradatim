@@ -22,7 +22,7 @@
 static const float SZ = 1;
 #else
 /* TODO: Keep this updated with protagonist size */
-static const float SZ = 0.8;
+static const float SZ = 0.6;
 #endif
 
 /* Global minimum & maximum coordinates */
@@ -48,7 +48,8 @@ bool schnitt_apply(float x1, float y1, float x2, float y2)
     x2 = max(0, min(SZ, x2)); y2 = max(0, min(SZ, y2));
     float _x1 = min(x1, x2), _y1 = min(y1, y2);
     float _x2 = max(x1, x2), _y2 = max(y1, y2);
-    if (_x1 == _x2 || _y1 == _y2) return false;
+    /*if (_x1 == _x2 || _y1 == _y2) return false;*/
+    if ((_x2 - _x1) * (_y2 - _y1) <= 1e-6) return false;
     xmin = min(xmin, x1); ymin = min(ymin, y1);
     xmax = max(xmax, x2); ymax = max(ymax, y2);
     v[m++] = (struct vert_seg){_x1, _y1, _y2, false};

@@ -91,7 +91,8 @@ void sim_tick(sim *this)
     if (in) {
         int i, dir = -1;
         float min = 10;
-        for (i = 0; i < 4; ++i) {
+        for (i = 0; i < 8; ++i) {
+            if (i == 4 && dir != -1) break;
             this->prot.x = x0 + dx[i];
             this->prot.y = y0 + dy[i];
             in = check_intsc(this, true);
@@ -101,28 +102,13 @@ void sim_tick(sim *this)
                 dir = i;
             }
         }
-        if (!in) {
-            if (dir == 0 || dir == 3) this->prot.vy = 0;
-            else this->prot.vx = 0;
+        if (dir == -1) {
+            puts("> <");
         } else {
-            for (i = 4; i < 8; ++i) {
-                this->prot.x = x0 + dx[i];
-                this->prot.y = y0 + dy[i];
-                in = check_intsc(this, true);
-                schnitt_flush(NULL, NULL);
-                if (!in && dx[i] * dx[i] + dy[i] * dy[i] < min) {
-                    min = dx[i] * dx[i] + dy[i] * dy[i];
-                    dir = i;
-                }
-            }
-            if (dir == -1) {
-                puts("> <");
-            } else {
-                this->prot.x = x0 + dx[dir];
-                this->prot.y = y0 + dy[dir];
-                if (dir == 1 || dir == 2 || dir >= 4) this->prot.vx = 0;
-                if (dir == 0 || dir == 3 || dir >= 4) this->prot.vy = 0;
-            }
+            this->prot.x = x0 + dx[dir];
+            this->prot.y = y0 + dy[dir];
+            if (dir == 1 || dir == 2 || dir >= 4) this->prot.vx = 0;
+            if (dir == 0 || dir == 3 || dir >= 4) this->prot.vy = 0;
         }
     }
 }
