@@ -15,18 +15,8 @@ static inline float clamp(float x, float l, float u)
     return (x < l ? l : (x > u ? u : x));
 }
 
-static double accum = 0;
-
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
-    if (accum == 0) {
-        this->simulator->prot.ay = 0;
-        this->simulator->prot.vy = -SIM_GRAVITY;
-    } else if (accum >= BEAT * 2) {
-        this->simulator->prot.ay = -SIM_GRAVITY;
-        this->simulator->prot.vy = 0;
-    }
-    accum += dt;
     double rt = this->rem_time + dt / BEAT;
     while (rt >= SIM_STEPLEN) {
         sim_tick(this->simulator);
@@ -83,7 +73,20 @@ static void gameplay_scene_drop(gameplay_scene *this)
 
 static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *ev)
 {
-    if (accum >= BEAT * 2) accum = 0;
+    switch (ev->keysym.sym) {
+        case SDLK_c:
+            this->simulator->prot.vy -= SIM_GRAVITY;
+            break;
+        case SDLK_LEFT:
+            this->simulator->prot.vx =
+                (ev->state == SDL_PRESSED ? -1 : 0);
+            break;
+        case SDLK_RIGHT:
+            this->simulator->prot.vx =
+                (ev->state == SDL_PRESSED ? 1 : 0);
+            break;
+        default: break;
+    }
 }
 
 gameplay_scene *gameplay_scene_create(scene **bg)
@@ -108,9 +111,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
         sim_grid(ret->simulator, 107, i).tag = (i != 110);
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
-    ret->simulator->prot.x = ret->simulator->prot.y = 108;
+    ret->simulator->prot.x = ret->simulator->prot.y = 104;
     ret->simulator->prot.w = ret->simulator->prot.h = 0.9;
-    ret->simulator->prot.ay = -SIM_GRAVITY;
 
     return ret;
 }
