@@ -20,8 +20,6 @@
 
 /* Global minimum & maximum coordinates */
 static float xmin = 1, xmax = 0, ymin = 1, ymax = 0;
-/* Stored values for use in `schnitt_get_delta` */
-static float xmin_s, xmax_s, ymin_s, ymax_s;
 
 /* Vertical segments; tag = 0/1 denotes left/right borders */
 static int m = 0;
@@ -141,7 +139,10 @@ static inline void process_crits(float x)
     rn ^= 1;
 }
 
-void schnitt_flush()
+/* Processes all cutting rectangles and stores the responses in `dx` and `dy`
+ * in this order: up, left, right, down, ul, ur, dl, dr
+ * In accordance with SDL, this assumes a left-handed coordinate system */
+void schnitt_flush(float *dx, float *dy)
 {
     /* Sort all vertical segments */
     qsort(v, m, sizeof v[0], vert_seg_cmp);
@@ -172,49 +173,47 @@ void schnitt_flush()
     t = 0;
     process_crits(1);
 
+    /* Calculate responses */
+    if (n == 0) {
+        for (i = 0; i < 8; ++i) dx[i] = dy[i] = 0;
+    } else {
+        dy[0] = -1 + ymin; dx[0] = 0;
+        dx[1] = -1 + xmin; dy[1] = 0;
+        dx[2] = xmax; dy[2] = 0;
+        dy[3] = ymax; dx[3] = 0;
+
+        int idx_mx1, idx_mn1, idx_mx2, idx_mn2;
+        float mx1 = -5, mn1 = 5, mx2 = -5, mn2 = 5, u;
+        for (i = 0; i < n; ++i) {
+            u = p[i].x + p[i].y;
+            if (u > mx1) { mx1 = u; idx_mx1 = i; }
+            if (u < mn1) { mn1 = u; idx_mn1 = i; }
+            u = p[i].x - p[i].y;
+            if (u > mx2) { mx2 = u; idx_mx2 = i; }
+            if (u < mn2) { mn2 = u; idx_mn2 = i; }
+        }
+        dx[4] = p[idx_mx1].x - 1;
+        dy[4] = p[idx_mx1].y - 1;
+        dx[5] = p[idx_mn2].x;
+        dy[5] = p[idx_mn2].y - 1;
+        dx[6] = p[idx_mx2].x - 1;
+        dy[6] = p[idx_mx2].y;
+        dx[7] = p[idx_mn1].x;
+        dy[7] = p[idx_mn1].y;
+    }
+
     /* Cleanup */
     m = 0;
-    xmin_s = xmin, xmax_s = xmax, ymin_s = ymin, ymax_s = ymax;
     xmin = 1, xmax = 0, ymin = 1, ymax = 0;
-}
-
-/* dir in [0, 7]: up, left, right, down, ul, ur, dl, dr
- * In accordance with SDL, this assumes a left-handed coordinate system */
-void schnitt_get_delta(int dir, float *dx, float *dy)
-{
-    if (n == 0 || dir < 0 || dir > 7) { *dx = *dy = 0; return; }
-    int i, idx = -1;
-    float val;
-    switch (dir) {
-        case 0: *dy = -1 + ymin_s; *dx = 0; break;
-        case 1: *dx = -1 + xmin_s; *dy = 0; break;
-        case 2: *dx = xmax_s; *dy = 0; break;
-        case 3: *dy = ymax_s; *dx = 0; break;
-
-    #define find(__init, __op, __cmp, __xmod, __ymod) do { \
-        val = __init; \
-        for (i = 0; i < n; ++i) \
-            if (p[i].x __op p[i].y __cmp val) { \
-                val = p[i].x __op p[i].y; \
-                idx = i; \
-            } \
-        *dx = __xmod + p[idx].x; \
-        *dy = __ymod + p[idx].y; \
-    } while (0)
-        case 4: find(-5, +, >, -1, -1); break;
-        case 5: find(+5, -, <, 0, -1); break;
-        case 6: find(-5, -, >, -1, 0); break;
-        case 7: find(+5, +, <, 0, 0); break;
-    #undef find
-    }
 }
 
 #ifdef SCHNITT_TEST
 static int case_num = 0;
+static float dx[8], dy[8];
 
 bool schnitt_check(int _n, float *x, float *y)
 {
-    schnitt_flush();
+    schnitt_flush(dx, dy);
     ++case_num;
     if (_n == -1) return true;
 
@@ -243,14 +242,12 @@ bool schnitt_check(int _n, float *x, float *y)
     return true;
 }
 
-bool schnitt_check_d(int dir, float dx, float dy)
+bool schnitt_check_d(int dir, float dx0, float dy0)
 {
-    float dx0, dy0;
-    schnitt_get_delta(dir, &dx0, &dy0);
-    if (fabs(dx0 - dx) + fabs(dy0 - dy) >= 1e-6) {
+    if (fabs(dx0 - dx[dir]) + fabs(dy0 - dy[dir]) >= 1e-6) {
         printf("[Case %d] Incorrect movement\n", case_num);
-        printf("Actual   %.4f %.4f\n", dx0, dy0);
-        printf("Expected %.4f %.4f\n", dx, dy);
+        printf("Actual   %.4f %.4f\n", dx[dir], dy[dir]);
+        printf("Expected %.4f %.4f\n", dx0, dy0);
         return false;
     } else {
         printf("[Case %d] Correct movement ≥ ≤\n", case_num);

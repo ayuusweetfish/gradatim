@@ -2,6 +2,7 @@
 
 #include "schnitt.h"
 #include <stdio.h>
+#include <time.h>
 
 static int n;
 static float x[20], y[20];
@@ -196,6 +197,26 @@ int main()
     schnitt_apply(1, 1, .3, .8);
     schnitt_check(-1, NULL, NULL);
     if (!schnitt_check_d(4, -.1, -.2)) return 1;
+
+    clock_t start = clock();
+    int i, j;
+    float dx, dy, sx = 0, sy = 0;
+    for (i = 0; i < 1000000; ++i) {
+        schnitt_apply(0, 1, .3, .4);
+        schnitt_apply(.5, 0, 1, .4);
+        schnitt_apply(.3, .2, .5, .4);
+        schnitt_apply(.1, .1, .9, .9);
+        schnitt_apply(.3, 1, 1, .9);
+        schnitt_apply(.9, .9, 1, .4);
+        for (j = 0; j < 100; ++j) {
+            schnitt_apply(4, 5, 3, 6);
+            schnitt_apply(-2, -5, -4, -3);
+        }
+        schnitt_flush(x, y);
+        sx += dx; sy += dy;
+    }
+    printf("%.4f\n", sx + sy);
+    printf("%.6lf s\n", (double)(clock() - start) / CLOCKS_PER_SEC);
 
     puts("*\\(^ ^)/*");
     return 0;
