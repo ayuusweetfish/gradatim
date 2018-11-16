@@ -37,6 +37,7 @@ void schnitt_apply(float x1, float y1, float x2, float y2)
     x2 = max(0, min(1, x2)); y2 = max(0, min(1, y2));
     float _x1 = min(x1, x2), _y1 = min(y1, y2);
     float _x2 = max(x1, x2), _y2 = max(y1, y2);
+    if (_x1 == _x2 || _y1 == _y2) return;
     v[m++] = (struct vert_seg){_x1, _y1, _y2, false};
     v[m++] = (struct vert_seg){_x2, _y1, _y2, true};
 }

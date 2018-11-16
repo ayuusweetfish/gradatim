@@ -72,6 +72,26 @@ int main()
     reg(1, 0);
     if (!schnitt_check(n, x, y)) return 1;
 
+    schnitt_apply(-2, -2, -1, -1);
+    if (!schnitt_check(n, x, y)) return 1;
+
+    schnitt_apply(.4, 0, .4, 1);
+    if (!schnitt_check(n, x, y)) return 1;
+
+    schnitt_apply(1, .4, 0, .4);
+    if (!schnitt_check(n, x, y)) return 1;
+
+    schnitt_apply(-5, 1, 6, 2);
+    if (!schnitt_check(n, x, y)) return 1;
+
+    schnitt_apply(5, 1, 1, 7);
+    if (!schnitt_check(n, x, y)) return 1;
+
+    /* All */
+    schnitt_apply(-5, -5, 5, 5);
+    n = 0;
+    if (!schnitt_check(n, x, y)) return 1;
+
     /* Cuttings touching on the corners */
     schnitt_apply(0, 0, .5, .5);
     schnitt_apply(1, 1, .5, .5);
