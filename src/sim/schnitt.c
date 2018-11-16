@@ -81,26 +81,57 @@ static inline void del_crit_pt(float y, bool tag)
     --t;
 }
 
+/* For maintaining the difference between adjacent x's */
+static int rn, rcnt[2];
+static float r[2][MAX_RECTS * 2];
+
 /* Goes through the list of critical points
  * and create turning points in the output list `p` */
 static inline void process_crits(float x)
 {
     int i, layers = 1;
     float y_in = 0;
+    rcnt[rn] = 0;
     for (i = 0; i < t; ++i) {
-        if (layers == 1 && y_in != q[i].y) {
-            p[n++] = (struct point){x, y_in};
-            p[n++] = (struct point){x, q[i].y};
+        if (layers == 1 && y_in != -1) {
+            if (y_in != q[i].y) {
+                r[rn][rcnt[rn]++] = y_in;
+                r[rn][rcnt[rn]++] = q[i].y;
+            }
             y_in = -1;  /* Prevent [+    -+-+-+    -] */
         }
-        layers += (q[i].tag ? -1 : +1);
-        if (layers == 1 && y_in != -1) y_in = q[i].y;
+        debug("> %.4lf %d->", q[i].y, layers);
+        layers += (q[i].tag ? +1 : -1);
+        debug("%d\n", layers);
+        if (layers == 1 && y_in == -1) y_in = q[i].y;
     }
     assert(layers == 1);
-    if (y_in != 1 && y_in != -1) {
-        p[n++] = (struct point){x, y_in};
-        p[n++] = (struct point){x, 1};
+    if (x != 1 && y_in != -1 && y_in != 1) {
+        r[rn][rcnt[rn]++] = y_in;
+        r[rn][rcnt[rn]++] = 1;
     }
+
+    /* Calculate the difference with merge sort;
+     * here all elements are granted to be distinct */
+    int j;
+    debug("x = %.4f\nCurr: ", x);
+    for (i = 0; i < rcnt[rn]; ++i) debug(" %.4f", r[rn][i]);
+    debug("\nLast: ");
+    for (i = 0; i < rcnt[rn ^ 1]; ++i) debug(" %.4f", r[rn ^ 1][i]);
+    debug("\n");
+    i = j = 0;
+    while (i < rcnt[rn] || j < rcnt[rn ^ 1]) {
+        if (j == rcnt[rn ^ 1] || (i != rcnt[rn] && r[rn][i] < r[rn ^ 1][j])) {
+            p[n++] = (struct point){x, r[rn][i++]};
+            debug("Emit %.4f %.4f\n", x, p[n - 1].y);
+        } else if (i == rcnt[rn] || (j != rcnt[rn ^ 1] && r[rn][i] > r[rn ^ 1][j])) {
+            p[n++] = (struct point){x, r[rn ^ 1][j++]};
+            debug("Emit %.4f %.4f\n", x, p[n - 1].y);
+        } else if (r[rn][i] == r[rn ^ 1][j]) {
+            i++; j++;
+        }
+    }
+    rn ^= 1;
 }
 
 void schnitt_flush()
@@ -110,12 +141,11 @@ void schnitt_flush()
 
     /* Sweep line */
     n = t = 0;
-    if (m > 0 && v[0].x != 0)
-        process_crits(0);
+    rn = 0;
+    rcnt[rn ^ 1] = 0;
+    if (m == 0 || v[0].x != 0) process_crits(0);
     int i;
     for (i = 0; i < m; ++i) {
-        debug("----\n");
-        debug("%.4lf %.4lf %.4lf %d\n", v[i].x, v[i].y1, v[i].y2, v[i].tag ? +1 : -1);
         /* Update critical points */
         /* XXX: Speedup possible? */
         if (v[i].tag == false) {
@@ -125,14 +155,13 @@ void schnitt_flush()
             del_crit_pt(v[i].y1, false);
             del_crit_pt(v[i].y2, true);
         }
-        int j;
-        for (j = 0; j < t; ++j) debug("%.4lf %d\n", q[j].y, q[j].tag ? +1 : -1);
         /* Check all critical points */
-        if (i == m - 1 || v[i + 1].x != v[i].x)
+        float next_x = (i == m - 1 ? 1 : v[i + 1].x);
+        if (v[i].x != next_x)
             process_crits(v[i].x);
     }
-    if (m > 0 && v[m - 1].x != 1)
-        process_crits(1);
+    t = 0;
+    process_crits(1);
 
     /* Finalize */
     m = 0;
