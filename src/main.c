@@ -62,7 +62,7 @@ int main()
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 running = false;
-            } else if (e.type == SDL_KEYDOWN) {
+            } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
                 scene_handle_key(g_stage, &e.key);
             } else if (e.type == SDL_MOUSEMOTION) {
                 scene_handle_mousemove(g_stage, &e.motion);
