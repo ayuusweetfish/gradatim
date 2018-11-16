@@ -17,6 +17,7 @@ sim *sim_create(int grows, int gcols)
         for (j = 0; j < gcols; ++j) {
             sim_grid(ret, i, j).x = j;
             sim_grid(ret, i, j).y = i;
+            sim_grid(ret, i, j).w = sim_grid(ret, i, j).h = 1;
         }
     return ret;
 }
@@ -28,7 +29,17 @@ void sim_drop(sim *this)
     free(this);
 }
 
-/* Checks for intersections; `schnitt_flush()` needs be called afterwards
+/* Sends a rectangle to schnitt for checking. */
+static inline bool apply_intsc(sim *this, sobj *o)
+{
+    return schnitt_apply(
+        o->x - this->prot.x,
+        o->y - this->prot.y,
+        o->x - this->prot.x + o->w,
+        o->y - this->prot.y + o->h);
+}
+
+/* Checks for intersections; **`schnitt_flush()` must be called afterwards**
  * if `inst` is true, the function will return on first intersection */
 static inline bool check_intsc(sim *this, bool inst)
 {
@@ -37,27 +48,27 @@ static inline bool check_intsc(sim *this, bool inst)
     int px = (int)this->prot.x, py = (int)this->prot.y;
     sobj *o = &sim_grid(this, py, px);
     if (o->tag != 0) {
-        in |= schnitt_apply(o->x - this->prot.x, o->y - this->prot.y, 1, 1);
+        in |= apply_intsc(this, o);
         if (inst && in) return true;
     }
     if (px + 1 < this->gcols) {
         o = &sim_grid(this, py, px + 1);
         if (o->tag != 0) {
-            in |= schnitt_apply(o->x - this->prot.x, o->y - this->prot.y, 1, 1);
+            in |= apply_intsc(this, o);
             if (inst && in) return true;
         }
     }
     if (py + 1 < this->grows) {
         o = &sim_grid(this, py + 1, px);
         if (o->tag != 0) {
-            in |= schnitt_apply(o->x - this->prot.x, o->y - this->prot.y, 1, 1);
+            in |= apply_intsc(this, o);
             if (inst && in) return true;
         }
     }
     if (px + 1 < this->gcols && py + 1 < this->grows) {
         o = &sim_grid(this, py + 1, px + 1);
         if (o->tag != 0) {
-            in |= schnitt_apply(o->x - this->prot.x, o->y - this->prot.y, 1, 1);
+            in |= apply_intsc(this, o);
             if (inst && in) return true;
         }
     }
@@ -75,27 +86,30 @@ void sim_tick(sim *this)
     /* Respond by movement */
     float x0 = this->prot.x, y0 = this->prot.y;
     bool in = check_intsc(this, false);
-    float dx[8], dy[8];
+    float dx[16], dy[16];
     schnitt_flush(dx, dy);
     if (in) {
-        int i;
+        int i, dir = -1;
+        float min = 10;
         for (i = 0; i < 4; ++i) {
             this->prot.x = x0 + dx[i];
             this->prot.y = y0 + dy[i];
             in = check_intsc(this, true);
-            if (!in) {
-                if (i == 0 || i == 3) this->prot.vy = 0;
-                else this->prot.vx = 0;
-                break;
+            schnitt_flush(NULL, NULL);
+            if (!in && dx[i] * dx[i] + dy[i] * dy[i] < min) {
+                min = dx[i] * dx[i] + dy[i] * dy[i];
+                dir = i;
             }
         }
-        if (in) {
-            float min = 10;
-            int dir = -1;
-            for (i = 5; i < 8; ++i) {
+        if (!in) {
+            if (dir == 0 || dir == 3) this->prot.vy = 0;
+            else this->prot.vx = 0;
+        } else {
+            for (i = 4; i < 8; ++i) {
                 this->prot.x = x0 + dx[i];
                 this->prot.y = y0 + dy[i];
                 in = check_intsc(this, true);
+                schnitt_flush(NULL, NULL);
                 if (!in && dx[i] * dx[i] + dy[i] * dy[i] < min) {
                     min = dx[i] * dx[i] + dy[i] * dy[i];
                     dir = i;
@@ -106,7 +120,8 @@ void sim_tick(sim *this)
             } else {
                 this->prot.x = x0 + dx[dir];
                 this->prot.y = y0 + dy[dir];
-                this->prot.vx = this->prot.vy = 0;
+                if (dir == 1 || dir == 2 || dir >= 4) this->prot.vx = 0;
+                if (dir == 0 || dir == 3 || dir >= 4) this->prot.vy = 0;
             }
         }
     }

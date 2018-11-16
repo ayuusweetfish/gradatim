@@ -73,17 +73,19 @@ static void gameplay_scene_drop(gameplay_scene *this)
 
 static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *ev)
 {
+    if (ev->repeat) return;
     switch (ev->keysym.sym) {
         case SDLK_c:
-            this->simulator->prot.vy -= SIM_GRAVITY;
+            if (ev->state == SDL_PRESSED)
+                this->simulator->prot.vy -= SIM_GRAVITY;
             break;
         case SDLK_LEFT:
             this->simulator->prot.vx =
-                (ev->state == SDL_PRESSED ? -1 : 0);
+                (ev->state == SDL_PRESSED ? -sqrtf(2) : 0);
             break;
         case SDLK_RIGHT:
             this->simulator->prot.vx =
-                (ev->state == SDL_PRESSED ? 1 : 0);
+                (ev->state == SDL_PRESSED ? sqrtf(2) : 0);
             break;
         default: break;
     }
@@ -112,7 +114,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
     ret->simulator->prot.x = ret->simulator->prot.y = 104;
-    ret->simulator->prot.w = ret->simulator->prot.h = 0.9;
+    ret->simulator->prot.w = ret->simulator->prot.h = 0.8;
 
     return ret;
 }

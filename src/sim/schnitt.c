@@ -22,7 +22,7 @@
 static const float SZ = 1;
 #else
 /* TODO: Keep this updated with protagonist size */
-static const float SZ = 0.6;
+static const float SZ = 0.8;
 #endif
 
 /* Global minimum & maximum coordinates */
@@ -152,6 +152,8 @@ static inline void process_crits(float x)
  * In accordance with SDL, this assumes a left-handed coordinate system */
 void schnitt_flush(float *dx, float *dy)
 {
+    if (dx == NULL || dy == NULL) goto finalize;
+
     /* Sort all vertical segments */
     qsort(v, m, sizeof v[0], vert_seg_cmp);
 
@@ -211,6 +213,7 @@ void schnitt_flush(float *dx, float *dy)
     }
 
     /* Cleanup */
+finalize:
     m = 0;
     xmin = SZ, xmax = 0, ymin = SZ, ymax = 0;
 }
