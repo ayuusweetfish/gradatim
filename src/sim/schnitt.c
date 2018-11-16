@@ -18,8 +18,15 @@
 
 #define MAX_RECTS   64
 
+#ifdef SCHNITT_TEST
+static const float SZ = 1;
+#else
+/* TODO: Keep this updated with protagonist size */
+static const float SZ = 0.6;
+#endif
+
 /* Global minimum & maximum coordinates */
-static float xmin = 1, xmax = 0, ymin = 1, ymax = 0;
+static float xmin = SZ, xmax = 0, ymin = SZ, ymax = 0;
 
 /* Vertical segments; tag = 0/1 denotes left/right borders */
 static int m = 0;
@@ -37,8 +44,8 @@ static struct point {
 bool schnitt_apply(float x1, float y1, float x2, float y2)
 {
     /* Sanitize input */
-    x1 = max(0, min(1, x1)); y1 = max(0, min(1, y1));
-    x2 = max(0, min(1, x2)); y2 = max(0, min(1, y2));
+    x1 = max(0, min(SZ, x1)); y1 = max(0, min(SZ, y1));
+    x2 = max(0, min(SZ, x2)); y2 = max(0, min(SZ, y2));
     float _x1 = min(x1, x2), _y1 = min(y1, y2);
     float _x2 = max(x1, x2), _y2 = max(y1, y2);
     if (_x1 == _x2 || _y1 == _y2) return false;
@@ -115,9 +122,9 @@ static inline void process_crits(float x)
         if (layers == 1 && y_in == -1) y_in = q[i].y;
     }
     assert(layers == 1);
-    if (x != 1 && y_in != -1 && y_in != 1) {
+    if (x != SZ && y_in != -1 && y_in != SZ) {
         r[rn][rcnt[rn]++] = y_in;
-        r[rn][rcnt[rn]++] = 1;
+        r[rn][rcnt[rn]++] = SZ;
     }
 
     /* The difference between two lists (`r`) is the set of turning points.
@@ -165,26 +172,26 @@ void schnitt_flush(float *dx, float *dy)
             del_crit_pt(v[i].y2, true);
         }
         /* Check all critical points */
-        float next_x = (i == m - 1 ? 1 : v[i + 1].x);
+        float next_x = (i == m - 1 ? SZ : v[i + 1].x);
         if (v[i].x != next_x)
             process_crits(v[i].x);
     }
     /* At x = 1, the vertical line's right neighbourhood won't be covered
      * by any line, therefore `q` should be cleared (set `t` to 0). */
     t = 0;
-    process_crits(1);
+    process_crits(SZ);
 
     /* Calculate responses */
     if (n == 0) {
         for (i = 0; i < 8; ++i) dx[i] = dy[i] = 0;
     } else {
-        dy[0] = -1 + ymin; dx[0] = 0;
-        dx[1] = -1 + xmin; dy[1] = 0;
+        dy[0] = -SZ + ymin; dx[0] = 0;
+        dx[1] = -SZ + xmin; dy[1] = 0;
         dx[2] = xmax; dy[2] = 0;
         dy[3] = ymax; dx[3] = 0;
 
         int idx_mx1, idx_mn1, idx_mx2, idx_mn2;
-        float mx1 = -5, mn1 = 5, mx2 = -5, mn2 = 5, u;
+        float mx1 = -SZ * 3, mn1 = SZ * 3, mx2 = -SZ * 3, mn2 = SZ * 3, u;
         for (i = 0; i < n; ++i) {
             u = p[i].x + p[i].y;
             if (u > mx1) { mx1 = u; idx_mx1 = i; }
@@ -193,11 +200,11 @@ void schnitt_flush(float *dx, float *dy)
             if (u > mx2) { mx2 = u; idx_mx2 = i; }
             if (u < mn2) { mn2 = u; idx_mn2 = i; }
         }
-        dx[4] = p[idx_mx1].x - 1;
-        dy[4] = p[idx_mx1].y - 1;
+        dx[4] = p[idx_mx1].x - SZ;
+        dy[4] = p[idx_mx1].y - SZ;
         dx[5] = p[idx_mn2].x;
-        dy[5] = p[idx_mn2].y - 1;
-        dx[6] = p[idx_mx2].x - 1;
+        dy[5] = p[idx_mn2].y - SZ;
+        dx[6] = p[idx_mx2].x - SZ;
         dy[6] = p[idx_mx2].y;
         dx[7] = p[idx_mn1].x;
         dy[7] = p[idx_mn1].y;
@@ -205,7 +212,7 @@ void schnitt_flush(float *dx, float *dy)
 
     /* Cleanup */
     m = 0;
-    xmin = 1, xmax = 0, ymin = 1, ymax = 0;
+    xmin = SZ, xmax = 0, ymin = SZ, ymax = 0;
 }
 
 #ifdef SCHNITT_TEST
