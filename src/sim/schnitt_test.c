@@ -15,17 +15,21 @@ inline void reg(float _x, float _y)
 int main()
 {
     /* Four corners */
-    schnitt_apply(-0.5, -0.5, 0.5, 0.5);
+    schnitt_apply(-0.5, -0.5, 0.4, 0.3);
     n = 0;
-    reg(0, 0.5);
+    reg(0, 0.3);
     reg(0, 1);
     reg(1, 1);
     reg(1, 0);
-    reg(0.5, 0);
-    reg(0.5, 0.5);
+    reg(0.4, 0);
+    reg(0.4, 0.3);
     if (!schnitt_check(n, x, y)) return 1;
+    if (!schnitt_check_d(0, 0, -1)) return 1;
+    if (!schnitt_check_d(1, -1, 0)) return 1;
+    if (!schnitt_check_d(2, 0.4, 0)) return 1;
+    if (!schnitt_check_d(3, 0, 0.3)) return 1;
 
-    schnitt_apply(0, 0, 0.5, 0.5);
+    schnitt_apply(0, 0, 0.4, 0.3);
     if (!schnitt_check(n, x, y)) return 1;
 
     schnitt_apply(0.5, 0.5, 1, 1);
@@ -140,6 +144,7 @@ int main()
     reg(.5, .4);
     reg(.5, 0);
     if (!schnitt_check(n, x, y)) return 1;
+    if (!schnitt_check_d(0, 0, -1)) return 1;
 
     schnitt_apply(0, 1, .3, .4);
     schnitt_apply(.5, 0, 1, .4);
@@ -170,6 +175,27 @@ int main()
     reg(.1, .4);
     reg(0, .4);
     if (!schnitt_check(n, x, y)) return 1;
+
+    /* Movement tests */
+    schnitt_apply(0, 0, .9, .1);
+    schnitt_apply(0, 0, .2, .9);
+    schnitt_check(-1, NULL, NULL);
+    if (!schnitt_check_d(7, .2, .1)) return 1;
+
+    schnitt_apply(0, 0, 1, .1);
+    schnitt_apply(1, 0, .8, .9);
+    schnitt_check(-1, NULL, NULL);
+    if (!schnitt_check_d(6, -.2, .1)) return 1;
+
+    schnitt_apply(0, .2, .1, 1);
+    schnitt_apply(0, 1, .7, .6);
+    schnitt_check(-1, NULL, NULL);
+    if (!schnitt_check_d(5, .1, -.4)) return 1;
+
+    schnitt_apply(1, 1, .9, .1);
+    schnitt_apply(1, 1, .3, .8);
+    schnitt_check(-1, NULL, NULL);
+    if (!schnitt_check_d(4, -.1, -.2)) return 1;
 
     puts("*\\(^ ^)/*");
     return 0;

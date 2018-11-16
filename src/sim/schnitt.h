@@ -10,6 +10,7 @@ void schnitt_get_delta(int dir, float *dx, float *dy);
 #ifdef SCHNITT_TEST
 #include <stdbool.h>
 bool schnitt_check(int n, float *x, float *y);
+bool schnitt_check_d(int dir, float dx, float dy);
 #endif
 
 #endif

@@ -5,6 +5,7 @@
 
 #ifdef SCHNITT_TEST
     #include <assert.h>
+    #include <math.h>
     #include <stdio.h>
 #else
     #define assert(__x)
@@ -16,6 +17,11 @@
 #define sign(__x) ((__x) < 0 ? -1 : +1)
 
 #define MAX_RECTS   64
+
+/* Global minimum & maximum coordinates */
+static float xmin = 1, xmax = 0, ymin = 1, ymax = 0;
+/* Stored values for use in `schnitt_get_delta` */
+static float xmin_s, xmax_s, ymin_s, ymax_s;
 
 /* Vertical segments; tag = 0/1 denotes left/right borders */
 static int m = 0;
@@ -38,6 +44,8 @@ void schnitt_apply(float x1, float y1, float x2, float y2)
     float _x1 = min(x1, x2), _y1 = min(y1, y2);
     float _x2 = max(x1, x2), _y2 = max(y1, y2);
     if (_x1 == _x2 || _y1 == _y2) return;
+    xmin = min(xmin, x1); ymin = min(ymin, y1);
+    xmax = max(xmax, x2); ymax = max(ymax, y2);
     v[m++] = (struct vert_seg){_x1, _y1, _y2, false};
     v[m++] = (struct vert_seg){_x2, _y1, _y2, true};
 }
@@ -166,18 +174,49 @@ void schnitt_flush()
 
     /* Cleanup */
     m = 0;
+    xmin_s = xmin, xmax_s = xmax, ymin_s = ymin, ymax_s = ymax;
+    xmin = 1, xmax = 0, ymin = 1, ymax = 0;
 }
 
+/* dir in [0, 7]: up, left, right, down, ul, ur, dl, dr
+ * In accordance with SDL, this assumes a left-handed coordinate system */
 void schnitt_get_delta(int dir, float *dx, float *dy)
 {
+    if (n == 0 || dir < 0 || dir > 7) { *dx = *dy = 0; return; }
+    int i, idx = -1;
+    float val;
+    switch (dir) {
+        case 0: *dy = -1 + ymin_s; *dx = 0; break;
+        case 1: *dx = -1 + xmin_s; *dy = 0; break;
+        case 2: *dx = xmax_s; *dy = 0; break;
+        case 3: *dy = ymax_s; *dx = 0; break;
+
+    #define find(__init, __op, __cmp, __xmod, __ymod) do { \
+        val = __init; \
+        for (i = 0; i < n; ++i) \
+            if (p[i].x __op p[i].y __cmp val) { \
+                val = p[i].x __op p[i].y; \
+                idx = i; \
+            } \
+        *dx = __xmod + p[idx].x; \
+        *dy = __ymod + p[idx].y; \
+    } while (0)
+        case 4: find(-5, +, >, -1, -1); break;
+        case 5: find(+5, -, <, 0, -1); break;
+        case 6: find(-5, -, >, -1, 0); break;
+        case 7: find(+5, +, <, 0, 0); break;
+    #undef find
+    }
 }
 
 #ifdef SCHNITT_TEST
+static int case_num = 0;
+
 bool schnitt_check(int _n, float *x, float *y)
 {
     schnitt_flush();
-    static int case_num = 0;
     ++case_num;
+    if (_n == -1) return true;
 
     int i, j;
     bool valid = true;
@@ -202,5 +241,20 @@ bool schnitt_check(int _n, float *x, float *y)
     }
     printf("[Case %d] Correct! ^ ^\n", case_num);
     return true;
+}
+
+bool schnitt_check_d(int dir, float dx, float dy)
+{
+    float dx0, dy0;
+    schnitt_get_delta(dir, &dx0, &dy0);
+    if (fabs(dx0 - dx) + fabs(dy0 - dy) >= 1e-6) {
+        printf("[Case %d] Incorrect movement\n", case_num);
+        printf("Actual   %.4f %.4f\n", dx0, dy0);
+        printf("Expected %.4f %.4f\n", dx, dy);
+        return false;
+    } else {
+        printf("[Case %d] Correct movement ≥ ≤\n", case_num);
+        return true;
+    }
 }
 #endif
