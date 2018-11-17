@@ -4,11 +4,12 @@
 
 #include <math.h>
 
-static const float UNIT_PX = 64;
+static const float UNIT_PX = 48;
 static const float WIN_W_UNITS = (float)WIN_W / UNIT_PX;
 static const float WIN_H_UNITS = (float)WIN_H / UNIT_PX;
 
-static const double BEAT = 60.0 / 132;  /* Temporary */
+static const double BEAT = 60.0 / 144;  /* Temporary */
+static const double HOR_SPD = 2;
 
 static inline float clamp(float x, float l, float u)
 {
@@ -17,6 +18,10 @@ static inline float clamp(float x, float l, float u)
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
+    this->simulator->prot.vx = 
+        (this->hor_state == HOR_STATE_LEFT) ? -HOR_SPD :
+        (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
+
     double rt = this->rem_time + dt / BEAT;
     while (rt >= SIM_STEPLEN) {
         sim_tick(this->simulator);
@@ -80,12 +85,16 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
                 this->simulator->prot.vy -= SIM_GRAVITY;
             break;
         case SDLK_LEFT:
-            this->simulator->prot.vx =
-                (ev->state == SDL_PRESSED ? -sqrtf(2) : 0);
+            if (ev->state == SDL_PRESSED)
+                this->hor_state = HOR_STATE_LEFT;
+            else if (this->hor_state == HOR_STATE_LEFT)
+                this->hor_state = HOR_STATE_NONE;
             break;
         case SDLK_RIGHT:
-            this->simulator->prot.vx =
-                (ev->state == SDL_PRESSED ? sqrtf(2) : 0);
+            if (ev->state == SDL_PRESSED)
+                this->hor_state = HOR_STATE_RIGHT;
+            else if (this->hor_state == HOR_STATE_RIGHT)
+                this->hor_state = HOR_STATE_NONE;
             break;
         default: break;
     }

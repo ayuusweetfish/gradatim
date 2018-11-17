@@ -19,6 +19,9 @@ typedef struct _gameplay_scene {
     /* The position of the camera's top-left corner in the
      * simulated world, expressed in units */
     float cam_x, cam_y;
+
+    /* Input state */
+    enum { HOR_STATE_NONE, HOR_STATE_LEFT, HOR_STATE_RIGHT } hor_state;
 } gameplay_scene;
 
 gameplay_scene *gameplay_scene_create(scene **bg);
