@@ -1,6 +1,13 @@
 #include "sim.h"
 #include "schnitt.h"
 #include <stdlib.h>
+#include <string.h>
+
+#if DEBUG
+#define debug printf
+#else
+#define debug(...)
+#endif
 
 const double SIM_GRAVITY = 3.5 * 1.414213562;
 const double SIM_STEPLEN = 0.001;
@@ -12,6 +19,7 @@ sim *sim_create(int grows, int gcols)
     ret->grows = grows;
     ret->gcols = gcols;
     ret->grid = malloc(grows * gcols * sizeof(sobj));
+    memset(ret->grid, 0, grows * gcols * sizeof(sobj));
     int i, j;
     for (i = 0; i < grows; ++i)
         for (j = 0; j < gcols; ++j) {
@@ -46,14 +54,17 @@ static inline bool check_intsc(sim *this, bool inst)
     bool in = false;
     /* Neighbouring cells */
     int px = (int)this->prot.x, py = (int)this->prot.y;
+    debug("<%d, %d>\n", px, py);
     sobj *o = &sim_grid(this, py, px);
     if (o->tag != 0) {
+        debug("TL: ");
         in |= apply_intsc(this, o);
         if (inst && in) return true;
     }
     if (px + 1 < this->gcols) {
         o = &sim_grid(this, py, px + 1);
         if (o->tag != 0) {
+            debug("TR: ");
             in |= apply_intsc(this, o);
             if (inst && in) return true;
         }
@@ -61,6 +72,7 @@ static inline bool check_intsc(sim *this, bool inst)
     if (py + 1 < this->grows) {
         o = &sim_grid(this, py + 1, px);
         if (o->tag != 0) {
+            debug("BL: ");
             in |= apply_intsc(this, o);
             if (inst && in) return true;
         }
@@ -68,6 +80,7 @@ static inline bool check_intsc(sim *this, bool inst)
     if (px + 1 < this->gcols && py + 1 < this->grows) {
         o = &sim_grid(this, py + 1, px + 1);
         if (o->tag != 0) {
+            debug("BR: ");
             in |= apply_intsc(this, o);
             if (inst && in) return true;
         }
@@ -83,18 +96,21 @@ void sim_tick(sim *this)
     this->prot.x += this->prot.vx * SIM_STEPLEN;
     this->prot.y += this->prot.vy * SIM_STEPLEN;
 
+    debug("\n<%.8lf %.8lf>\n", this->prot.x, this->prot.y);
     /* Respond by movement */
-    float x0 = this->prot.x, y0 = this->prot.y;
+    double x0 = this->prot.x, y0 = this->prot.y;
     bool in = check_intsc(this, false);
-    float dx[16], dy[16];
+    double dx[16], dy[16];
     schnitt_flush(dx, dy);
     if (in) {
         int i, dir = -1;
-        float min = 10;
+        double min = 10;
         for (i = 0; i < 8; ++i) {
             if (i == 4 && dir != -1) break;
             this->prot.x = x0 + dx[i];
             this->prot.y = y0 + dy[i];
+            debug("[%d] (%.8lf %.8lf) (%.8lf %.8lf)\n",
+                i, dx[i], dy[i], this->prot.x, this->prot.y);
             in = check_intsc(this, true);
             schnitt_flush(NULL, NULL);
             if (!in && dx[i] * dx[i] + dy[i] * dy[i] < min) {
@@ -105,6 +121,7 @@ void sim_tick(sim *this)
         if (dir == -1) {
             puts("> <");
         } else {
+            debug("= = [%d]\n", dir);
             this->prot.x = x0 + dx[dir];
             this->prot.y = y0 + dy[dir];
             if (dir == 1 || dir == 2 || dir >= 4) this->prot.vx = 0;

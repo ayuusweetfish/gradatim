@@ -5,12 +5,12 @@
 
 #include <stdbool.h>
 
-bool schnitt_apply(float x1, float y1, float x2, float y2);
-void schnitt_flush(float *dx, float *dy);
+bool schnitt_apply(double x1, double y1, double x2, double y2);
+void schnitt_flush(double *dx, double *dy);
 
 #ifdef SCHNITT_TEST
-bool schnitt_check(int n, float *x, float *y);
-bool schnitt_check_d(int dir, float dx, float dy);
+bool schnitt_check(int n, double *x, double *y);
+bool schnitt_check_d(int dir, double dx, double dy);
 #endif
 
 #endif

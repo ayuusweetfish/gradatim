@@ -18,7 +18,7 @@ typedef struct _gameplay_scene {
     texture grid_tex[256];
     /* The position of the camera's top-left corner in the
      * simulated world, expressed in units */
-    float cam_x, cam_y;
+    double cam_x, cam_y;
 
     /* Input state */
     enum { HOR_STATE_NONE, HOR_STATE_LEFT, HOR_STATE_RIGHT } hor_state;

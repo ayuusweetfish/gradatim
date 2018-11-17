@@ -4,14 +4,14 @@
 
 #include <math.h>
 
-static const float UNIT_PX = 48;
-static const float WIN_W_UNITS = (float)WIN_W / UNIT_PX;
-static const float WIN_H_UNITS = (float)WIN_H / UNIT_PX;
+static const double UNIT_PX = 48;
+static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
+static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 
 static const double BEAT = 60.0 / 144;  /* Temporary */
 static const double HOR_SPD = 2;
 
-static inline float clamp(float x, float l, float u)
+static inline double clamp(double x, double l, double u)
 {
     return (x < l ? l : (x > u ? u : x));
 }
@@ -30,13 +30,13 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
     this->rem_time = rt;
 
     /* Move the camera */
-    float dest_x = clamp(this->simulator->prot.x,
+    double dest_x = clamp(this->simulator->prot.x,
         WIN_W_UNITS / 2, this->simulator->gcols - WIN_W_UNITS / 2);
-    float dest_y = clamp(this->simulator->prot.y,
+    double dest_y = clamp(this->simulator->prot.y,
         WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2);
-    float cam_dx = dest_x - (this->cam_x + WIN_W_UNITS / 2);
-    float cam_dy = dest_y - (this->cam_y + WIN_H_UNITS / 2);
-    float rate = (dt > 0.1 ? 0.1 : dt) * 10;
+    double cam_dx = dest_x - (this->cam_x + WIN_W_UNITS / 2);
+    double cam_dy = dest_y - (this->cam_y + WIN_H_UNITS / 2);
+    double rate = (dt > 0.1 ? 0.1 : dt) * 10;
     this->cam_x += rate * cam_dx;
     this->cam_y += rate * cam_dy;
 }

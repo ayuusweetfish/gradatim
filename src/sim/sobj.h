@@ -3,13 +3,13 @@
 #ifndef _SIM_OBJ_H
 #define _SIM_OBJ_H
 
-typedef void (*sobj_manipulator)(float t);
+typedef void (*sobj_manipulator)(double t);
 
 typedef struct _sobj {
     char tag;
-    float x, y, w, h;
-    float vx, vy;
-    float ax, ay;
+    double x, y, w, h;
+    double vx, vy;
+    double ax, ay;
     sobj_manipulator man;
 } sobj;
 
