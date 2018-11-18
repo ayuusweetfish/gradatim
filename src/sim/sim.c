@@ -90,6 +90,17 @@ static inline bool check_intsc(sim *this, bool inst)
     return in;
 }
 
+static inline bool check_intsc_mov(sim *this, double x, double y)
+{
+    this->prot.x = x;
+    this->prot.y = y;
+    debug("[%d] (%.8lf %.8lf) (%.8lf %.8lf)\n",
+        i, dx, dy, this->prot.x, this->prot.y);
+    bool in = check_intsc(this, true);
+    schnitt_flush(NULL, NULL);
+    return in;
+}
+
 void sim_tick(sim *this)
 {
     this->cur_time += SIM_STEPLEN;
@@ -111,12 +122,7 @@ void sim_tick(sim *this)
         double min = 10;
         for (i = 0; i < 8; ++i) {
             if (i == 4 && dir != -1) break;
-            this->prot.x = x0 + dx[i];
-            this->prot.y = y0 + dy[i];
-            debug("[%d] (%.8lf %.8lf) (%.8lf %.8lf)\n",
-                i, dx[i], dy[i], this->prot.x, this->prot.y);
-            in = check_intsc(this, true);
-            schnitt_flush(NULL, NULL);
+            in = check_intsc_mov(this, x0 + dx[i], y0 + dy[i]);
             if (!in && dx[i] * dx[i] + dy[i] * dy[i] < min) {
                 min = dx[i] * dx[i] + dy[i] * dy[i];
                 dir = i;
@@ -133,4 +139,32 @@ void sim_tick(sim *this)
             if (dir == 0) this->last_land = this->cur_time;
         }
     }
+}
+
+/* Tells whether a landing will happen in a given amount of time.
+ * This is only an approximation, but should be sufficient.
+ * The only times when problems may arise is when the protagonist
+ * is around the corners of moving platforms, in which case
+ * mispredictions may cause an incorrect anticipated deluge but no
+ * following jump. However, the player would continue to fall anyway. */
+bool sim_prophecy(sim *this, double time)
+{
+    double x0 = this->prot.x, y0 = this->prot.y;
+    this->prot.x += (this->prot.vx + this->prot.ax * time / 2) * time;
+    this->prot.y += (this->prot.vy + this->prot.ay * time / 2) * time;
+    /* Firstly, look for intersections */
+    bool in = check_intsc(this, false);
+    double dx[8], dy[8];
+    schnitt_flush(dx, dy);
+    if (in) {
+        /* Checks whether it is a landing event
+         * i.e. is it possible that the protagonist gets out
+         * of the colliding object by upward movement (dir = 0, 4, 5) */
+        in = !check_intsc_mov(this, x0 + dx[0], y0 + dy[0]) ||
+            !check_intsc_mov(this, x0 + dx[4], y0 + dy[4]) ||
+            !check_intsc_mov(this, x0 + dx[5], y0 + dy[5]);
+    }
+    this->prot.x = x0;
+    this->prot.y = y0;
+    return in;
 }

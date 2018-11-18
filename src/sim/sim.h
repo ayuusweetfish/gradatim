@@ -6,6 +6,8 @@
 #include "../bekter.h"
 #include "sobj.h"
 
+#include <stdbool.h>
+
 extern const double SIM_GRAVITY;    /* Gravity in units/beat^2 */
 extern const double SIM_STEPLEN;    /* Step length in beats */
 
@@ -26,5 +28,6 @@ void sim_drop(sim *this);
     ((__this)->grid[(__this)->gcols * (__r) + (__c)])
 
 void sim_tick(sim *this);
+bool sim_prophecy(sim *this, double time);
 
 #endif

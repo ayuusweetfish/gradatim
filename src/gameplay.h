@@ -23,7 +23,9 @@ typedef struct _gameplay_scene {
     /* Input state */
     enum { HOR_STATE_NONE, HOR_STATE_LEFT, HOR_STATE_RIGHT } hor_state;
     enum { VER_STATE_NONE, VER_STATE_UP, VER_STATE_DOWN } ver_state;
-    double last_hop_press;  /* Time of last hop button press, in beats */
+    /* Special movement states */
+    enum movement_state { MOV_NORMAL, MOV_ANTHOP } mov_state;
+    double mov_time;    /* Time remaining until movement state resets */
 } gameplay_scene;
 
 gameplay_scene *gameplay_scene_create(scene **bg);

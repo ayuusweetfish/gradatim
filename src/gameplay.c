@@ -10,8 +10,9 @@ static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 
 static const double BEAT = 60.0 / 132;  /* Temporary */
 #define HOP_SPD SIM_GRAVITY
-static const double HOP_PRED_DUR = 0.25;
+static const double HOP_PRED_DUR = 0.2;
 static const double HOP_GRACE_DUR = 0.15;
+#define ANTHOP_DELUGE_SPD (6.0 * SIM_GRAVITY)
 static const double HOR_SPD = 2;
 
 static inline double clamp(double x, double l, double u)
@@ -26,12 +27,14 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
     this->simulator->prot.ay =
         (this->ver_state == VER_STATE_DOWN) ? 4.0 * SIM_GRAVITY : 0;
-    if (this->last_hop_press != -1) {
-        double delta = this->last_hop_press - this->simulator->last_land;
-        if (delta >= -HOP_PRED_DUR && delta <= HOP_GRACE_DUR) {
-            this->simulator->prot.vy -= HOP_SPD;
-            this->last_hop_press = -1;
-            this->simulator->last_land = -1e10;
+    if (this->mov_state == MOV_ANTHOP) {
+        if ((this->mov_time -= dt / BEAT) <= 0) {
+            /* Perform a jump */
+            this->mov_state = MOV_NORMAL;
+            this->simulator->prot.vy = -HOP_SPD;
+        } else {
+            /* Deluging */
+            this->simulator->prot.ay = ANTHOP_DELUGE_SPD;
         }
     }
 
@@ -89,6 +92,26 @@ static void gameplay_scene_drop(gameplay_scene *this)
     sim_drop(this->simulator);
 }
 
+static void try_hop(gameplay_scene *this)
+{
+    if ((this->simulator->cur_time - this->simulator->last_land) <= HOP_GRACE_DUR) {
+        /* Grace jump */
+        this->simulator->prot.vy = -HOP_SPD;
+    } else if (sim_prophecy(this->simulator, HOP_PRED_DUR)) {
+        /* Will land soon, deluge and then jump */
+        this->mov_state = MOV_ANTHOP;
+        /* Binary search on time needed till landing happens */
+        double lo = 0, hi = HOP_PRED_DUR, mid;
+        int i;
+        for (i = 0; i < 10; ++i) {
+            mid = (lo + hi) / 2;
+            if (sim_prophecy(this->simulator, mid)) hi = mid;
+            else lo = mid;
+        }
+        this->mov_time = hi;
+    }
+}
+
 static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *ev)
 {
 #define toggle(__thisstate, __keystate, __has, __none) do { \
@@ -99,8 +122,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     if (ev->repeat) return;
     switch (ev->keysym.sym) {
         case SDLK_c:
-            if (ev->state == SDL_PRESSED)
-                this->last_hop_press = this->simulator->cur_time;
+            if (ev->state == SDL_PRESSED) try_hop(this);
             break;
         case SDLK_UP:
             toggle(this->ver_state, ev->state, VER_STATE_UP, VER_STATE_NONE);
@@ -135,7 +157,6 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->prot_tex = retrieve_texture("4.png");
     ret->grid_tex[1] = retrieve_texture("4.png");
     ret->cam_x = ret->cam_y = 100.0;
-    ret->last_hop_press = -1;
 
     int i;
     for (i = 50; i < 120; ++i)
