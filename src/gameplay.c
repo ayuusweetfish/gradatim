@@ -8,7 +8,7 @@ static const double UNIT_PX = 48;
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 
-static const double BEAT = 60.0 / 144;  /* Temporary */
+static const double BEAT = 60.0 / 132;  /* Temporary */
 static const double HOR_SPD = 2;
 
 static inline double clamp(double x, double l, double u)
@@ -21,6 +21,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
     this->simulator->prot.vx = 
         (this->hor_state == HOR_STATE_LEFT) ? -HOR_SPD :
         (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
+    this->simulator->prot.ay =
+        (this->ver_state == VER_STATE_DOWN) ? 4.0 * SIM_GRAVITY : 0;
 
     double rt = this->rem_time + dt / BEAT;
     while (rt >= SIM_STEPLEN) {
@@ -78,23 +80,28 @@ static void gameplay_scene_drop(gameplay_scene *this)
 
 static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *ev)
 {
+#define toggle(__thisstate, __keystate, __has, __none) do { \
+    if ((__keystate) == SDL_PRESSED) (__thisstate) = (__has); \
+    else if ((__thisstate) == (__has)) (__thisstate) = (__none); \
+} while (0)
+
     if (ev->repeat) return;
     switch (ev->keysym.sym) {
         case SDLK_c:
             if (ev->state == SDL_PRESSED)
                 this->simulator->prot.vy -= SIM_GRAVITY;
             break;
+        case SDLK_UP:
+            toggle(this->ver_state, ev->state, VER_STATE_UP, VER_STATE_NONE);
+            break;
+        case SDLK_DOWN:
+            toggle(this->ver_state, ev->state, VER_STATE_DOWN, VER_STATE_NONE);
+            break;
         case SDLK_LEFT:
-            if (ev->state == SDL_PRESSED)
-                this->hor_state = HOR_STATE_LEFT;
-            else if (this->hor_state == HOR_STATE_LEFT)
-                this->hor_state = HOR_STATE_NONE;
+            toggle(this->hor_state, ev->state, HOR_STATE_LEFT, HOR_STATE_NONE);
             break;
         case SDLK_RIGHT:
-            if (ev->state == SDL_PRESSED)
-                this->hor_state = HOR_STATE_RIGHT;
-            else if (this->hor_state == HOR_STATE_RIGHT)
-                this->hor_state = HOR_STATE_NONE;
+            toggle(this->hor_state, ev->state, HOR_STATE_RIGHT, HOR_STATE_NONE);
             break;
         default: break;
     }
@@ -119,7 +126,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
 
     int i;
     for (i = 50; i < 120; ++i)
-        sim_grid(ret->simulator, 107, i).tag = (i != 110);
+        sim_grid(ret->simulator, 107, i).tag = (i >= 110 || i % 2 == 0);
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
     ret->simulator->prot.x = ret->simulator->prot.y = 104;

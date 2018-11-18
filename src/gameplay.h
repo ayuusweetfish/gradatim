@@ -22,6 +22,7 @@ typedef struct _gameplay_scene {
 
     /* Input state */
     enum { HOR_STATE_NONE, HOR_STATE_LEFT, HOR_STATE_RIGHT } hor_state;
+    enum { VER_STATE_NONE, VER_STATE_UP, VER_STATE_DOWN } ver_state;
 } gameplay_scene;
 
 gameplay_scene *gameplay_scene_create(scene **bg);
