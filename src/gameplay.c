@@ -9,6 +9,9 @@ static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 
 static const double BEAT = 60.0 / 132;  /* Temporary */
+#define HOP_SPD SIM_GRAVITY
+static const double HOP_PRED_DUR = 0.25;
+static const double HOP_GRACE_DUR = 0.15;
 static const double HOR_SPD = 2;
 
 static inline double clamp(double x, double l, double u)
@@ -23,6 +26,14 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
     this->simulator->prot.ay =
         (this->ver_state == VER_STATE_DOWN) ? 4.0 * SIM_GRAVITY : 0;
+    if (this->last_hop_press != -1) {
+        double delta = this->last_hop_press - this->simulator->last_land;
+        if (delta >= -HOP_PRED_DUR && delta <= HOP_GRACE_DUR) {
+            this->simulator->prot.vy -= HOP_SPD;
+            this->last_hop_press = -1;
+            this->simulator->last_land = -1e10;
+        }
+    }
 
     double rt = this->rem_time + dt / BEAT;
     while (rt >= SIM_STEPLEN) {
@@ -89,7 +100,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     switch (ev->keysym.sym) {
         case SDLK_c:
             if (ev->state == SDL_PRESSED)
-                this->simulator->prot.vy -= SIM_GRAVITY;
+                this->last_hop_press = this->simulator->cur_time;
             break;
         case SDLK_UP:
             toggle(this->ver_state, ev->state, VER_STATE_UP, VER_STATE_NONE);
@@ -110,6 +121,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
 gameplay_scene *gameplay_scene_create(scene **bg)
 {
     gameplay_scene *ret = malloc(sizeof(gameplay_scene));
+    memset(ret, 0, sizeof(gameplay_scene));
     ret->_base.children = bekter_create();
     ret->_base.tick = (scene_tick_func)gameplay_scene_tick;
     ret->_base.draw = (scene_draw_func)gameplay_scene_draw;
@@ -123,6 +135,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->prot_tex = retrieve_texture("4.png");
     ret->grid_tex[1] = retrieve_texture("4.png");
     ret->cam_x = ret->cam_y = 100.0;
+    ret->last_hop_press = -1;
 
     int i;
     for (i = 50; i < 120; ++i)

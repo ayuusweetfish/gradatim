@@ -14,6 +14,9 @@ typedef struct _sim {
     int grows, gcols;   /* Dimensions of the grid */
     sobj *grid;         /* Map grid */
     bekter(sobj) anim;  /* Animate objects */
+
+    double cur_time;    /* Current time in beats */
+    double last_land;   /* Last landing time in beats */
 } sim;
 
 sim *sim_create(int nrows, int ncols);

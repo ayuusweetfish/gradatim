@@ -16,10 +16,12 @@ static const double MAX_VY = 8 * SIM_GRAVITY;
 sim *sim_create(int grows, int gcols)
 {
     sim *ret = malloc(sizeof(sim));
+    memset(ret, 0, sizeof(sim));
     ret->grows = grows;
     ret->gcols = gcols;
     ret->grid = malloc(grows * gcols * sizeof(sobj));
     memset(ret->grid, 0, grows * gcols * sizeof(sobj));
+    ret->last_land = -1e10;
     int i, j;
     for (i = 0; i < grows; ++i)
         for (j = 0; j < gcols; ++j) {
@@ -90,6 +92,8 @@ static inline bool check_intsc(sim *this, bool inst)
 
 void sim_tick(sim *this)
 {
+    this->cur_time += SIM_STEPLEN;
+
     this->prot.vx += this->prot.ax * SIM_STEPLEN;
     this->prot.vy += (this->prot.ay + SIM_GRAVITY) * SIM_STEPLEN;
     if (this->prot.vy >= MAX_VY) this->prot.vy = MAX_VY;
@@ -126,6 +130,7 @@ void sim_tick(sim *this)
             this->prot.y = y0 + dy[dir];
             if (dir == 1 || dir == 2 || dir >= 4) this->prot.vx = 0;
             if (dir == 0 || dir == 3 || dir >= 4) this->prot.vy = 0;
+            if (dir == 0) this->last_land = this->cur_time;
         }
     }
 }
