@@ -11,7 +11,7 @@
 #endif
 
 const double SIM_GRAVITY = 3.5 * 1.414213562;
-const double SIM_STEPLEN = 0.001;
+const double SIM_STEPLEN = 0.00025;
 static const double MAX_VY = 8 * SIM_GRAVITY;
 
 sim *sim_create(int grows, int gcols)

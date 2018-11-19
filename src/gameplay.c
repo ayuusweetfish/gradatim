@@ -240,7 +240,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->cam_x = ret->cam_y = 100.0;
 
     int i, j;
-    for (i = 50; i < 120; ++i)
+    for (i = 50; i < 117; ++i)
         sim_grid(ret->simulator, 107, i).tag = (i >= 110 || i % 2 == 0);
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
@@ -251,8 +251,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     o->vx = 119;
     o->vy = 119;
     o->ax = 119;
-    o->ay = 110;
-    o->t = 10;
+    o->ay = 109;
+    o->t = 5;
     sim_add(ret->simulator, o);
 
     o = malloc(sizeof(sobj));
@@ -270,8 +270,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     sim_grid(ret->simulator, 121, 125).tag = 1;
     for (i = 118; i < 124; ++i) sim_grid(ret->simulator, 121, i).tag = OBJID_FRAGILE;
 
-    for (i = 100; i < 128; ++i)
-        for (j = 100; j < 128; ++j)
+    for (i = 0; i < 128; ++i)
+        for (j = 0; j < 128; ++j)
             if (sim_grid(ret->simulator, i, j).tag != 0)
                 sim_check_volat(ret->simulator, &sim_grid(ret->simulator, i, j));
 
