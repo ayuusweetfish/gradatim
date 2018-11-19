@@ -128,6 +128,14 @@ void sim_tick(sim *this)
     this->prot.x += this->prot.vx * SIM_STEPLEN;
     this->prot.y += this->prot.vy * SIM_STEPLEN;
 
+    /* Update all objects, before collision detection */
+    int i, j;
+    for (i = 0; i < this->grows; ++i)
+        for (j = 0; j < this->gcols; ++j)
+            if (sim_grid(this, i, j).tag != 0) {
+                sobj_update_pred(&sim_grid(this, i, j), this->cur_time);
+            }
+
     debug("\n<%.8lf %.8lf>\n", this->prot.x, this->prot.y);
     /* Respond by movement */
     double x0 = this->prot.x, y0 = this->prot.y;
@@ -162,12 +170,11 @@ void sim_tick(sim *this)
         }
     }
 
-    /* Update all objects */
-    int i, j;
+    /* Update all objects, after collision detection */
     for (i = 0; i < this->grows; ++i)
         for (j = 0; j < this->gcols; ++j)
             if (sim_grid(this, i, j).tag != 0) {
-                sobj_update(&sim_grid(this, i, j), this->cur_time);
+                sobj_update_post(&sim_grid(this, i, j), this->cur_time);
                 sim_grid(this, i, j).is_on = false;
             }
 }

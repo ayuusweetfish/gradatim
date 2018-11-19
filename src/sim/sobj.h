@@ -18,6 +18,7 @@ typedef struct _sobj {
 #define OBJID_FRAGILE       30
 #define OBJID_FRAGILE_FIN   33
 
-void sobj_update(sobj *o, double T);
+void sobj_update_pred(sobj *o, double T);
+void sobj_update_post(sobj *o, double T);
 
 #endif
