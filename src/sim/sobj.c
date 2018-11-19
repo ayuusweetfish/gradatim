@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdbool.h>
 
-static const int FRAGILE_FRAMES = OBJID_FRAGILE_FIN - OBJID_FRAGILE;
+static const int FRAGILE_FRAMES = OBJID_FRAGILE_EMPTY - OBJID_FRAGILE - 1;
 static const double FRAGILE_RECOVER_DUR = 4;
 static const double SPRING_RECOVER_DUR = 1;
 #define SPRING_SPD (1.5 * SIM_GRAVITY)
@@ -24,6 +24,7 @@ static inline void fragile_update_pred(sobj *o, double T, sobj *prot)
         if (T - o->t < FRAGILE_FRAMES) {
             o->tag = OBJID_FRAGILE + (int)(T - o->t) + 1;
         } else if (T - o->t < FRAGILE_FRAMES + FRAGILE_RECOVER_DUR) {
+            o->tag = OBJID_FRAGILE_EMPTY;
             o->w = o->h = 0;
         } else {
             o->tag = OBJID_FRAGILE;
@@ -41,9 +42,10 @@ static inline void fragile_update_post(sobj *o, double T, sobj *prot)
 static inline void spring_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->t != -1 && T - o->t >= SPRING_RECOVER_DUR) {
+        o->tag = OBJID_SPRING;
         o->w = 1;
-        o->y = (int)o->y + 0.7;
-        o->h = 0.3;
+        o->y = (int)o->y + 10./16;
+        o->h = 6./16;
         o->t = -1;
     }
 }
@@ -51,8 +53,10 @@ static inline void spring_update_pred(sobj *o, double T, sobj *prot)
 static inline void spring_update_post(sobj *o, double T, sobj *prot)
 {
     if (o->t == -1 && is_landing(o, prot)) {
+        o->tag = OBJID_SPRING_PRESS;
         o->t = T;
-        o->w = o->h = 0;
+        o->y = (int)o->y + 13./16;
+        o->h = 3./16;
         prot->vy = -SPRING_SPD;
         prot->ay = 0;
     }
@@ -91,9 +95,9 @@ static inline void cloud_update_post(sobj *o, double T, sobj *prot)
 
 void sobj_update_pred(sobj *o, double T, sobj *prot)
 {
-    if (o->tag >= OBJID_FRAGILE && o->tag <= OBJID_FRAGILE_FIN)
+    if (o->tag >= OBJID_FRAGILE && o->tag <= OBJID_FRAGILE_EMPTY)
         fragile_update_pred(o, T, prot);
-    else if (o->tag == OBJID_SPRING)
+    else if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_update_pred(o, T, prot);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
         cloud_update_pred(o, T, prot);
@@ -101,9 +105,9 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
 
 void sobj_update_post(sobj *o, double T, sobj *prot)
 {
-    if (o->tag >= OBJID_FRAGILE && o->tag <= OBJID_FRAGILE_FIN)
+    if (o->tag >= OBJID_FRAGILE && o->tag <= OBJID_FRAGILE_EMPTY)
         fragile_update_post(o, T, prot);
-    else if (o->tag == OBJID_SPRING)
+    else if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_update_post(o, T, prot);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
         cloud_update_post(o, T, prot);

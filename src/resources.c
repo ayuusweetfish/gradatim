@@ -55,6 +55,17 @@ void load_images()
     load_image("2.png");
     load_image("3.png");
     load_image("4.png");
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+    load_image("uwu.png");
+    load_image("block.png");
+    load_image("fragile1.png");
+    load_image("fragile2.png");
+    load_image("fragile3.png");
+    load_image("fragile4.png");
+    load_image("cloud.png");
+    load_image("spring1.png");
+    load_image("spring2.png");
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 }
 
 void release_images()
@@ -99,6 +110,14 @@ void render_texture(texture t, SDL_Rect *dim)
 {
     if (t.sdl_tex == NULL) return;
     SDL_RenderCopy(g_renderer, t.sdl_tex, &t.range, dim);
+}
+
+void render_texture_scaled(texture t, double x, double y, double scale)
+{
+    if (t.sdl_tex == NULL) return;
+    SDL_RenderCopy(g_renderer, t.sdl_tex, &t.range, &(SDL_Rect){
+        x, y, round(t.range.w * scale), round(t.range.h * scale)
+    });
 }
 
 void render_texture_alpha(texture t, SDL_Rect *dim, int alpha)

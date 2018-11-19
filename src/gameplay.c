@@ -107,11 +107,11 @@ static void gameplay_scene_draw(gameplay_scene *this)
         for (c = cmin; c < cmax; ++c) {
             sobj *o = &sim_grid(this->simulator, r, c);
             if (o->tag != 0) {
-                render_texture(this->grid_tex[o->tag], &(SDL_Rect){
+                render_texture_scaled(this->grid_tex[o->tag],
                     (o->x - this->cam_x) * UNIT_PX,
                     (o->y - this->cam_y) * UNIT_PX,
-                    o->w * UNIT_PX, o->h * UNIT_PX
-                });
+                    3
+                );
             }
         }
 
@@ -218,15 +218,16 @@ gameplay_scene *gameplay_scene_create(scene **bg)
 
     ret->simulator = sim_create(128, 128);
     ret->rem_time = 0;
-    ret->prot_tex = retrieve_texture("4.png");
-    ret->grid_tex[1] = retrieve_texture("4.png");
-    ret->grid_tex[OBJID_SPRING] =
+    ret->prot_tex = retrieve_texture("uwu.png");
+    ret->grid_tex[1] = retrieve_texture("block.png");
+    ret->grid_tex[OBJID_SPRING] = retrieve_texture("spring1.png");
+    ret->grid_tex[OBJID_SPRING_PRESS] = retrieve_texture("spring2.png");
     ret->grid_tex[OBJID_CLOUD_ONEWAY] =
-    ret->grid_tex[OBJID_CLOUD_RTRIP] =
-    ret->grid_tex[OBJID_FRAGILE] = retrieve_texture("1.png");
-    ret->grid_tex[OBJID_FRAGILE + 1] = retrieve_texture("2.png");
-    ret->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("3.png");
-    ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("4.png");
+    ret->grid_tex[OBJID_CLOUD_RTRIP] = retrieve_texture("cloud.png");
+    ret->grid_tex[OBJID_FRAGILE] = retrieve_texture("fragile1.png");
+    ret->grid_tex[OBJID_FRAGILE + 1] = retrieve_texture("fragile2.png");
+    ret->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("fragile3.png");
+    ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("fragile4.png");
     ret->cam_x = ret->cam_y = 100.0;
 
     int i;

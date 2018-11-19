@@ -16,10 +16,11 @@ typedef struct _sobj {
 } sobj;
 
 #define OBJID_FRAGILE       30
-#define OBJID_FRAGILE_FIN   33
-#define OBJID_SPRING        34
-#define OBJID_CLOUD_ONEWAY  35
-#define OBJID_CLOUD_RTRIP   36
+#define OBJID_FRAGILE_EMPTY 34
+#define OBJID_SPRING        35
+#define OBJID_SPRING_PRESS  36
+#define OBJID_CLOUD_ONEWAY  37
+#define OBJID_CLOUD_RTRIP   38
 #define OBJID_CLOUD_FIRST   OBJID_CLOUD_ONEWAY
 #define OBJID_CLOUD_LAST    OBJID_CLOUD_RTRIP
 
