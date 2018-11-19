@@ -221,6 +221,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->prot_tex = retrieve_texture("4.png");
     ret->grid_tex[1] = retrieve_texture("4.png");
     ret->grid_tex[OBJID_SPRING] =
+    ret->grid_tex[OBJID_CLOUD_ONEWAY] =
     ret->grid_tex[OBJID_FRAGILE] = retrieve_texture("1.png");
     ret->grid_tex[OBJID_FRAGILE + 1] = retrieve_texture("2.png");
     ret->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("3.png");
@@ -232,8 +233,20 @@ gameplay_scene *gameplay_scene_create(scene **bg)
         sim_grid(ret->simulator, 107, i).tag = (i >= 110 || i % 2 == 0);
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
+    sim_grid(ret->simulator, 119, 122).tag = OBJID_CLOUD_ONEWAY;
+    sim_grid(ret->simulator, 119, 122).vx = 122;
+    sim_grid(ret->simulator, 119, 122).vy = 119.6;
+    sim_grid(ret->simulator, 119, 122).ax = 122;
+    sim_grid(ret->simulator, 119, 122).ay = 119;
+    sim_grid(ret->simulator, 119, 122).t = 10;
+    sim_grid(ret->simulator, 119, 125).tag = OBJID_CLOUD_ONEWAY;
+    sim_grid(ret->simulator, 119, 125).vx = 125.6;
+    sim_grid(ret->simulator, 119, 125).vy = 119;
+    sim_grid(ret->simulator, 119, 125).ax = 125;
+    sim_grid(ret->simulator, 119, 125).ay = 119;
+    sim_grid(ret->simulator, 119, 125).t = 10;
     sim_grid(ret->simulator, 120, 125).tag = OBJID_SPRING;
-    sim_grid(ret->simulator, 120, 125).data.t = -100;
+    sim_grid(ret->simulator, 120, 125).t = -100;
     sim_grid(ret->simulator, 121, 125).tag = 1;
     for (i = 118; i < 124; ++i) sim_grid(ret->simulator, 121, i).tag = OBJID_FRAGILE;
     ret->simulator->prot.x = ret->simulator->prot.y = 116;

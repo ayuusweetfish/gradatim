@@ -28,7 +28,7 @@ sim *sim_create(int grows, int gcols)
             sim_grid(ret, i, j).x = j;
             sim_grid(ret, i, j).y = i;
             sim_grid(ret, i, j).w = sim_grid(ret, i, j).h = 1;
-            sim_grid(ret, i, j).data.t = -1;
+            sim_grid(ret, i, j).t = -1;
         }
     return ret;
 }
@@ -135,6 +135,7 @@ void sim_tick(sim *this)
             if (sim_grid(this, i, j).tag != 0) {
                 sobj_update_pred(
                     &sim_grid(this, i, j), this->cur_time, &this->prot);
+                sim_grid(this, i, j).is_on = false;
             }
 
     debug("\n<%.8lf %.8lf>\n", this->prot.x, this->prot.y);
@@ -177,7 +178,6 @@ void sim_tick(sim *this)
             if (sim_grid(this, i, j).tag != 0) {
                 sobj_update_post(
                     &sim_grid(this, i, j), this->cur_time, &this->prot);
-                sim_grid(this, i, j).is_on = false;
             }
 }
 
