@@ -4,12 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if DEBUG
-#define debug printf
-#else
-#define debug(...)
-#endif
-
 const double SIM_GRAVITY = 3.5 * 1.414213562;
 const double SIM_STEPLEN = 0.00025;
 static const double MAX_VY = 8 * SIM_GRAVITY;
@@ -22,14 +16,16 @@ sim *sim_create(int grows, int gcols)
     ret->gcols = gcols;
     ret->grid = malloc(grows * gcols * sizeof(sobj));
     memset(ret->grid, 0, grows * gcols * sizeof(sobj));
-    /* TODO: Dynamic allocation! */
+
     ret->anim_cap = 16;
     ret->anim = malloc(ret->anim_cap * sizeof(sobj *));
     ret->anim_sz = 0;
     ret->volat_cap = 16;
     ret->volat = malloc(ret->volat_cap * sizeof(sobj *));
     ret->volat_sz = 0;
+
     ret->last_land = -1e10;
+
     int i, j;
     for (i = 0; i < grows; ++i)
         for (j = 0; j < gcols; ++j) {
@@ -89,56 +85,25 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
     bool in = false, cur;
     /* Neighbouring cells */
     int px = (int)this->prot.x, py = (int)this->prot.y;
+    int i, j;
     sobj *o = &sim_grid(this, py, px);
-    if (o->tag != 0) {
-        in |= (cur = apply_intsc(this, o));
-        if (mark_lands) o->is_on = cur;
-        if (inst && in) return true;
-    }
-    if (px + 1 < this->gcols) {
-        o = &sim_grid(this, py, px + 1);
-        if (o->tag != 0) {
-            in |= (cur = apply_intsc(this, o));
-            if (mark_lands) o->is_on = cur;
-            if (inst && in) return true;
-        }
-    }
-    if (py + 1 < this->grows) {
-        o = &sim_grid(this, py + 1, px);
-        if (o->tag != 0) {
-            in |= (cur = apply_intsc(this, o));
-            if (mark_lands) o->is_on = cur;
-            if (inst && in) return true;
-        }
-    }
-    if (px + 1 < this->gcols && py + 1 < this->grows) {
-        o = &sim_grid(this, py + 1, px + 1);
-        if (o->tag != 0) {
-            in |= (cur = apply_intsc(this, o));
-            if (mark_lands) o->is_on = cur;
-            if (inst && in) return true;
-        }
-    }
-    for (px = 0; px < this->anim_sz; ++px) {
-        o = this->anim[px];
+    for (i = 0; i <= 1; ++i)
+        for (j = 0; j <= 1; ++j)
+            if (px + i < this->gcols && py + j < this->grows) {
+                o = &sim_grid(this, py + i, px + j);
+                if (o->tag != 0) {
+                    in |= (cur = apply_intsc(this, o));
+                    if (mark_lands) o->is_on = cur;
+                    if (inst && in) return true;
+                }
+            }
+    for (i = 0; i < this->anim_sz; ++i) {
+        o = this->anim[i];
         in |= (cur = apply_intsc(this, o));
         if (mark_lands) o->is_on = cur;
         if (inst && in) return true;
     }
     return in;
-}
-
-static inline void find_lands(sim *this, sobj **ls)
-{
-    /* Neighbouring cells */
-    int px = (int)this->prot.x, py = (int)this->prot.y;
-    int len = 0;
-    sobj *o = &sim_grid(this, py, px);
-    if (o->tag != 0 && apply_intsc(this, o)) ls[len++] = o;
-    if (px + 1 < this->gcols) {
-        o = &sim_grid(this, py, px + 1);
-        if (o->tag != 0 && apply_intsc(this, o)) ls[len++] = o;
-    }
 }
 
 static inline bool check_intsc_mov(sim *this, double x, double y)
@@ -167,7 +132,6 @@ void sim_tick(sim *this)
         this->volat[i]->is_on = false;
     }
 
-    debug("\n<%.8lf %.8lf>\n", this->prot.x, this->prot.y);
     /* Respond by movement */
     double x0 = this->prot.x, y0 = this->prot.y;
     bool in = check_intsc(this, false, true);
@@ -188,7 +152,6 @@ void sim_tick(sim *this)
         if (dir == -1) {
             puts("> <");
         } else {
-            debug("= = [%d]\n", dir);
             this->prot.x = x0 + dx[dir];
             this->prot.y = y0 + dy[dir];
             if (dir == 1 || dir == 2 || dir >= 4)
