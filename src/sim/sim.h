@@ -17,9 +17,9 @@ typedef struct _sim {
     sobj *grid;         /* Map grid */
 
     sobj **anim;        /* List of moving & extra objects */
-    int anim_sz;
+    int anim_sz, anim_cap;
     sobj **volat;       /* List of stuff that need to be updated frequently */
-    int volat_sz;
+    int volat_sz, volat_cap;
 
     double cur_time;    /* Current time in beats */
     double last_land;   /* Last landing time in beats */

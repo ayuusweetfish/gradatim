@@ -23,9 +23,11 @@ sim *sim_create(int grows, int gcols)
     ret->grid = malloc(grows * gcols * sizeof(sobj));
     memset(ret->grid, 0, grows * gcols * sizeof(sobj));
     /* TODO: Dynamic allocation! */
-    ret->anim = malloc(100 * sizeof(sobj *));
+    ret->anim_cap = 16;
+    ret->anim = malloc(ret->anim_cap * sizeof(sobj *));
     ret->anim_sz = 0;
-    ret->volat = malloc(grows * gcols * sizeof(sobj *));
+    ret->volat_cap = 16;
+    ret->volat = malloc(ret->volat_cap * sizeof(sobj *));
     ret->volat_sz = 0;
     ret->last_land = -1e10;
     int i, j;
@@ -47,19 +49,26 @@ void sim_drop(sim *this)
     free(this);
 }
 
+/* Adds a given object (usu. grid cell) to the `volat` list, if necessary */
+void sim_check_volat(sim *this, sobj *o)
+{
+    if (!sobj_needs_update(o)) return;
+    this->volat[this->volat_sz++] = o;
+    if (this->volat_sz == this->volat_cap) {
+        this->volat_cap <<= 1;
+        this->volat = realloc(this->volat, this->volat_cap * sizeof(sobj *));
+    }
+}
+
 /* Adds a given object to the `anim` list; and `volat`, if necessary */
 void sim_add(sim *this, sobj *o)
 {
     this->anim[this->anim_sz++] = o;
-    if (sobj_needs_update(o))
-        this->volat[this->volat_sz++] = o;
-}
-
-/* Adds a given object (usu. grid cell) to the `volat` list, if necessary */
-void sim_check_volat(sim *this, sobj *o)
-{
-    if (sobj_needs_update(o))
-        this->volat[this->volat_sz++] = o;
+    if (this->anim_sz == this->anim_cap) {
+        this->anim_cap <<= 1;
+        this->anim = realloc(this->anim, this->anim_cap * sizeof(sobj *));
+    }
+    sim_check_volat(this, o);
 }
 
 /* Sends a rectangle to schnitt for checking. */
