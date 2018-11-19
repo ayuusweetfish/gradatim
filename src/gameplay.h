@@ -21,7 +21,7 @@ typedef struct _gameplay_scene {
     double cam_x, cam_y;
 
     /* Input state */
-    enum { HOR_STATE_NONE, HOR_STATE_LEFT, HOR_STATE_RIGHT } hor_state;
+    enum { HOR_STATE_NONE, HOR_STATE_LEFT, HOR_STATE_RIGHT } hor_state, facing;
     enum { VER_STATE_NONE, VER_STATE_UP, VER_STATE_DOWN } ver_state;
     /* Special movement states */
     enum movement_state {

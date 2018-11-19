@@ -112,6 +112,13 @@ void render_texture(texture t, SDL_Rect *dim)
     SDL_RenderCopy(g_renderer, t.sdl_tex, &t.range, dim);
 }
 
+void render_texture_ex(texture t, SDL_Rect *dim,
+    double a, SDL_Point *c, SDL_RendererFlip f)
+{
+    if (t.sdl_tex == NULL) return;
+    SDL_RenderCopyEx(g_renderer, t.sdl_tex, &t.range, dim, a, c, f);
+}
+
 void render_texture_scaled(texture t, double x, double y, double scale)
 {
     if (t.sdl_tex == NULL) return;

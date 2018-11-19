@@ -124,12 +124,12 @@ static void gameplay_scene_draw(gameplay_scene *this)
         );
     }
 
-    render_texture(this->prot_tex, &(SDL_Rect){
+    render_texture_ex(this->prot_tex, &(SDL_Rect){
         (this->simulator->prot.x - this->cam_x) * UNIT_PX,
         (this->simulator->prot.y - this->cam_y) * UNIT_PX,
         round(this->simulator->prot.w * UNIT_PX),
-        round(this->simulator->prot.h * UNIT_PX)
-    });
+        round(this->simulator->prot.h * UNIT_PX),
+    }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
 }
 
 static void gameplay_scene_drop(gameplay_scene *this)
@@ -160,20 +160,20 @@ static void try_hop(gameplay_scene *this)
 static void try_dash(gameplay_scene *this)
 {
     int dir_has = 0, dir_denotes = 0;
-    if (this->hor_state != HOR_STATE_NONE) {
-        dir_has |= 1;
-        dir_denotes |= (this->hor_state == HOR_STATE_LEFT ? MOV_DASH_LEFT : 0);
-        this->simulator->prot.vx =
-            (this->hor_state == HOR_STATE_LEFT ? -DASH_HOR_V0 : +DASH_HOR_V0);
-    }
     if (this->ver_state == VER_STATE_UP) {
         dir_has |= 2;
         dir_denotes |= MOV_DASH_UP;
         this->simulator->prot.vy = -DASH_VER_V0;
     }
-    if (dir_has == 0) {
-        /* TODO: Dash in the last movement direction */
-    } else if (dir_has == 3) {
+    if (this->hor_state != HOR_STATE_NONE || dir_has == 0) {
+        int s = (this->hor_state == HOR_STATE_NONE ?
+            this->facing : this->hor_state);
+        dir_has |= 1;
+        dir_denotes |= (s == HOR_STATE_LEFT ? MOV_DASH_LEFT : 0);
+        this->simulator->prot.vx =
+            (s == HOR_STATE_LEFT ? -DASH_HOR_V0 : +DASH_HOR_V0);
+    }
+    if (dir_has == 3) {
         this->simulator->prot.vx *= DASH_DIAG_SCALE;
         this->simulator->prot.vy *= DASH_DIAG_SCALE;
     }
@@ -204,9 +204,11 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
             toggle(this->ver_state, ev->state, VER_STATE_DOWN, VER_STATE_NONE);
             break;
         case SDLK_LEFT:
+            if (ev->state == SDL_PRESSED) this->facing = HOR_STATE_LEFT;
             toggle(this->hor_state, ev->state, HOR_STATE_LEFT, HOR_STATE_NONE);
             break;
         case SDLK_RIGHT:
+            if (ev->state == SDL_PRESSED) this->facing = HOR_STATE_RIGHT;
             toggle(this->hor_state, ev->state, HOR_STATE_RIGHT, HOR_STATE_NONE);
             break;
         default: break;
@@ -238,6 +240,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("fragile3.png");
     ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("fragile4.png");
     ret->cam_x = ret->cam_y = 100.0;
+    ret->facing = HOR_STATE_RIGHT;
 
     int i, j;
     for (i = 50; i < 117; ++i)
