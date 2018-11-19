@@ -28,6 +28,7 @@ sim *sim_create(int grows, int gcols)
             sim_grid(ret, i, j).x = j;
             sim_grid(ret, i, j).y = i;
             sim_grid(ret, i, j).w = sim_grid(ret, i, j).h = 1;
+            sim_grid(ret, i, j).t = -1;
         }
     return ret;
 }
@@ -50,24 +51,27 @@ static inline bool apply_intsc(sim *this, sobj *o)
 }
 
 /* Checks for intersections; **`schnitt_flush()` must be called afterwards**
- * if `inst` is true, the function will return on first intersection */
-static inline bool check_intsc(sim *this, bool inst)
+ * if `inst` is true, the function will return on first intersection
+ * if `mark_lands` is true, the `is_on` field will be updated */
+static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
 {
-    bool in = false;
+    bool in = false, cur;
     /* Neighbouring cells */
     int px = (int)this->prot.x, py = (int)this->prot.y;
     debug("<%d, %d>\n", px, py);
     sobj *o = &sim_grid(this, py, px);
     if (o->tag != 0) {
         debug("TL: ");
-        in |= apply_intsc(this, o);
+        in |= (cur = apply_intsc(this, o));
+        if (mark_lands) o->is_on = cur;
         if (inst && in) return true;
     }
     if (px + 1 < this->gcols) {
         o = &sim_grid(this, py, px + 1);
         if (o->tag != 0) {
             debug("TR: ");
-            in |= apply_intsc(this, o);
+            in |= (cur = apply_intsc(this, o));
+            if (mark_lands) o->is_on = cur;
             if (inst && in) return true;
         }
     }
@@ -75,7 +79,8 @@ static inline bool check_intsc(sim *this, bool inst)
         o = &sim_grid(this, py + 1, px);
         if (o->tag != 0) {
             debug("BL: ");
-            in |= apply_intsc(this, o);
+            in |= (cur = apply_intsc(this, o));
+            if (mark_lands) o->is_on = cur;
             if (inst && in) return true;
         }
     }
@@ -83,20 +88,32 @@ static inline bool check_intsc(sim *this, bool inst)
         o = &sim_grid(this, py + 1, px + 1);
         if (o->tag != 0) {
             debug("BR: ");
-            in |= apply_intsc(this, o);
+            in |= (cur = apply_intsc(this, o));
+            if (mark_lands) o->is_on = cur;
             if (inst && in) return true;
         }
     }
     return in;
 }
 
+static inline void find_lands(sim *this, sobj **ls)
+{
+    /* Neighbouring cells */
+    int px = (int)this->prot.x, py = (int)this->prot.y;
+    int len = 0;
+    sobj *o = &sim_grid(this, py, px);
+    if (o->tag != 0 && apply_intsc(this, o)) ls[len++] = o;
+    if (px + 1 < this->gcols) {
+        o = &sim_grid(this, py, px + 1);
+        if (o->tag != 0 && apply_intsc(this, o)) ls[len++] = o;
+    }
+}
+
 static inline bool check_intsc_mov(sim *this, double x, double y)
 {
     this->prot.x = x;
     this->prot.y = y;
-    debug("[%d] (%.8lf %.8lf) (%.8lf %.8lf)\n",
-        i, dx, dy, this->prot.x, this->prot.y);
-    bool in = check_intsc(this, true);
+    bool in = check_intsc(this, true, false);
     schnitt_flush(NULL, NULL);
     return in;
 }
@@ -114,8 +131,9 @@ void sim_tick(sim *this)
     debug("\n<%.8lf %.8lf>\n", this->prot.x, this->prot.y);
     /* Respond by movement */
     double x0 = this->prot.x, y0 = this->prot.y;
-    bool in = check_intsc(this, false);
+    bool in = check_intsc(this, false, true);
     double dx[16], dy[16];
+    sobj *land_on = NULL;
     schnitt_flush(dx, dy);
     if (in) {
         int i, dir = -1;
@@ -138,9 +156,20 @@ void sim_tick(sim *this)
                 this->prot.vx = this->prot.ax = 0;
             if (dir == 0 || dir == 3 || dir >= 4)
                 this->prot.vy = this->prot.ay = 0;
-            if (dir == 0) this->last_land = this->cur_time;
+            if (dir == 0) {
+                this->last_land = this->cur_time;
+            }
         }
     }
+
+    /* Update all objects */
+    int i, j;
+    for (i = 0; i < this->grows; ++i)
+        for (j = 0; j < this->gcols; ++j)
+            if (sim_grid(this, i, j).tag != 0) {
+                sobj_update(&sim_grid(this, i, j), this->cur_time);
+                sim_grid(this, i, j).is_on = false;
+            }
 }
 
 /* Tells whether a landing will happen in a given amount of time.
@@ -155,7 +184,7 @@ bool sim_prophecy(sim *this, double time)
     this->prot.x += (this->prot.vx + this->prot.ax * time / 2) * time;
     this->prot.y += (this->prot.vy + this->prot.ay * time / 2) * time;
     /* Firstly, look for intersections */
-    bool in = check_intsc(this, false);
+    bool in = check_intsc(this, false, false);
     double dx[8], dy[8];
     schnitt_flush(dx, dy);
     if (in) {

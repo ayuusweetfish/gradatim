@@ -110,7 +110,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
                 render_texture(this->grid_tex[o->tag], &(SDL_Rect){
                     (c - this->cam_x) * UNIT_PX,
                     (r - this->cam_y) * UNIT_PX,
-                    UNIT_PX, UNIT_PX
+                    o->w * UNIT_PX, o->h * UNIT_PX
                 });
             }
         }
@@ -220,6 +220,10 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->rem_time = 0;
     ret->prot_tex = retrieve_texture("4.png");
     ret->grid_tex[1] = retrieve_texture("4.png");
+    ret->grid_tex[OBJID_FRAGILE] = retrieve_texture("1.png");
+    ret->grid_tex[OBJID_FRAGILE + 1] = retrieve_texture("2.png");
+    ret->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("3.png");
+    ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("4.png");
     ret->cam_x = ret->cam_y = 100.0;
 
     int i;
@@ -228,7 +232,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
     sim_grid(ret->simulator, 121, 125).tag = 1;
-    ret->simulator->prot.x = ret->simulator->prot.y = 120;
+    for (i = 118; i < 124; ++i) sim_grid(ret->simulator, 121, i).tag = OBJID_FRAGILE;
+    ret->simulator->prot.x = ret->simulator->prot.y = 116;
     ret->simulator->prot.w = ret->simulator->prot.h = 0.6;
 
     return ret;
