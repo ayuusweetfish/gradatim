@@ -1,6 +1,5 @@
 #include "sim.h"
 #include "schnitt.h"
-#include "../bekter.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +22,11 @@ sim *sim_create(int grows, int gcols)
     ret->gcols = gcols;
     ret->grid = malloc(grows * gcols * sizeof(sobj));
     memset(ret->grid, 0, grows * gcols * sizeof(sobj));
-    ret->anim = bekter_create();
+    /* TODO: Dynamic allocation! */
+    ret->anim = malloc(100 * sizeof(sobj *));
+    ret->anim_sz = 0;
+    ret->volat = malloc(grows * gcols * sizeof(sobj *));
+    ret->volat_sz = 0;
     ret->last_land = -1e10;
     int i, j;
     for (i = 0; i < grows; ++i)
@@ -39,8 +42,24 @@ sim *sim_create(int grows, int gcols)
 void sim_drop(sim *this)
 {
     free(this->grid);
-    bekter_drop(this->anim);
+    free(this->anim);
+    free(this->volat);
     free(this);
+}
+
+/* Adds a given object to the `anim` list; and `volat`, if necessary */
+void sim_add(sim *this, sobj *o)
+{
+    this->anim[this->anim_sz++] = o;
+    if (sobj_needs_update(o))
+        this->volat[this->volat_sz++] = o;
+}
+
+/* Adds a given object (usu. grid cell) to the `volat` list, if necessary */
+void sim_check_volat(sim *this, sobj *o)
+{
+    if (sobj_needs_update(o))
+        this->volat[this->volat_sz++] = o;
 }
 
 /* Sends a rectangle to schnitt for checking. */
@@ -61,10 +80,8 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
     bool in = false, cur;
     /* Neighbouring cells */
     int px = (int)this->prot.x, py = (int)this->prot.y;
-    debug("<%d, %d>\n", px, py);
     sobj *o = &sim_grid(this, py, px);
     if (o->tag != 0) {
-        debug("TL: ");
         in |= (cur = apply_intsc(this, o));
         if (mark_lands) o->is_on = cur;
         if (inst && in) return true;
@@ -72,7 +89,6 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
     if (px + 1 < this->gcols) {
         o = &sim_grid(this, py, px + 1);
         if (o->tag != 0) {
-            debug("TR: ");
             in |= (cur = apply_intsc(this, o));
             if (mark_lands) o->is_on = cur;
             if (inst && in) return true;
@@ -81,7 +97,6 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
     if (py + 1 < this->grows) {
         o = &sim_grid(this, py + 1, px);
         if (o->tag != 0) {
-            debug("BL: ");
             in |= (cur = apply_intsc(this, o));
             if (mark_lands) o->is_on = cur;
             if (inst && in) return true;
@@ -90,13 +105,13 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
     if (px + 1 < this->gcols && py + 1 < this->grows) {
         o = &sim_grid(this, py + 1, px + 1);
         if (o->tag != 0) {
-            debug("BR: ");
             in |= (cur = apply_intsc(this, o));
             if (mark_lands) o->is_on = cur;
             if (inst && in) return true;
         }
     }
-    for bekter_each(this->anim, px, o) if (o->tag != 0) {
+    for (px = 0; px < this->anim_sz; ++px) {
+        o = this->anim[px];
         in |= (cur = apply_intsc(this, o));
         if (mark_lands) o->is_on = cur;
         if (inst && in) return true;
@@ -137,18 +152,10 @@ void sim_tick(sim *this)
     this->prot.y += this->prot.vy * SIM_STEPLEN;
 
     /* Update all objects, before collision detection */
-    int i, j;
-    sobj *o;
-    for (i = 0; i < this->grows; ++i)
-        for (j = 0; j < this->gcols; ++j)
-            if (sim_grid(this, i, j).tag != 0) {
-                sobj_update_pred(
-                    &sim_grid(this, i, j), this->cur_time, &this->prot);
-                sim_grid(this, i, j).is_on = false;
-            }
-    for bekter_each(this->anim, i, o) {
-        sobj_update_pred(o, this->cur_time, &this->prot);
-        o->is_on = false;
+    int i;
+    for (i = 0; i < this->volat_sz; ++i) {
+        sobj_update_pred(this->volat[i], this->cur_time, &this->prot);
+        this->volat[i]->is_on = false;
     }
 
     debug("\n<%.8lf %.8lf>\n", this->prot.x, this->prot.y);
@@ -186,12 +193,8 @@ void sim_tick(sim *this)
     }
 
     /* Update all objects, after collision detection */
-    for (i = 0; i < this->grows; ++i)
-        for (j = 0; j < this->gcols; ++j)
-            sobj_update_post(
-                &sim_grid(this, i, j), this->cur_time, &this->prot);
-    for bekter_each(this->anim, i, o)
-        sobj_update_post(o, this->cur_time, &this->prot);
+    for (i = 0; i < this->volat_sz; ++i)
+        sobj_update_post(this->volat[i], this->cur_time, &this->prot);
 }
 
 /* Tells whether a landing will happen in a given amount of time.

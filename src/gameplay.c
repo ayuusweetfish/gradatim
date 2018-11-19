@@ -115,16 +115,14 @@ static void gameplay_scene_draw(gameplay_scene *this)
                 );
             }
         }
-    sobj *o;
-    for bekter_each(this->simulator->anim, r, o)
-        if (o->tag != 0) {
-            /* XXX: Avoid duplication */
-            render_texture_scaled(this->grid_tex[o->tag],
-                (o->x - this->cam_x) * UNIT_PX,
-                (o->y - this->cam_y) * UNIT_PX,
-                3
-            );
-        }
+    for (r = 0; r < this->simulator->anim_sz; ++r) {
+        sobj *o = this->simulator->anim[r];
+        render_texture_scaled(this->grid_tex[o->tag],
+            (o->x - this->cam_x) * UNIT_PX,
+            (o->y - this->cam_y) * UNIT_PX,
+            3
+        );
+    }
 
     render_texture(this->prot_tex, &(SDL_Rect){
         (this->simulator->prot.x - this->cam_x) * UNIT_PX,
@@ -241,7 +239,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("fragile4.png");
     ret->cam_x = ret->cam_y = 100.0;
 
-    int i;
+    int i, j;
     for (i = 50; i < 120; ++i)
         sim_grid(ret->simulator, 107, i).tag = (i >= 110 || i % 2 == 0);
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
@@ -255,7 +253,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     o->ax = 119;
     o->ay = 110;
     o->t = 10;
-    bekter_pushback(ret->simulator->anim, o);
+    sim_add(ret->simulator, o);
 
     o = malloc(sizeof(sobj));
     o->tag = OBJID_CLOUD_RTRIP;
@@ -265,12 +263,18 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     o->ax = 120;
     o->ay = 119;
     o->t = 3;
-    bekter_pushback(ret->simulator->anim, o);
+    sim_add(ret->simulator, o);
 
     sim_grid(ret->simulator, 120, 125).tag = OBJID_SPRING;
     sim_grid(ret->simulator, 120, 125).t = -100;
     sim_grid(ret->simulator, 121, 125).tag = 1;
     for (i = 118; i < 124; ++i) sim_grid(ret->simulator, 121, i).tag = OBJID_FRAGILE;
+
+    for (i = 100; i < 128; ++i)
+        for (j = 100; j < 128; ++j)
+            if (sim_grid(ret->simulator, i, j).tag != 0)
+                sim_check_volat(ret->simulator, &sim_grid(ret->simulator, i, j));
+
     ret->simulator->prot.x = ret->simulator->prot.y = 116;
     ret->simulator->prot.w = ret->simulator->prot.h = 0.6;
 

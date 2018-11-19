@@ -24,6 +24,7 @@ typedef struct _sobj {
 #define OBJID_CLOUD_FIRST   OBJID_CLOUD_ONEWAY
 #define OBJID_CLOUD_LAST    OBJID_CLOUD_RTRIP
 
+bool sobj_needs_update(sobj *o);
 void sobj_update_pred(sobj *o, double T, sobj *prot);
 void sobj_update_post(sobj *o, double T, sobj *prot);
 

@@ -105,10 +105,17 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
 
 void sobj_update_post(sobj *o, double T, sobj *prot)
 {
+    //static int cnt = 0;
+    //if (++cnt % 1048576 == 0) printf("%d\n", cnt);
     if (o->tag >= OBJID_FRAGILE && o->tag <= OBJID_FRAGILE_EMPTY)
         fragile_update_post(o, T, prot);
     else if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_update_post(o, T, prot);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
         cloud_update_post(o, T, prot);
+}
+
+bool sobj_needs_update(sobj *o)
+{
+    return o->tag >= 30;
 }
