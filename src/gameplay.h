@@ -24,7 +24,17 @@ typedef struct _gameplay_scene {
     enum { HOR_STATE_NONE, HOR_STATE_LEFT, HOR_STATE_RIGHT } hor_state;
     enum { VER_STATE_NONE, VER_STATE_UP, VER_STATE_DOWN } ver_state;
     /* Special movement states */
-    enum movement_state { MOV_NORMAL, MOV_ANTHOP } mov_state;
+    enum movement_state {
+        MOV_NORMAL = 0, MOV_ANTHOP = 1,
+        /* Dash directions can be distinguished by taking & 3 */
+        MOV_DASH_BASE = 4,
+        MOV_HORDASH = MOV_DASH_BASE + 1,
+        MOV_VERDASH = MOV_DASH_BASE + 2,
+        MOV_DIAGDASH = MOV_DASH_BASE + 3,
+        /* Bitmasks denoting dash direction */
+        MOV_DASH_LEFT = 8,
+        MOV_DASH_UP = 16
+    } mov_state;
     double mov_time;    /* Time remaining until movement state resets */
 } gameplay_scene;
 

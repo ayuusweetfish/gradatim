@@ -14,6 +14,12 @@ static const double HOP_PRED_DUR = 0.2;
 static const double HOP_GRACE_DUR = 0.15;
 #define ANTHOP_DELUGE_SPD (6.0 * SIM_GRAVITY)
 static const double HOR_SPD = 2;
+static const double DASH_DUR = 1;
+#define DASH_HOR_V0     (7.5 * 1.414213562)
+#define DASH_HOR_ACCEL  (7.5 * 1.414213562)
+#define DASH_VER_V0     (5.5 * 1.414213562)
+#define DASH_VER_ACCEL  (5.5 * 1.414213562 - SIM_GRAVITY)
+static const double DASH_DIAG_SCALE = 0.8;
 
 static inline double clamp(double x, double l, double u)
 {
@@ -22,6 +28,7 @@ static inline double clamp(double x, double l, double u)
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
+    double prev_vx = this->simulator->prot.vx;
     this->simulator->prot.vx = 
         (this->hor_state == HOR_STATE_LEFT) ? -HOR_SPD :
         (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
@@ -35,6 +42,28 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         } else {
             /* Deluging */
             this->simulator->prot.ay = ANTHOP_DELUGE_SPD;
+        }
+    } else if (this->mov_state & MOV_DASH_BASE) {
+        if ((this->mov_time -= dt / BEAT) <= 0) {
+            /* XXX: Avoid duplicates? */
+            this->mov_state = MOV_NORMAL;
+            this->simulator->prot.ax = 0;
+            this->simulator->prot.ay = 0;
+        } else {
+            if (this->mov_state & MOV_HORDASH & 3) {
+                this->simulator->prot.vx = prev_vx;
+                this->simulator->prot.ax =
+                    (this->mov_state & MOV_DASH_LEFT) ?
+                    +DASH_HOR_ACCEL : -DASH_HOR_ACCEL;
+            }
+            if (this->mov_state & MOV_VERDASH & 3) {
+                this->simulator->prot.ay =
+                    (this->mov_state & MOV_DASH_UP) ? DASH_VER_ACCEL : 0;
+            }
+            if (this->mov_state & 3) {
+                this->simulator->prot.ax *= DASH_DIAG_SCALE;
+                this->simulator->prot.ay *= DASH_DIAG_SCALE;
+            }
         }
     }
 
@@ -112,6 +141,31 @@ static void try_hop(gameplay_scene *this)
     }
 }
 
+static void try_dash(gameplay_scene *this)
+{
+    int dir_has = 0, dir_denotes = 0;
+    if (this->hor_state != HOR_STATE_NONE) {
+        dir_has |= 1;
+        dir_denotes |= (this->hor_state == HOR_STATE_LEFT ? MOV_DASH_LEFT : 0);
+        this->simulator->prot.vx =
+            (this->hor_state == HOR_STATE_LEFT ? -DASH_HOR_V0 : +DASH_HOR_V0);
+    }
+    if (this->ver_state == VER_STATE_UP) {
+        dir_has |= 2;
+        dir_denotes |= MOV_DASH_UP;
+        this->simulator->prot.vy = -DASH_VER_V0;
+    }
+    if (dir_has == 0) {
+        /* TODO: Dash in the last movement direction */
+    } else if (dir_has == 3) {
+        this->simulator->prot.vx *= DASH_DIAG_SCALE;
+        this->simulator->prot.vy *= DASH_DIAG_SCALE;
+    }
+    this->simulator->last_land = -1e10; /* Disable grace jumps */
+    this->mov_state = MOV_DASH_BASE | dir_has | dir_denotes;
+    this->mov_time = DASH_DUR;
+}
+
 static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *ev)
 {
 #define toggle(__thisstate, __keystate, __has, __none) do { \
@@ -123,6 +177,9 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     switch (ev->keysym.sym) {
         case SDLK_c:
             if (ev->state == SDL_PRESSED) try_hop(this);
+            break;
+        case SDLK_x:
+            if (ev->state == SDL_PRESSED) try_dash(this);
             break;
         case SDLK_UP:
             toggle(this->ver_state, ev->state, VER_STATE_UP, VER_STATE_NONE);
@@ -163,7 +220,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
         sim_grid(ret->simulator, 107, i).tag = (i >= 110 || i % 2 == 0);
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
-    ret->simulator->prot.x = ret->simulator->prot.y = 104;
+    sim_grid(ret->simulator, 121, 125).tag = 1;
+    ret->simulator->prot.x = ret->simulator->prot.y = 120;
     ret->simulator->prot.w = ret->simulator->prot.h = 0.6;
 
     return ret;
