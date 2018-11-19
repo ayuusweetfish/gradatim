@@ -1,5 +1,7 @@
 #include "sim.h"
 #include "schnitt.h"
+#include "../bekter.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,6 +23,7 @@ sim *sim_create(int grows, int gcols)
     ret->gcols = gcols;
     ret->grid = malloc(grows * gcols * sizeof(sobj));
     memset(ret->grid, 0, grows * gcols * sizeof(sobj));
+    ret->anim = bekter_create();
     ret->last_land = -1e10;
     int i, j;
     for (i = 0; i < grows; ++i)
@@ -93,6 +96,11 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
             if (inst && in) return true;
         }
     }
+    for bekter_each(this->anim, px, o) if (o->tag != 0) {
+        in |= (cur = apply_intsc(this, o));
+        if (mark_lands) o->is_on = cur;
+        if (inst && in) return true;
+    }
     return in;
 }
 
@@ -130,6 +138,7 @@ void sim_tick(sim *this)
 
     /* Update all objects, before collision detection */
     int i, j;
+    sobj *o;
     for (i = 0; i < this->grows; ++i)
         for (j = 0; j < this->gcols; ++j)
             if (sim_grid(this, i, j).tag != 0) {
@@ -137,6 +146,10 @@ void sim_tick(sim *this)
                     &sim_grid(this, i, j), this->cur_time, &this->prot);
                 sim_grid(this, i, j).is_on = false;
             }
+    for bekter_each(this->anim, i, o) {
+        sobj_update_pred(o, this->cur_time, &this->prot);
+        o->is_on = false;
+    }
 
     debug("\n<%.8lf %.8lf>\n", this->prot.x, this->prot.y);
     /* Respond by movement */
@@ -175,10 +188,10 @@ void sim_tick(sim *this)
     /* Update all objects, after collision detection */
     for (i = 0; i < this->grows; ++i)
         for (j = 0; j < this->gcols; ++j)
-            if (sim_grid(this, i, j).tag != 0) {
-                sobj_update_post(
-                    &sim_grid(this, i, j), this->cur_time, &this->prot);
-            }
+            sobj_update_post(
+                &sim_grid(this, i, j), this->cur_time, &this->prot);
+    for bekter_each(this->anim, i, o)
+        sobj_update_post(o, this->cur_time, &this->prot);
 }
 
 /* Tells whether a landing will happen in a given amount of time.

@@ -1,6 +1,7 @@
 #include "gameplay.h"
 
 #include "global.h"
+#include "bekter.h"
 
 #include <math.h>
 
@@ -113,6 +114,16 @@ static void gameplay_scene_draw(gameplay_scene *this)
                     3
                 );
             }
+        }
+    sobj *o;
+    for bekter_each(this->simulator->anim, r, o)
+        if (o->tag != 0) {
+            /* XXX: Avoid duplication */
+            render_texture_scaled(this->grid_tex[o->tag],
+                (o->x - this->cam_x) * UNIT_PX,
+                (o->y - this->cam_y) * UNIT_PX,
+                3
+            );
         }
 
     render_texture(this->prot_tex, &(SDL_Rect){
@@ -235,18 +246,27 @@ gameplay_scene *gameplay_scene_create(scene **bg)
         sim_grid(ret->simulator, 107, i).tag = (i >= 110 || i % 2 == 0);
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
-    sim_grid(ret->simulator, 119, 122).tag = OBJID_CLOUD_ONEWAY;
-    sim_grid(ret->simulator, 119, 122).vx = 122;
-    sim_grid(ret->simulator, 119, 122).vy = 119.6;
-    sim_grid(ret->simulator, 119, 122).ax = 122;
-    sim_grid(ret->simulator, 119, 122).ay = 119;
-    sim_grid(ret->simulator, 119, 122).t = 10;
-    sim_grid(ret->simulator, 119, 125).tag = OBJID_CLOUD_RTRIP;
-    sim_grid(ret->simulator, 119, 125).vx = 125.6;
-    sim_grid(ret->simulator, 119, 125).vy = 119;
-    sim_grid(ret->simulator, 119, 125).ax = 125;
-    sim_grid(ret->simulator, 119, 125).ay = 119;
-    sim_grid(ret->simulator, 119, 125).t = 1;
+
+    sobj *o = malloc(sizeof(sobj));
+    o->tag = OBJID_CLOUD_ONEWAY;
+    o->w = 1;
+    o->vx = 119;
+    o->vy = 119;
+    o->ax = 119;
+    o->ay = 110;
+    o->t = 10;
+    bekter_pushback(ret->simulator->anim, o);
+
+    o = malloc(sizeof(sobj));
+    o->tag = OBJID_CLOUD_RTRIP;
+    o->w = 1;
+    o->vx = 125;
+    o->vy = 119;
+    o->ax = 120;
+    o->ay = 119;
+    o->t = 3;
+    bekter_pushback(ret->simulator->anim, o);
+
     sim_grid(ret->simulator, 120, 125).tag = OBJID_SPRING;
     sim_grid(ret->simulator, 120, 125).t = -100;
     sim_grid(ret->simulator, 121, 125).tag = 1;
