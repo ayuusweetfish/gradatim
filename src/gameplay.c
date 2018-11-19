@@ -15,8 +15,8 @@ static const double HOP_GRACE_DUR = 0.15;
 #define ANTHOP_DELUGE_SPD (6.0 * SIM_GRAVITY)
 static const double HOR_SPD = 2;
 static const double DASH_DUR = 1;
-#define DASH_HOR_V0     (7.5 * 1.414213562)
-#define DASH_HOR_ACCEL  (7.5 * 1.414213562)
+#define DASH_HOR_V0     (6.5 * 1.414213562)
+#define DASH_HOR_ACCEL  (6.5 * 1.414213562)
 #define DASH_VER_V0     (5.5 * 1.414213562)
 #define DASH_VER_ACCEL  (5.5 * 1.414213562 - SIM_GRAVITY)
 static const double DASH_DIAG_SCALE = 0.8;
@@ -34,6 +34,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
     this->simulator->prot.ay =
         (this->ver_state == VER_STATE_DOWN) ? 4.0 * SIM_GRAVITY : 0;
+    double deluge_vy = this->simulator->prot.ay;
     if (this->mov_state == MOV_ANTHOP) {
         if ((this->mov_time -= dt / BEAT) <= 0) {
             /* Perform a jump */
@@ -55,6 +56,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                 this->simulator->prot.ax =
                     (this->mov_state & MOV_DASH_LEFT) ?
                     +DASH_HOR_ACCEL : -DASH_HOR_ACCEL;
+                this->simulator->prot.ay = -SIM_GRAVITY;
             }
             if (this->mov_state & MOV_VERDASH & 3) {
                 this->simulator->prot.ay =
@@ -64,6 +66,11 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                 this->simulator->prot.ax *= DASH_DIAG_SCALE;
                 this->simulator->prot.ay *= DASH_DIAG_SCALE;
             }
+            if (this->simulator->prot.vx * this->simulator->prot.ax >= 0)
+                this->simulator->prot.ax = 0;
+            if (this->simulator->prot.vy * this->simulator->prot.ay >= 0)
+                this->simulator->prot.ay = 0;
+            this->simulator->prot.ay += deluge_vy;
         }
     }
 

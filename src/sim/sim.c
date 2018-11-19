@@ -134,8 +134,10 @@ void sim_tick(sim *this)
             debug("= = [%d]\n", dir);
             this->prot.x = x0 + dx[dir];
             this->prot.y = y0 + dy[dir];
-            if (dir == 1 || dir == 2 || dir >= 4) this->prot.vx = 0;
-            if (dir == 0 || dir == 3 || dir >= 4) this->prot.vy = 0;
+            if (dir == 1 || dir == 2 || dir >= 4)
+                this->prot.vx = this->prot.ax = 0;
+            if (dir == 0 || dir == 3 || dir >= 4)
+                this->prot.vy = this->prot.ay = 0;
             if (dir == 0) this->last_land = this->cur_time;
         }
     }
