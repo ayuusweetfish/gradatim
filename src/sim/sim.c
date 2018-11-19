@@ -133,7 +133,8 @@ void sim_tick(sim *this)
     for (i = 0; i < this->grows; ++i)
         for (j = 0; j < this->gcols; ++j)
             if (sim_grid(this, i, j).tag != 0) {
-                sobj_update_pred(&sim_grid(this, i, j), this->cur_time);
+                sobj_update_pred(
+                    &sim_grid(this, i, j), this->cur_time, &this->prot);
             }
 
     debug("\n<%.8lf %.8lf>\n", this->prot.x, this->prot.y);
@@ -174,7 +175,8 @@ void sim_tick(sim *this)
     for (i = 0; i < this->grows; ++i)
         for (j = 0; j < this->gcols; ++j)
             if (sim_grid(this, i, j).tag != 0) {
-                sobj_update_post(&sim_grid(this, i, j), this->cur_time);
+                sobj_update_post(
+                    &sim_grid(this, i, j), this->cur_time, &this->prot);
                 sim_grid(this, i, j).is_on = false;
             }
 }
