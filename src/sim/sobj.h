@@ -12,7 +12,10 @@ typedef struct _sobj {
     double ax, ay;
 
     bool is_on; /* Whether this object caused intersection at the last tick */
-    double t;   /* Any special record; usually time */
+    union {
+        double t;
+        void *p;
+    } data;
 } sobj;
 
 #define OBJID_FRAGILE       30

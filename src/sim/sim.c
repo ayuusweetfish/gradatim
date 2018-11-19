@@ -28,7 +28,7 @@ sim *sim_create(int grows, int gcols)
             sim_grid(ret, i, j).x = j;
             sim_grid(ret, i, j).y = i;
             sim_grid(ret, i, j).w = sim_grid(ret, i, j).h = 1;
-            sim_grid(ret, i, j).t = -1;
+            sim_grid(ret, i, j).data.t = -1;
         }
     return ret;
 }

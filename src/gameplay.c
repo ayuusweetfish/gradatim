@@ -233,7 +233,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
     for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
     sim_grid(ret->simulator, 120, 125).tag = OBJID_SPRING;
-    sim_grid(ret->simulator, 120, 125).t = -100;
+    sim_grid(ret->simulator, 120, 125).data.t = -100;
     sim_grid(ret->simulator, 121, 125).tag = 1;
     for (i = 118; i < 124; ++i) sim_grid(ret->simulator, 121, i).tag = OBJID_FRAGILE;
     ret->simulator->prot.x = ret->simulator->prot.y = 116;
