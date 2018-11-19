@@ -52,7 +52,7 @@ static inline void spring_update_pred(sobj *o, double T, sobj *prot)
 
 static inline void spring_update_post(sobj *o, double T, sobj *prot)
 {
-    if (o->t == -1 && is_landing(o, prot)) {
+    if (is_landing(o, prot)) {
         o->tag = OBJID_SPRING_PRESS;
         o->t = T;
         o->y = (int)o->y + 13./16;
