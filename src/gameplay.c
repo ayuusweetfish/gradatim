@@ -9,7 +9,7 @@ static const double UNIT_PX = 48;
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 
-static const double BEAT = 60.0 / 132;  /* Temporary */
+static const double BEAT = 60.0 / 44;  /* Temporary */
 #define HOP_SPD SIM_GRAVITY
 static const double HOP_PRED_DUR = 0.2;
 static const double HOP_GRACE_DUR = 0.15;
@@ -261,6 +261,9 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("fragile4.png");
     ret->grid_tex[OBJID_MUSHROOM_T] = retrieve_texture("mushroom_t.png");
     ret->grid_tex[OBJID_MUSHROOM_B] = retrieve_texture("mushroom_b.png");
+    ret->grid_tex[OBJID_MUSHROOM_BR] =
+    ret->grid_tex[OBJID_MUSHROOM_BL] =
+    ret->grid_tex[OBJID_MUSHROOM_TR] =
     ret->grid_tex[OBJID_MUSHROOM_TL] = retrieve_texture("mushroom_tl.png");
     ret->cam_x = ret->cam_y = 100.0;
     ret->facing = HOR_STATE_RIGHT;
@@ -296,9 +299,12 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     for (i = 118; i < 124; ++i) sim_grid(ret->simulator, 121, i).tag = OBJID_FRAGILE;
 
     sim_grid(ret->simulator, 122, 125).tag = OBJID_MUSHROOM_T;
-    sim_grid(ret->simulator, 126, 126).tag = OBJID_MUSHROOM_B;
+    sim_grid(ret->simulator, 126, 123).tag = OBJID_MUSHROOM_B;
     sim_grid(ret->simulator, 122, 118).tag = 1;
     sim_grid(ret->simulator, 122, 119).tag = OBJID_MUSHROOM_TL;
+    sim_grid(ret->simulator, 126, 124).tag = OBJID_MUSHROOM_TR;
+    sim_grid(ret->simulator, 126, 125).tag = OBJID_MUSHROOM_BL;
+    sim_grid(ret->simulator, 126, 126).tag = OBJID_MUSHROOM_BR;
 
     for (i = 0; i < 128; ++i)
         for (j = 0; j < 128; ++j)

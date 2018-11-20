@@ -99,16 +99,17 @@ static inline void mushroom_init(sobj *o)
 {
     switch (o->tag) {
         case OBJID_MUSHROOM_B:
+        case OBJID_MUSHROOM_BL:
+        case OBJID_MUSHROOM_BR:
             o->y = (int)o->y + 6./16; /* Fallthrough */
         case OBJID_MUSHROOM_T:
+        case OBJID_MUSHROOM_TL:
+        case OBJID_MUSHROOM_TR:
             o->h = 10./16; break;
         case OBJID_MUSHROOM_R:
             o->x = (int)o->x + 6./16; /* Fallthrough */
         case OBJID_MUSHROOM_L:
             o->h = 10./16; break;
-        default:    /* Corners */
-            o->h = 10./16;
-            o->w = 1;
     }
 }
 
@@ -117,6 +118,12 @@ static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
     if (o->is_on) prot->is_on = true;
     if (o->tag >= OBJID_MUSHROOM_TL && o->tag <= OBJID_MUSHROOM_BR) {
         double t = o->h; o->h = o->w; o->w = t;
+        /* Is right-floating? */
+        if ((o->tag & 1) == (OBJID_MUSHROOM_TR & 1))
+            o->x = ((int)o->x == o->x ? (int)o->x + 6./16 : (int)o->x);
+        /* Is bottom-sticking? */
+        if (o->tag == OBJID_MUSHROOM_BL || o->tag == OBJID_MUSHROOM_BR)
+            o->y = ((int)o->y == o->y ? (int)o->y + 6./16 : (int)o->y);
     }
 }
 
