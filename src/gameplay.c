@@ -31,7 +31,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
     this->simulator->prot.ay =
         (this->ver_state == VER_STATE_DOWN) ? 4.0 * SIM_GRAVITY : 0;
-    double deluge_vy = this->simulator->prot.ay;
+    double plunge_vy = this->simulator->prot.ay;
     if (this->mov_state == MOV_ANTHOP) {
         if ((this->mov_time -= dt / BEAT) <= 0) {
             /* Perform a jump */
@@ -72,7 +72,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                 this->simulator->prot.ay = 0;
             /* In case a plunge is in progress, its speed change
              * should be taken into account */
-            this->simulator->prot.ay += deluge_vy;
+            this->simulator->prot.ay += plunge_vy;
         }
     } else {
         /* Normal state */
@@ -156,7 +156,7 @@ static void try_hop(gameplay_scene *this)
         /* Grace jump */
         this->simulator->prot.vy = -HOP_SPD;
     } else if (sim_prophecy(this->simulator, HOP_PRED_DUR)) {
-        /* Will land soon, deluge and then jump */
+        /* Will land soon, plunge and then jump */
         this->mov_state = MOV_ANTHOP;
         /* Binary search on time needed till landing happens */
         double lo = 0, hi = HOP_PRED_DUR, mid;
