@@ -29,10 +29,6 @@ static inline double clamp(double x, double l, double u)
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
-    double prev_vx = this->simulator->prot.vx;
-    this->simulator->prot.vx = 
-        (this->hor_state == HOR_STATE_LEFT) ? -HOR_SPD :
-        (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
     this->simulator->prot.ay =
         (this->ver_state == VER_STATE_DOWN) ? 4.0 * SIM_GRAVITY : 0;
     double deluge_vy = this->simulator->prot.ay;
@@ -53,13 +49,14 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             this->simulator->prot.ay = 0;
         } else {
             if (this->mov_state & MOV_HORDASH & 3) {
-                this->simulator->prot.vx = prev_vx;
                 this->simulator->prot.ax =
                     (this->mov_state & MOV_DASH_LEFT) ?
                     +DASH_HOR_ACCEL : -DASH_HOR_ACCEL;
                 this->simulator->prot.ay = -SIM_GRAVITY;
             }
             if (this->mov_state & MOV_VERDASH & 3) {
+                /* If a diagonal dash is taking place,
+                 * the vertical acceleration is overridden here */
                 this->simulator->prot.ay =
                     (this->mov_state & MOV_DASH_UP) ? DASH_VER_ACCEL : 0;
             }
@@ -67,13 +64,24 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                 this->simulator->prot.ax *= DASH_DIAG_SCALE;
                 this->simulator->prot.ay *= DASH_DIAG_SCALE;
             }
+            /* In case the protagonist runs into something,
+             * the velocity becomes 0 and should not change any more */
             if (this->simulator->prot.vx * this->simulator->prot.ax >= 0)
                 this->simulator->prot.ax = 0;
             if (this->simulator->prot.vy * this->simulator->prot.ay >= 0)
                 this->simulator->prot.ay = 0;
+            /* In case a plunge is in progress, its speed change
+             * should be taken into account */
             this->simulator->prot.ay += deluge_vy;
         }
+    } else {
+        /* Normal state */
+        this->simulator->prot.vx = 0;
     }
+    double hor_mov_vx =
+        (this->hor_state == HOR_STATE_LEFT) ? -HOR_SPD :
+        (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
+    this->simulator->prot.vx += hor_mov_vx;
 
     double rt = this->rem_time + dt / BEAT;
     while (rt >= SIM_STEPLEN) {
@@ -81,6 +89,11 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         rt -= SIM_STEPLEN;
     }
     this->rem_time = rt;
+
+    /* Horizontal speed should be cancelled out immediately
+     * However, not if such will result in a 'bounce' */
+    if (this->simulator->prot.vx * (this->simulator->prot.vx - hor_mov_vx) > 0)
+        this->simulator->prot.vx -= hor_mov_vx;
 
     /* Move the camera */
     double dest_x = clamp(this->simulator->prot.x,
