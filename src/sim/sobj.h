@@ -36,7 +36,7 @@ typedef struct _sobj {
 #define OBJID_MUSHROOM_LAST  OBJID_MUSHROOM_BR
 
 void sobj_init(sobj *o);
-bool sobj_needs_freq_update(sobj *o);
+bool sobj_needs_update(sobj *o);
 void sobj_update_pred(sobj *o, double T, sobj *prot);
 void sobj_update_post(sobj *o, double T, sobj *prot);
 

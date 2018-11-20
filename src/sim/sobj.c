@@ -148,7 +148,7 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
         mushroom_update_post(o, T, prot);
 }
 
-bool sobj_needs_freq_update(sobj *o)
+bool sobj_needs_update(sobj *o)
 {
     return o->tag >= 30;
 }
