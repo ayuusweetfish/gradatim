@@ -50,6 +50,12 @@ static inline void spring_update_pred(sobj *o, double T, sobj *prot)
     }
 }
 
+static inline void spring_init(sobj *o)
+{
+    o->t = -SPRING_RECOVER_DUR * 2;
+    spring_update_pred(o, 0, NULL);
+}
+
 static inline void spring_update_post(sobj *o, double T, sobj *prot)
 {
     if (is_landing(o, prot)) {
@@ -89,36 +95,36 @@ static inline void cloud_update_pred(sobj *o, double T, sobj *prot)
     }
 }
 
-static inline void cloud_update_post(sobj *o, double T, sobj *prot)
-{
-}
-
 static inline void mushroom_init(sobj *o)
 {
     switch (o->tag) {
         case OBJID_MUSHROOM_B:
-            o->y = (int)o->y + 6./16;
-            /* Fallthrough */
+            o->y = (int)o->y + 6./16; /* Fallthrough */
         case OBJID_MUSHROOM_T:
+            o->h = 10./16; break;
+        case OBJID_MUSHROOM_R:
+            o->x = (int)o->x + 6./16; /* Fallthrough */
+        case OBJID_MUSHROOM_L:
+            o->h = 10./16; break;
+        default:    /* Corners */
             o->h = 10./16;
-            break;
+            o->w = 1;
     }
-}
-
-static inline void mushroom_update_pred(sobj *o, double T, sobj *prot)
-{
 }
 
 static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
 {
-    if (o->is_on) {
-        prot->is_on = true;
+    if (o->is_on) prot->is_on = true;
+    if (o->tag >= OBJID_MUSHROOM_TL && o->tag <= OBJID_MUSHROOM_BR) {
+        double t = o->h; o->h = o->w; o->w = t;
     }
 }
 
 void sobj_init(sobj *o)
 {
-    if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
+    if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
+        spring_init(o);
+    else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
         mushroom_init(o);
 }
 
@@ -130,8 +136,6 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
         spring_update_pred(o, T, prot);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
         cloud_update_pred(o, T, prot);
-    else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
-        mushroom_update_pred(o, T, prot);
 }
 
 void sobj_update_post(sobj *o, double T, sobj *prot)
@@ -140,13 +144,11 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
         fragile_update_post(o, T, prot);
     else if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_update_post(o, T, prot);
-    else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
-        cloud_update_post(o, T, prot);
     else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
         mushroom_update_post(o, T, prot);
 }
 
-bool sobj_needs_update(sobj *o)
+bool sobj_needs_freq_update(sobj *o)
 {
     return o->tag >= 30;
 }

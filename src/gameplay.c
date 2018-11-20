@@ -261,6 +261,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("fragile4.png");
     ret->grid_tex[OBJID_MUSHROOM_T] = retrieve_texture("mushroom_t.png");
     ret->grid_tex[OBJID_MUSHROOM_B] = retrieve_texture("mushroom_b.png");
+    ret->grid_tex[OBJID_MUSHROOM_TL] = retrieve_texture("mushroom_tl.png");
     ret->cam_x = ret->cam_y = 100.0;
     ret->facing = HOR_STATE_RIGHT;
 
@@ -291,12 +292,13 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     sim_add(ret->simulator, o);
 
     sim_grid(ret->simulator, 120, 125).tag = OBJID_SPRING;
-    sim_grid(ret->simulator, 120, 125).t = -100;
     sim_grid(ret->simulator, 121, 125).tag = 1;
     for (i = 118; i < 124; ++i) sim_grid(ret->simulator, 121, i).tag = OBJID_FRAGILE;
 
     sim_grid(ret->simulator, 122, 125).tag = OBJID_MUSHROOM_T;
     sim_grid(ret->simulator, 126, 126).tag = OBJID_MUSHROOM_B;
+    sim_grid(ret->simulator, 122, 118).tag = 1;
+    sim_grid(ret->simulator, 122, 119).tag = OBJID_MUSHROOM_TL;
 
     for (i = 0; i < 128; ++i)
         for (j = 0; j < 128; ++j)

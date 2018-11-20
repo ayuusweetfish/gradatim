@@ -48,7 +48,7 @@ void sim_drop(sim *this)
 /* Adds a given object (usu. grid cell) to the `volat` list, if necessary */
 void sim_check_volat(sim *this, sobj *o)
 {
-    if (!sobj_needs_update(o)) return;
+    if (!sobj_needs_freq_update(o)) return;
     this->volat[this->volat_sz++] = o;
     if (this->volat_sz == this->volat_cap) {
         this->volat_cap <<= 1;
@@ -140,11 +140,20 @@ void sim_tick(sim *this)
     this->prot.y += this->prot.vy * SIM_STEPLEN;
 
     /* Update all objects, before collision detection */
-    int i;
+    int i, j, px, py;
     for (i = 0; i < this->volat_sz; ++i) {
         sobj_update_pred(this->volat[i], this->cur_time, &this->prot);
         this->volat[i]->is_on = false;
     }
+    px = (int)this->prot.x;
+    py = (int)this->prot.y;
+    for (i = 0; i <= 1; ++i)
+        for (j = 0; j <= 1; ++j)
+            if (px + i < this->gcols && py + j < this->grows) {
+                sobj *o = &sim_grid(this, py + i, px + j);
+                sobj_update_pred(o, this->cur_time, &this->prot);
+                o->is_on = false;
+            }
 
     /* Respond by movement */
     double x0 = this->prot.x, y0 = this->prot.y;
@@ -181,6 +190,14 @@ void sim_tick(sim *this)
     /* Update all objects, after collision detection */
     for (i = 0; i < this->volat_sz; ++i)
         sobj_update_post(this->volat[i], this->cur_time, &this->prot);
+    px = (int)this->prot.x;
+    py = (int)this->prot.y;
+    for (i = 0; i <= 1; ++i)
+        for (j = 0; j <= 1; ++j)
+            if (px + i < this->gcols && py + j < this->grows) {
+                sobj *o = &sim_grid(this, py + i, px + j);
+                sobj_update_post(o, this->cur_time, &this->prot);
+            }
 }
 
 /* Tells whether a landing will happen in a given amount of time.

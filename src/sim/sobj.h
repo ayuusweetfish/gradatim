@@ -26,11 +26,17 @@ typedef struct _sobj {
 
 #define OBJID_MUSHROOM_T    39
 #define OBJID_MUSHROOM_B    40
+#define OBJID_MUSHROOM_L    41
+#define OBJID_MUSHROOM_R    42
+#define OBJID_MUSHROOM_TL   43
+#define OBJID_MUSHROOM_TR   44
+#define OBJID_MUSHROOM_BL   45
+#define OBJID_MUSHROOM_BR   46
 #define OBJID_MUSHROOM_FIRST OBJID_MUSHROOM_T
-#define OBJID_MUSHROOM_LAST  OBJID_MUSHROOM_B
+#define OBJID_MUSHROOM_LAST  OBJID_MUSHROOM_BR
 
 void sobj_init(sobj *o);
-bool sobj_needs_update(sobj *o);
+bool sobj_needs_freq_update(sobj *o);
 void sobj_update_pred(sobj *o, double T, sobj *prot);
 void sobj_update_post(sobj *o, double T, sobj *prot);
 
