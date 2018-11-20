@@ -9,7 +9,7 @@ static const double UNIT_PX = 48;
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 
-static const double BEAT = 60.0 / 44;  /* Temporary */
+static const double BEAT = 60.0 / 132;  /* Temporary */
 #define HOP_SPD SIM_GRAVITY
 static const double HOP_PRED_DUR = 0.2;
 static const double HOP_GRACE_DUR = 0.15;
@@ -129,8 +129,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
             sobj *o = &sim_grid(this->simulator, r, c);
             if (o->tag != 0) {
                 render_texture_scaled(this->grid_tex[o->tag],
-                    (o->x - this->cam_x) * UNIT_PX,
-                    (o->y - this->cam_y) * UNIT_PX,
+                    ((int)o->x - this->cam_x) * UNIT_PX,
+                    ((int)o->y - this->cam_y) * UNIT_PX,
                     3
                 );
             }
