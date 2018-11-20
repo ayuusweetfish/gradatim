@@ -65,6 +65,8 @@ void load_images()
     load_image("cloud.png");
     load_image("spring1.png");
     load_image("spring2.png");
+    load_image("mushroom_t.png");
+    load_image("mushroom_b.png");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 }
 

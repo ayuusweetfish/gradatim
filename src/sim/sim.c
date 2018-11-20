@@ -67,6 +67,17 @@ void sim_add(sim *this, sobj *o)
     sim_check_volat(this, o);
 }
 
+/* Initialize all objects */
+static inline void init(sim *this)
+{
+    int i, j;
+    for (i = 0; i < this->grows; ++i)
+        for (j = 0; j < this->gcols; ++j)
+            sobj_init(&sim_grid(this, i, j));
+    for (i = 0; i < this->anim_sz; ++i)
+        sobj_init(this->anim[i]);
+}
+
 /* Sends a rectangle to schnitt for checking. */
 static inline bool apply_intsc(sim *this, sobj *o)
 {
@@ -117,6 +128,9 @@ static inline bool check_intsc_mov(sim *this, double x, double y)
 
 void sim_tick(sim *this)
 {
+    /* XXX: Should this be moved elsewhere? */
+    if (this->cur_time == 0) init(this);
+
     this->cur_time += SIM_STEPLEN;
 
     this->prot.vx += this->prot.ax * SIM_STEPLEN;

@@ -93,6 +93,35 @@ static inline void cloud_update_post(sobj *o, double T, sobj *prot)
 {
 }
 
+static inline void mushroom_init(sobj *o)
+{
+    switch (o->tag) {
+        case OBJID_MUSHROOM_B:
+            o->y = (int)o->y + 6./16;
+            /* Fallthrough */
+        case OBJID_MUSHROOM_T:
+            o->h = 10./16;
+            break;
+    }
+}
+
+static inline void mushroom_update_pred(sobj *o, double T, sobj *prot)
+{
+}
+
+static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
+{
+    if (o->is_on) {
+        prot->is_on = true;
+    }
+}
+
+void sobj_init(sobj *o)
+{
+    if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
+        mushroom_init(o);
+}
+
 void sobj_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->tag >= OBJID_FRAGILE && o->tag <= OBJID_FRAGILE_EMPTY)
@@ -101,6 +130,8 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
         spring_update_pred(o, T, prot);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
         cloud_update_pred(o, T, prot);
+    else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
+        mushroom_update_pred(o, T, prot);
 }
 
 void sobj_update_post(sobj *o, double T, sobj *prot)
@@ -111,6 +142,8 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
         spring_update_post(o, T, prot);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
         cloud_update_post(o, T, prot);
+    else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
+        mushroom_update_post(o, T, prot);
 }
 
 bool sobj_needs_update(sobj *o)

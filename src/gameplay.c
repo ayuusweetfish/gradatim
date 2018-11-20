@@ -29,6 +29,13 @@ static inline double clamp(double x, double l, double u)
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
+    if (this->simulator->prot.is_on) {
+        /* Failure */
+        *(this->bg_ptr) = this->bg;
+        scene_drop(this);
+        return;
+    }
+
     this->simulator->prot.ay =
         (this->ver_state == VER_STATE_DOWN) ? 4.0 * SIM_GRAVITY : 0;
     double plunge_vy = this->simulator->prot.ay;
@@ -252,6 +259,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_FRAGILE + 1] = retrieve_texture("fragile2.png");
     ret->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("fragile3.png");
     ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("fragile4.png");
+    ret->grid_tex[OBJID_MUSHROOM_T] = retrieve_texture("mushroom_t.png");
+    ret->grid_tex[OBJID_MUSHROOM_B] = retrieve_texture("mushroom_b.png");
     ret->cam_x = ret->cam_y = 100.0;
     ret->facing = HOR_STATE_RIGHT;
 
@@ -285,6 +294,9 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     sim_grid(ret->simulator, 120, 125).t = -100;
     sim_grid(ret->simulator, 121, 125).tag = 1;
     for (i = 118; i < 124; ++i) sim_grid(ret->simulator, 121, i).tag = OBJID_FRAGILE;
+
+    sim_grid(ret->simulator, 122, 125).tag = OBJID_MUSHROOM_T;
+    sim_grid(ret->simulator, 126, 126).tag = OBJID_MUSHROOM_B;
 
     for (i = 0; i < 128; ++i)
         for (j = 0; j < 128; ++j)
