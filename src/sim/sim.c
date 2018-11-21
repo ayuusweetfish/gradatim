@@ -59,6 +59,7 @@ void sim_check_volat(sim *this, sobj *o)
 /* Adds a given object to the `anim` list; and `volat`, if necessary */
 void sim_add(sim *this, sobj *o)
 {
+    sobj_init(o);
     this->anim[this->anim_sz++] = o;
     if (this->anim_sz == this->anim_cap) {
         this->anim_cap <<= 1;
@@ -67,15 +68,15 @@ void sim_add(sim *this, sobj *o)
     sim_check_volat(this, o);
 }
 
-/* Initialize all objects */
+/* Initialize all grid cells */
 static inline void init(sim *this)
 {
     int i, j;
     for (i = 0; i < this->grows; ++i)
-        for (j = 0; j < this->gcols; ++j)
+        for (j = 0; j < this->gcols; ++j) {
             sobj_init(&sim_grid(this, i, j));
-    for (i = 0; i < this->anim_sz; ++i)
-        sobj_init(this->anim[i]);
+            sim_check_volat(this, &sim_grid(this, i, j));
+        }
 }
 
 /* Sends a rectangle to schnitt for checking. */

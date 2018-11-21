@@ -54,11 +54,6 @@ static inline void load_csv(gameplay_scene *this, const char *path)
 
     fclose(f);
 
-    for (i = 0; i < nrows; ++i)
-        for (j = 0; j < ncols; ++j)
-            if (sim_grid(this->simulator, i, j).tag != 0)
-                sim_check_volat(this->simulator, &sim_grid(this->simulator, i, j));
-
     this->cam_x = clamp(this->simulator->prot.x,
         WIN_W_UNITS / 2, ncols - WIN_W_UNITS / 2);
     this->cam_y = clamp(this->simulator->prot.y,
