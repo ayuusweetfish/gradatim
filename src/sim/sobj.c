@@ -78,6 +78,11 @@ static inline double get_prog(sobj *o, double T)
     }
 }
 
+static inline void cloud_init(sobj *o)
+{
+    o->tx = o->ty = -2./16;
+}
+
 static inline void cloud_update_pred(sobj *o, double T, sobj *prot)
 {
     /* Update position */
@@ -131,6 +136,8 @@ void sobj_init(sobj *o)
 {
     if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_init(o);
+    else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
+        cloud_init(o);
     else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
         mushroom_init(o);
 }

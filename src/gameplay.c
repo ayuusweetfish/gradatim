@@ -114,11 +114,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
     this->cam_y += rate * cam_dy;
 }
 
-static void gameplay_scene_draw(gameplay_scene *this)
+static inline void render_objects(gameplay_scene *this, bool is_after)
 {
-    SDL_SetRenderDrawColor(g_renderer, 216, 224, 255, 255);
-    SDL_RenderClear(g_renderer);
-
     int rmin = floorf(this->cam_y),
         rmax = ceilf(this->cam_y + WIN_H_UNITS),
         cmin = floorf(this->cam_x),
@@ -138,11 +135,19 @@ static void gameplay_scene_draw(gameplay_scene *this)
     for (r = 0; r < this->simulator->anim_sz; ++r) {
         sobj *o = this->simulator->anim[r];
         render_texture_scaled(this->grid_tex[o->tag],
-            (o->x - this->cam_x) * UNIT_PX,
-            (o->y - this->cam_y) * UNIT_PX,
+            (o->x + o->tx - this->cam_x) * UNIT_PX,
+            (o->y + o->ty - this->cam_y) * UNIT_PX,
             3
         );
     }
+}
+
+static void gameplay_scene_draw(gameplay_scene *this)
+{
+    SDL_SetRenderDrawColor(g_renderer, 216, 224, 255, 255);
+    SDL_RenderClear(g_renderer);
+
+    render_objects(this, false);
 
     render_texture_ex(this->prot_tex, &(SDL_Rect){
         (this->simulator->prot.x - this->cam_x) * UNIT_PX,
@@ -150,6 +155,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
         round(this->simulator->prot.w * UNIT_PX),
         round(this->simulator->prot.h * UNIT_PX),
     }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
+
+    render_objects(this, true);
 }
 
 static void gameplay_scene_drop(gameplay_scene *this)

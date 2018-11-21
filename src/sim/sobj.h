@@ -10,10 +10,13 @@ typedef struct _sobj {
     double x, y, w, h;
     double vx, vy;
     double ax, ay;
+    double tx, ty;  /* Offset of texture */
 
     bool is_on; /* Whether this object caused intersection at the last tick */
     double t;
 } sobj;
+
+#define OBJID_DRAW_AFTER    10
 
 #define OBJID_FRAGILE       30
 #define OBJID_FRAGILE_EMPTY 34
