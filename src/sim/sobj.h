@@ -40,8 +40,8 @@ typedef struct _sobj {
 
 #define OBJID_NXSTAGE       127
 
-#define PROT_MARK_FAILURE   1
-#define PROT_MARK_NXSTAGE   2
+#define PROT_TAG_FAILURE    1
+#define PROT_TAG_NXSTAGE    2
 
 void sobj_init(sobj *o);
 bool sobj_needs_update(sobj *o);

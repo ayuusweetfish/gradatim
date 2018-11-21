@@ -105,16 +105,14 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
                 o = &sim_grid(this, py + i, px + j);
                 if (o->tag != 0) {
                     in |= (cur = apply_intsc(this, o));
-                    if (mark_lands && (o->is_on = cur))
-                        sobj_trigger(o, this->cur_time, &this->prot);
+                    if (mark_lands) o->is_on = cur;
                     if (inst && in) return true;
                 }
             }
     for (i = 0; i < this->anim_sz; ++i) {
         o = this->anim[i];
         in |= (cur = apply_intsc(this, o));
-        if (mark_lands && (o->is_on = cur))
-            sobj_trigger(o, this->cur_time, &this->prot);
+        if (mark_lands) o->is_on = cur;
         if (inst && in) return true;
     }
     return in;
@@ -184,6 +182,13 @@ void sim_tick(sim *this)
     /* Update all objects, after collision detection */
     for (i = 0; i < this->volat_sz; ++i)
         sobj_update_post(this->volat[i], this->cur_time, &this->prot);
+
+    /* Check for special actions */
+    int px = (int)this->prot.x, py = (int)this->prot.y;
+    if (sim_grid(this, py, px).tag == OBJID_NXSTAGE) {
+        this->prot.is_on = true;
+        this->prot.tag = PROT_TAG_NXSTAGE;
+    }
 }
 
 /* Tells whether a landing will happen in a given amount of time.

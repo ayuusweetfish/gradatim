@@ -122,7 +122,7 @@ static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
 {
     if (o->is_on) {
         prot->is_on = true;
-        prot->tag = PROT_MARK_FAILURE;
+        prot->tag = PROT_TAG_FAILURE;
     }
     if (o->tag >= OBJID_MUSHROOM_TL && o->tag <= OBJID_MUSHROOM_BR) {
         double t = o->h; o->h = o->w; o->w = t;
@@ -135,10 +135,8 @@ static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
     }
 }
 
-static inline void nxstage_trigger(sobj *o, double T, sobj *prot)
+static inline void nxstage_init(sobj *o)
 {
-    prot->is_on = true;
-    prot->tag = PROT_MARK_NXSTAGE;
     o->w = o->h = 0;
 }
 
@@ -150,6 +148,8 @@ void sobj_init(sobj *o)
         cloud_init(o);
     else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
         mushroom_init(o);
+    else if (o->tag == OBJID_NXSTAGE)
+        nxstage_init(o);
 }
 
 void sobj_update_pred(sobj *o, double T, sobj *prot)
@@ -170,12 +170,6 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
         spring_update_post(o, T, prot);
     else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
         mushroom_update_post(o, T, prot);
-}
-
-void sobj_trigger(sobj *o, double T, sobj *prot)
-{
-    if (o->tag == OBJID_NXSTAGE)
-        nxstage_trigger(o, T, prot);
 }
 
 bool sobj_needs_update(sobj *o)
