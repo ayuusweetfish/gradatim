@@ -27,6 +27,44 @@ static inline double clamp(double x, double l, double u)
     return (x < l ? l : (x > u ? u : x));
 }
 
+static inline void load_csv(gameplay_scene *this, const char *path)
+{
+    FILE *f = fopen(path, "r");
+    if (!f) return; /* TODO: Report errors? */
+
+    int nrows, ncols, init_r, init_c;
+    int i, j;
+
+    /* TODO: Report all fscanf()'s incorrect return values? */
+    fscanf(f, "%d,%d", &nrows, &ncols);
+    fscanf(f, "%d,%d", &init_r, &init_c);
+
+    this->simulator = sim_create(nrows, ncols);
+    this->simulator->prot.x = init_c;
+    this->simulator->prot.y = init_r;
+    this->simulator->prot.w = this->simulator->prot.h = 0.6;
+
+    for (i = 0; i < nrows; ++i)
+        for (j = 0; j < ncols; ++j) {
+            int t;
+            fscanf(f, "%d", &t);
+            fgetc(f);
+            sim_grid(this->simulator, i, j).tag = t;
+        }
+
+    fclose(f);
+
+    for (i = 0; i < nrows; ++i)
+        for (j = 0; j < ncols; ++j)
+            if (sim_grid(this->simulator, i, j).tag != 0)
+                sim_check_volat(this->simulator, &sim_grid(this->simulator, i, j));
+
+    this->cam_x = clamp(this->simulator->prot.x,
+        WIN_W_UNITS / 2, ncols - WIN_W_UNITS / 2);
+    this->cam_y = clamp(this->simulator->prot.y,
+        WIN_H_UNITS / 2, nrows - WIN_H_UNITS / 2);
+}
+
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
     if (this->simulator->prot.is_on) {
@@ -116,10 +154,10 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
 
 static inline void render_objects(gameplay_scene *this, bool is_after)
 {
-    int rmin = floorf(this->cam_y),
-        rmax = ceilf(this->cam_y + WIN_H_UNITS),
-        cmin = floorf(this->cam_x),
-        cmax = ceilf(this->cam_x + WIN_W_UNITS);
+    int rmin = clamp(floorf(this->cam_y), 0, this->simulator->grows),
+        rmax = clamp(ceilf(this->cam_y + WIN_H_UNITS), 0, this->simulator->grows),
+        cmin = clamp(floorf(this->cam_x), 0, this->simulator->gcols),
+        cmax = clamp(ceilf(this->cam_x + WIN_W_UNITS), 0, this->simulator->gcols);
     int r, c;
     for (r = rmin; r < rmax; ++r)
         for (c = cmin; c < cmax; ++c) {
@@ -254,7 +292,6 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->bg = *bg;
     ret->bg_ptr = bg;
 
-    ret->simulator = sim_create(128, 128);
     ret->rem_time = 0;
     ret->prot_tex = retrieve_texture("uwu.png");
     ret->grid_tex[1] = retrieve_texture("block.png");
@@ -272,54 +309,9 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_MUSHROOM_BL] =
     ret->grid_tex[OBJID_MUSHROOM_TR] =
     ret->grid_tex[OBJID_MUSHROOM_TL] = retrieve_texture("mushroom_tl.png");
-    ret->cam_x = ret->cam_y = 100.0;
     ret->facing = HOR_STATE_RIGHT;
 
-    int i, j;
-    for (i = 50; i < 117; ++i)
-        sim_grid(ret->simulator, 107, i).tag = (i >= 110 || i % 2 == 0);
-    for (i = 0; i < 128; ++i) sim_grid(ret->simulator, i, 127).tag = 1;
-    for (i = 0; i < 128; ++i) sim_grid(ret->simulator, 127, i).tag = 1;
-
-    sobj *o = malloc(sizeof(sobj));
-    o->tag = OBJID_CLOUD_ONEWAY;
-    o->w = 1;
-    o->vx = 119;
-    o->vy = 119;
-    o->ax = 119;
-    o->ay = 109;
-    o->t = 5;
-    sim_add(ret->simulator, o);
-
-    o = malloc(sizeof(sobj));
-    o->tag = OBJID_CLOUD_RTRIP;
-    o->w = 1;
-    o->vx = 125;
-    o->vy = 119;
-    o->ax = 120;
-    o->ay = 119;
-    o->t = 3;
-    sim_add(ret->simulator, o);
-
-    sim_grid(ret->simulator, 120, 125).tag = OBJID_SPRING;
-    sim_grid(ret->simulator, 121, 125).tag = 1;
-    for (i = 118; i < 124; ++i) sim_grid(ret->simulator, 121, i).tag = OBJID_FRAGILE;
-
-    sim_grid(ret->simulator, 122, 125).tag = OBJID_MUSHROOM_T;
-    sim_grid(ret->simulator, 126, 123).tag = OBJID_MUSHROOM_B;
-    sim_grid(ret->simulator, 122, 118).tag = 1;
-    sim_grid(ret->simulator, 122, 119).tag = OBJID_MUSHROOM_TL;
-    sim_grid(ret->simulator, 126, 124).tag = OBJID_MUSHROOM_TR;
-    sim_grid(ret->simulator, 126, 125).tag = OBJID_MUSHROOM_BL;
-    sim_grid(ret->simulator, 126, 126).tag = OBJID_MUSHROOM_BR;
-
-    for (i = 0; i < 128; ++i)
-        for (j = 0; j < 128; ++j)
-            if (sim_grid(ret->simulator, i, j).tag != 0)
-                sim_check_volat(ret->simulator, &sim_grid(ret->simulator, i, j));
-
-    ret->simulator->prot.x = ret->simulator->prot.y = 116;
-    ret->simulator->prot.w = ret->simulator->prot.h = 0.6;
+    load_csv(ret, "rua.csv");
 
     return ret;
 }
