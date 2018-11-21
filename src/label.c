@@ -30,11 +30,18 @@ static void label_render_text(label *this)
     this->_base._base.dim.h = this->_base.tex.range.h;
 }
 
+static void label_drop(label *this)
+{
+    SDL_DestroyTexture(this->_base.tex.sdl_tex);
+    TTF_CloseFont(this->font);
+}
+
 label *label_create(const char *path, int pts,
     SDL_Color cl, int wid, const char *text)
 {
     label *ret = (label *)sprite_create_empty();
     ret = realloc(ret, sizeof(label));
+    ret->_base._base.drop = (element_drop_func)label_drop;
     ret->font = load_font(path, pts);
     ret->cl = cl;
     ret->text = text;
