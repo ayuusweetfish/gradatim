@@ -38,9 +38,15 @@ typedef struct _sobj {
 #define OBJID_MUSHROOM_FIRST OBJID_MUSHROOM_T
 #define OBJID_MUSHROOM_LAST  OBJID_MUSHROOM_BR
 
+#define OBJID_NXSTAGE       127
+
+#define PROT_MARK_FAILURE   1
+#define PROT_MARK_NXSTAGE   2
+
 void sobj_init(sobj *o);
 bool sobj_needs_update(sobj *o);
 void sobj_update_pred(sobj *o, double T, sobj *prot);
 void sobj_update_post(sobj *o, double T, sobj *prot);
+void sobj_trigger(sobj *o, double T, sobj *prot);
 
 #endif

@@ -62,11 +62,15 @@ static inline void load_csv(gameplay_scene *this, const char *path)
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
-    if (this->simulator->prot.is_on) {
-        /* Failure */
-        *(this->bg_ptr) = this->bg;
-        scene_drop(this);
-        return;
+    if (this->simulator->prot.is_on) switch (this->simulator->prot.tag) {
+        case PROT_MARK_FAILURE:
+            /* Failure */
+            *(this->bg_ptr) = this->bg;
+            scene_drop(this);
+            return;
+        case PROT_MARK_NXSTAGE:
+            /* Move on to the next stage */
+            return;
     }
 
     this->simulator->prot.ay =

@@ -120,7 +120,10 @@ static inline void mushroom_init(sobj *o)
 
 static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
 {
-    if (o->is_on) prot->is_on = true;
+    if (o->is_on) {
+        prot->is_on = true;
+        prot->tag = PROT_MARK_FAILURE;
+    }
     if (o->tag >= OBJID_MUSHROOM_TL && o->tag <= OBJID_MUSHROOM_BR) {
         double t = o->h; o->h = o->w; o->w = t;
         /* Is right-floating? */
@@ -130,6 +133,13 @@ static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
         if (o->tag == OBJID_MUSHROOM_BL || o->tag == OBJID_MUSHROOM_BR)
             o->y = ((int)o->y == o->y ? (int)o->y + 6./16 : (int)o->y);
     }
+}
+
+static inline void nxstage_trigger(sobj *o, double T, sobj *prot)
+{
+    prot->is_on = true;
+    prot->tag = PROT_MARK_NXSTAGE;
+    o->w = o->h = 0;
 }
 
 void sobj_init(sobj *o)
@@ -160,6 +170,12 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
         spring_update_post(o, T, prot);
     else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
         mushroom_update_post(o, T, prot);
+}
+
+void sobj_trigger(sobj *o, double T, sobj *prot)
+{
+    if (o->tag == OBJID_NXSTAGE)
+        nxstage_trigger(o, T, prot);
 }
 
 bool sobj_needs_update(sobj *o)

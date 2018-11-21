@@ -105,14 +105,16 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
                 o = &sim_grid(this, py + i, px + j);
                 if (o->tag != 0) {
                     in |= (cur = apply_intsc(this, o));
-                    if (mark_lands) o->is_on = cur;
+                    if (mark_lands && (o->is_on = cur))
+                        sobj_trigger(o, this->cur_time, &this->prot);
                     if (inst && in) return true;
                 }
             }
     for (i = 0; i < this->anim_sz; ++i) {
         o = this->anim[i];
         in |= (cur = apply_intsc(this, o));
-        if (mark_lands) o->is_on = cur;
+        if (mark_lands && (o->is_on = cur))
+            sobj_trigger(o, this->cur_time, &this->prot);
         if (inst && in) return true;
     }
     return in;
