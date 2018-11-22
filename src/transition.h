@@ -21,6 +21,9 @@ typedef struct _transition_scene {
     transition_draw_func t_draw;
 } transition_scene;
 
+/* This one is for inheritance-related use only */
+transition_scene *transition_create(scene **a, scene *b, double dur);
+
 void transition_set_preservative(transition_scene *this);
 scene *transition_slidedown_create(scene **a, scene *b, double dur);
 scene *transition_slideup_create(scene **a, scene *b, double dur);

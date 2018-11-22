@@ -2,6 +2,7 @@
 
 #include "global.h"
 #include "bekter.h"
+#include "unary_transition.h"
 
 #include <math.h>
 
@@ -61,14 +62,29 @@ static inline void load_csv(gameplay_scene *this, const char *path)
     fclose(f);
 }
 
+static void retry_reinit(gameplay_scene *this)
+{
+    this->hor_state = HOR_STATE_NONE;
+    this->facing = HOR_STATE_RIGHT;
+    this->ver_state = VER_STATE_NONE;
+    this->simulator->prot.is_on = false;
+    this->simulator->prot.x = this->spawn_c;
+    this->simulator->prot.y = this->spawn_r;
+    this->cam_x = clamp(this->simulator->prot.x,
+        WIN_W_UNITS / 2, this->simulator->gcols - WIN_W_UNITS / 2);
+    this->cam_y = clamp(this->simulator->prot.y,
+        WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2);
+}
+
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
     if (this->simulator->prot.is_on) switch (this->simulator->prot.tag) {
         case PROT_TAG_FAILURE:
             /* Failure */
-            *(this->bg_ptr) = this->bg;
-            scene_drop(this);
-            return;
+            if (g_stage == (scene *)this)
+                g_stage = (scene *)utransition_fade_create(
+                    &g_stage, 1, (utransition_callback)retry_reinit);
+            break;
         case PROT_TAG_NXSTAGE:
             /* Move on to the next stage */
             if (this->prev_sim == NULL) {

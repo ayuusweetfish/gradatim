@@ -10,6 +10,8 @@ void transition_set_preservative(transition_scene *this)
 
 static void transition_tick(transition_scene *this, double dt)
 {
+    scene_tick(this->a, dt);
+    if (this->b != this->a) scene_tick(this->b, dt);
     this->elapsed += dt;
     if (this->elapsed >= this->duration) {
         *(this->p) = this->b;
@@ -34,7 +36,7 @@ static void transition_drop(transition_scene *this)
     SDL_DestroyTexture(this->b_tex);
 }
 
-static transition_scene *transition_create(scene **a, scene *b, double dur)
+transition_scene *transition_create(scene **a, scene *b, double dur)
 {
     transition_scene *ret = malloc(sizeof(transition_scene));
     ret->_base.children = NULL;
