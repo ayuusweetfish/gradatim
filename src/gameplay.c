@@ -311,7 +311,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_MUSHROOM_TL] = retrieve_texture("mushroom_tl.png");
     ret->facing = HOR_STATE_RIGHT;
 
-    load_csv(ret, "rua.csv");
+    load_csv(ret, "rub.csv");
 
     return ret;
 }
