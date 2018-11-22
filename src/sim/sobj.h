@@ -41,11 +41,17 @@ typedef struct _sobj {
 #define OBJID_REFILL        47
 #define OBJID_REFILL_WAIT   51
 
+#define OBJID_PUFF_L        52
+#define OBJID_PUFF_R        53
+#define OBJID_PUFF_FIRST    OBJID_PUFF_L
+#define OBJID_PUFF_LAST     OBJID_PUFF_R
+
 #define OBJID_NXSTAGE       127
 
 #define PROT_TAG_FAILURE    9
 #define PROT_TAG_NXSTAGE    8
 #define PROT_TAG_REFILL     7
+#define PROT_TAG_PUFF       6
 
 void sobj_init(sobj *o);
 bool sobj_needs_update(sobj *o);

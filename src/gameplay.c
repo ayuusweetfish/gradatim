@@ -59,6 +59,21 @@ static inline void load_csv(gameplay_scene *this, const char *path)
             sim_grid(this->simulator, i, j).tag = t;
         }
 
+    int m;
+
+    fscanf(f, "%d", &m);
+    for (i = 0; i < m; ++i) {
+        int r, c, tag;
+        fscanf(f, "%d,%d,%d", &r, &c, &tag);
+        sobj *o = malloc(sizeof(sobj));
+        memset(o, 0, sizeof(sobj));
+        o->tag = tag;
+        o->x = c;
+        o->y = r;
+        o->w = o->h = 1;
+        sim_add(this->simulator, o);
+    }
+
     fclose(f);
 }
 
@@ -257,6 +272,11 @@ static void try_hop(gameplay_scene *this)
     if ((this->simulator->cur_time - this->simulator->last_land) <= HOP_GRACE_DUR) {
         /* Grace jump */
         this->simulator->prot.vy = -HOP_SPD;
+    } else if (this->simulator->prot.tag == PROT_TAG_PUFF &&
+        (this->simulator->cur_time - this->simulator->prot.t) <= HOP_GRACE_DUR)
+    {
+        /* On a puff */
+        this->simulator->prot.vy = -HOP_SPD;
     } else if (sim_prophecy(this->simulator, HOP_PRED_DUR)) {
         /* Will land soon, plunge and then jump */
         this->mov_state = MOV_ANTHOP;
@@ -363,6 +383,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_REFILL + 1] = retrieve_texture("refill2.png");
     ret->grid_tex[OBJID_REFILL + 2] = retrieve_texture("refill3.png");
     ret->grid_tex[OBJID_REFILL + 3] = retrieve_texture("refill4.png");
+    ret->grid_tex[OBJID_PUFF_L] = retrieve_texture("puff_l.png");
+    ret->grid_tex[OBJID_PUFF_R] = retrieve_texture("puff_r.png");
     ret->facing = HOR_STATE_RIGHT;
 
     ret->prev_sim = NULL;

@@ -186,6 +186,20 @@ static inline void refill_update_post(sobj *o, double T, sobj *prot)
     }
 }
 
+static inline void puff_init(sobj *o)
+{
+    o->h = 2;
+}
+
+static inline void puff_update_pred(sobj *o, double T, sobj *prot)
+{
+    if (o->is_on && prot->vy >= 0) {
+        prot->vy = 0;
+        take_max(prot->tag, PROT_TAG_PUFF);
+        prot->t = T;
+    }
+}
+
 static inline void nxstage_init(sobj *o)
 {
     o->w = o->h = 0;
@@ -201,6 +215,8 @@ void sobj_init(sobj *o)
         mushroom_init(o);
     else if (o->tag >= OBJID_REFILL && o->tag <= OBJID_REFILL_WAIT)
         refill_init(o);
+    else if (o->tag >= OBJID_PUFF_FIRST && o->tag <= OBJID_PUFF_LAST)
+        puff_init(o);
     else if (o->tag == OBJID_NXSTAGE)
         nxstage_init(o);
 }
@@ -215,6 +231,8 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
         cloud_update_pred(o, T, prot);
     else if (o->tag >= OBJID_REFILL && o->tag <= OBJID_REFILL_WAIT)
         refill_update_pred(o, T, prot);
+    else if (o->tag >= OBJID_PUFF_FIRST && o->tag <= OBJID_PUFF_LAST)
+        puff_update_pred(o, T, prot);
 }
 
 void sobj_update_post(sobj *o, double T, sobj *prot)
