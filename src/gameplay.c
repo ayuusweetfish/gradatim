@@ -22,6 +22,9 @@ static const double DASH_DUR = 1;
 #define DASH_VER_ACCEL  (5.5 * 1.414213562 - SIM_GRAVITY)
 static const double DASH_DIAG_SCALE = 0.8;
 
+static const double CAM_MOV_FAC = 8;
+static const double STAGE_TRANSITION_DUR = 2;
+
 static inline double clamp(double x, double l, double u)
 {
     return (x < l ? l : (x > u ? u : x));
@@ -32,16 +35,19 @@ static inline void load_csv(gameplay_scene *this, const char *path)
     FILE *f = fopen(path, "r");
     if (!f) return; /* TODO: Report errors? */
 
-    int nrows, ncols, init_r, init_c;
+    int worldr, worldc, nrows, ncols;
     int i, j;
 
     /* TODO: Report all fscanf()'s incorrect return values? */
+    fscanf(f, "%d,%d", &worldr, &worldc);
     fscanf(f, "%d,%d", &nrows, &ncols);
-    fscanf(f, "%d,%d", &init_r, &init_c);
+    fscanf(f, "%d,%d", &this->spawn_r, &this->spawn_c);
 
     this->simulator = sim_create(nrows, ncols);
-    this->simulator->prot.x = init_c;
-    this->simulator->prot.y = init_r;
+    this->simulator->worldr = worldr;
+    this->simulator->worldc = worldc;
+    this->simulator->prot.x = this->spawn_c;
+    this->simulator->prot.y = this->spawn_r;
     this->simulator->prot.w = this->simulator->prot.h = 0.6;
 
     for (i = 0; i < nrows; ++i)
@@ -53,11 +59,6 @@ static inline void load_csv(gameplay_scene *this, const char *path)
         }
 
     fclose(f);
-
-    this->cam_x = clamp(this->simulator->prot.x,
-        WIN_W_UNITS / 2, ncols - WIN_W_UNITS / 2);
-    this->cam_y = clamp(this->simulator->prot.y,
-        WIN_H_UNITS / 2, nrows - WIN_H_UNITS / 2);
 }
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
@@ -70,8 +71,25 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             return;
         case PROT_TAG_NXSTAGE:
             /* Move on to the next stage */
-            puts("Go");
-            break;
+            if (this->prev_sim == NULL) {
+                this->prev_sim = this->simulator;
+                load_csv(this, "rub.csv");
+                this->simulator->cur_time = this->prev_sim->cur_time;
+                this->simulator->prot = this->prev_sim->prot;
+                int delta_x = this->simulator->worldc - this->prev_sim->worldc;
+                int delta_y = this->simulator->worldr - this->prev_sim->worldr;
+                this->simulator->prot.x -= delta_x;
+                this->simulator->prot.y -= delta_y;
+                this->cam_x -= delta_x;
+                this->cam_y -= delta_y;
+            } else if (this->simulator->cur_time - this->simulator->prot.t
+                >= STAGE_TRANSITION_DUR)
+            {
+                sim_drop(this->prev_sim);
+                this->prev_sim = NULL;
+                this->simulator->prot.is_on = false;
+                break;
+            }
     }
 
     this->simulator->prot.ay =
@@ -147,34 +165,38 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2);
     double cam_dx = dest_x - (this->cam_x + WIN_W_UNITS / 2);
     double cam_dy = dest_y - (this->cam_y + WIN_H_UNITS / 2);
-    double rate = (dt > 0.1 ? 0.1 : dt) * 10;
+    double rate = (dt > 0.1 ? 0.1 : dt) * CAM_MOV_FAC;
     this->cam_x += rate * cam_dx;
     this->cam_y += rate * cam_dy;
 }
 
-static inline void render_objects(gameplay_scene *this, bool is_after)
+static inline void render_objects(gameplay_scene *this,
+    bool is_prev, bool is_after, double offsx, double offsy)
 {
-    int rmin = clamp(floorf(this->cam_y), 0, this->simulator->grows),
-        rmax = clamp(ceilf(this->cam_y + WIN_H_UNITS), 0, this->simulator->grows),
-        cmin = clamp(floorf(this->cam_x), 0, this->simulator->gcols),
-        cmax = clamp(ceilf(this->cam_x + WIN_W_UNITS), 0, this->simulator->gcols);
+    sim *sim = (is_prev ? this->prev_sim : this->simulator);
+    double cx = (is_prev ? this->cam_x + offsx : this->cam_x);
+    double cy = (is_prev ? this->cam_y + offsy : this->cam_y);
+    int rmin = clamp(floorf(cy), 0, sim->grows),
+        rmax = clamp(ceilf(cy + WIN_H_UNITS), 0, sim->grows),
+        cmin = clamp(floorf(cx), 0, sim->gcols),
+        cmax = clamp(ceilf(cx + WIN_W_UNITS), 0, sim->gcols);
     int r, c;
     for (r = rmin; r < rmax; ++r)
         for (c = cmin; c < cmax; ++c) {
-            sobj *o = &sim_grid(this->simulator, r, c);
+            sobj *o = &sim_grid(sim, r, c);
             if (o->tag != 0) {
                 render_texture_scaled(this->grid_tex[o->tag],
-                    ((int)o->x - this->cam_x) * UNIT_PX,
-                    ((int)o->y - this->cam_y) * UNIT_PX,
+                    ((int)o->x - cx) * UNIT_PX,
+                    ((int)o->y - cy) * UNIT_PX,
                     3
                 );
             }
         }
-    for (r = 0; r < this->simulator->anim_sz; ++r) {
-        sobj *o = this->simulator->anim[r];
+    for (r = 0; r < sim->anim_sz; ++r) {
+        sobj *o = sim->anim[r];
         render_texture_scaled(this->grid_tex[o->tag],
-            (o->x + o->tx - this->cam_x) * UNIT_PX,
-            (o->y + o->ty - this->cam_y) * UNIT_PX,
+            (o->x + o->tx - cx) * UNIT_PX,
+            (o->y + o->ty - cy) * UNIT_PX,
             3
         );
     }
@@ -185,7 +207,15 @@ static void gameplay_scene_draw(gameplay_scene *this)
     SDL_SetRenderDrawColor(g_renderer, 216, 224, 255, 255);
     SDL_RenderClear(g_renderer);
 
-    render_objects(this, false);
+    /* Draw the previous stage during transition */
+    if (this->prev_sim != NULL) {
+        int delta_x = this->simulator->worldc - this->prev_sim->worldc;
+        int delta_y = this->simulator->worldr - this->prev_sim->worldr;
+        render_objects(this, true, false, delta_x, delta_y);
+        render_objects(this, true, true, delta_x, delta_y);
+    }
+
+    render_objects(this, false, false, 0, 0);
 
     render_texture_ex(this->prot_tex, &(SDL_Rect){
         (this->simulator->prot.x - this->cam_x) * UNIT_PX,
@@ -194,7 +224,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
         round(this->simulator->prot.h * UNIT_PX),
     }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
 
-    render_objects(this, true);
+    render_objects(this, false, true, 0, 0);
 }
 
 static void gameplay_scene_drop(gameplay_scene *this)
@@ -311,7 +341,12 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_MUSHROOM_TL] = retrieve_texture("mushroom_tl.png");
     ret->facing = HOR_STATE_RIGHT;
 
-    load_csv(ret, "rub.csv");
+    ret->prev_sim = NULL;
+    load_csv(ret, "rua.csv");
+    ret->cam_x = clamp(ret->simulator->prot.x,
+        WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2);
+    ret->cam_y = clamp(ret->simulator->prot.y,
+        WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2);
 
     return ret;
 }

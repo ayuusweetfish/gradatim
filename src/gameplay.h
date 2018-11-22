@@ -11,7 +11,7 @@ typedef struct _gameplay_scene {
     scene _base;
     scene *bg, **bg_ptr;
 
-    sim *simulator;
+    sim *simulator, *prev_sim;
     double rem_time;
 
     texture prot_tex;
@@ -19,6 +19,9 @@ typedef struct _gameplay_scene {
     /* The position of the camera's top-left corner in the
      * simulated world, expressed in units */
     double cam_x, cam_y;
+
+    /* Spawn position */
+    int spawn_r, spawn_c;
 
     /* Input state */
     enum { HOR_STATE_NONE, HOR_STATE_LEFT, HOR_STATE_RIGHT } hor_state, facing;

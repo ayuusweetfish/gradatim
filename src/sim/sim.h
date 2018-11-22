@@ -13,8 +13,10 @@ extern const double SIM_STEPLEN;    /* Step length in beats */
 
 typedef struct _sim {
     sobj prot;          /* Protagonist */
+    int worldr, worldc; /* Offset to the whole world */
     int grows, gcols;   /* Dimensions of the grid */
     sobj *grid;         /* Map grid */
+    bool grid_initialized;
 
     sobj **anim;        /* List of moving & extra objects */
     int anim_sz, anim_cap;

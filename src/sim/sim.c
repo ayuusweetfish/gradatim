@@ -69,8 +69,9 @@ void sim_add(sim *this, sobj *o)
 }
 
 /* Initialize all grid cells */
-static inline void init(sim *this)
+static inline void init_grid(sim *this)
 {
+    this->grid_initialized = true;
     int i, j;
     for (i = 0; i < this->grows; ++i)
         for (j = 0; j < this->gcols; ++j) {
@@ -129,8 +130,7 @@ static inline bool check_intsc_mov(sim *this, double x, double y)
 
 void sim_tick(sim *this)
 {
-    /* XXX: Should this be moved elsewhere? */
-    if (this->cur_time == 0) init(this);
+    if (!this->grid_initialized) init_grid(this);
 
     this->cur_time += SIM_STEPLEN;
 
@@ -188,6 +188,7 @@ void sim_tick(sim *this)
     if (sim_grid(this, py, px).tag == OBJID_NXSTAGE) {
         this->prot.is_on = true;
         this->prot.tag = PROT_TAG_NXSTAGE;
+        this->prot.t = this->cur_time;
     }
 }
 

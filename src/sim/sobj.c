@@ -123,6 +123,7 @@ static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
     if (o->is_on) {
         prot->is_on = true;
         prot->tag = PROT_TAG_FAILURE;
+        prot->t = T;
     }
     if (o->tag >= OBJID_MUSHROOM_TL && o->tag <= OBJID_MUSHROOM_BR) {
         double t = o->h; o->h = o->w; o->w = t;
