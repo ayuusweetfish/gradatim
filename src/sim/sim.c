@@ -8,6 +8,11 @@ const double SIM_GRAVITY = 3.5 * 1.414213562;
 const double SIM_STEPLEN = 0.00025;
 static const double MAX_VY = 8 * SIM_GRAVITY;
 
+static inline double clamp(double x, double l, double u)
+{
+    return (x < l ? l : (x > u ? u : x));
+}
+
 sim *sim_create(int grows, int gcols)
 {
     sim *ret = malloc(sizeof(sim));
@@ -182,6 +187,10 @@ void sim_tick(sim *this)
     /* Update all objects, after collision detection */
     for (i = 0; i < this->volat_sz; ++i)
         sobj_update_post(this->volat[i], this->cur_time, &this->prot);
+
+    /* Sanitize */
+    this->prot.x = clamp(this->prot.x, 0, this->gcols - this->prot.w);
+    this->prot.y = clamp(this->prot.y, 0, this->grows - this->prot.h);
 
     /* Check for special actions */
     int px = (int)this->prot.x, py = (int)this->prot.y;
