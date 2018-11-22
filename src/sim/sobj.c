@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdbool.h>
 
+#define take_max(__var, __val) if ((__var) < (__val)) (__var) = (__val)
+
 static const int FRAGILE_FRAMES = OBJID_FRAGILE_EMPTY - OBJID_FRAGILE - 1;
 static const double FRAGILE_RECOVER_DUR = 4;
 static const double SPRING_RECOVER_DUR = 1;
@@ -134,8 +136,7 @@ static inline void mushroom_init(sobj *o)
 static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
 {
     if (o->is_on) {
-        prot->is_on = true;
-        prot->tag = PROT_TAG_FAILURE;
+        take_max(prot->tag, PROT_TAG_FAILURE);
         prot->t = T;
     }
     if (o->tag >= OBJID_MUSHROOM_TL && o->tag <= OBJID_MUSHROOM_BR) {
@@ -178,8 +179,7 @@ static inline void refill_update_pred(sobj *o, double T, sobj *prot)
 static inline void refill_update_post(sobj *o, double T, sobj *prot)
 {
     if (o->tag != OBJID_REFILL_WAIT && is_touching(o, prot, 8./16, 8./16)) {
-        prot->is_on = true;
-        prot->tag = PROT_TAG_REFILL;
+        take_max(prot->tag, PROT_TAG_REFILL);
         prot->t = T;
         o->tag = OBJID_REFILL_WAIT;
         o->t = T;

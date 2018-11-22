@@ -43,10 +43,9 @@ typedef struct _sobj {
 
 #define OBJID_NXSTAGE       127
 
-/* TODO: Resolve conflicts between different tags */
-#define PROT_TAG_FAILURE    1
-#define PROT_TAG_NXSTAGE    2
-#define PROT_TAG_REFILL     3
+#define PROT_TAG_FAILURE    9
+#define PROT_TAG_NXSTAGE    8
+#define PROT_TAG_REFILL     7
 
 void sobj_init(sobj *o);
 bool sobj_needs_update(sobj *o);

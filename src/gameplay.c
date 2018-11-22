@@ -67,7 +67,7 @@ static void retry_reinit(gameplay_scene *this)
     this->hor_state = HOR_STATE_NONE;
     this->facing = HOR_STATE_RIGHT;
     this->ver_state = VER_STATE_NONE;
-    this->simulator->prot.is_on = false;
+    this->simulator->prot.tag = 0;
     this->simulator->prot.x = this->spawn_c;
     this->simulator->prot.y = this->spawn_r;
     this->cam_x = clamp(this->simulator->prot.x,
@@ -78,7 +78,7 @@ static void retry_reinit(gameplay_scene *this)
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
-    if (this->simulator->prot.is_on) switch (this->simulator->prot.tag) {
+    switch (this->simulator->prot.tag) {
         case PROT_TAG_FAILURE:
             /* Failure */
             if (g_stage == (scene *)this)
@@ -103,12 +103,12 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             {
                 sim_drop(this->prev_sim);
                 this->prev_sim = NULL;
-                this->simulator->prot.is_on = false;
+                this->simulator->prot.tag = 0;
                 break;
             }
         case PROT_TAG_REFILL:
             puts("Refill");
-            this->simulator->prot.is_on = false;
+            this->simulator->prot.tag = 0;
             break;
     }
 
