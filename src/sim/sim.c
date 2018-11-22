@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-const double SIM_GRAVITY = 3.5 * 1.414213562;
+const double SIM_GRAVITY = 4 * 1.414213562;
 const double SIM_STEPLEN = 0.00025;
 static const double MAX_VY = 8 * SIM_GRAVITY;
 
