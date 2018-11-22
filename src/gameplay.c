@@ -384,6 +384,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_REFILL + 2] = retrieve_texture("refill3.png");
     ret->grid_tex[OBJID_REFILL + 3] = retrieve_texture("refill4.png");
     ret->grid_tex[OBJID_PUFF_L] = retrieve_texture("puff_l.png");
+    ret->grid_tex[OBJID_PUFF_L_CURL] = retrieve_texture("spring1.png");
+    ret->grid_tex[OBJID_PUFF_L_AFTER] = retrieve_texture("fragile2.png");
     ret->grid_tex[OBJID_PUFF_R] = retrieve_texture("puff_r.png");
     ret->facing = HOR_STATE_RIGHT;
 

@@ -42,9 +42,13 @@ typedef struct _sobj {
 #define OBJID_REFILL_WAIT   51
 
 #define OBJID_PUFF_L        52
-#define OBJID_PUFF_R        53
+#define OBJID_PUFF_L_CURL   53
+#define OBJID_PUFF_L_AFTER  54
+#define OBJID_PUFF_R        55
+#define OBJID_PUFF_R_CURL   56
+#define OBJID_PUFF_R_AFTER  57
 #define OBJID_PUFF_FIRST    OBJID_PUFF_L
-#define OBJID_PUFF_LAST     OBJID_PUFF_R
+#define OBJID_PUFF_LAST     OBJID_PUFF_R_AFTER
 
 #define OBJID_NXSTAGE       127
 

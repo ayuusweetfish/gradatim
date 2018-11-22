@@ -33,6 +33,15 @@ static inline bool is_touching(sobj *o, sobj *prot, double w, double h)
         in_range(prot->y + prot->h, o->y, o->y + h));
 }
 
+static inline bool is_near(sobj *o, sobj *prot)
+{
+    static const double EPS = 1e-8;
+    return (in_range(prot->x, o->x - EPS, o->x + o->w + EPS) ||
+        in_range(prot->x + prot->w, o->x - EPS, o->x + o->w + EPS)) &&
+        (in_range(prot->y, o->y - EPS, o->y + o->h + EPS) ||
+        in_range(prot->y + prot->h, o->y - EPS, o->y + o->h + EPS));
+}
+
 static inline void fragile_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->t != -1) {
@@ -186,6 +195,8 @@ static inline void refill_update_post(sobj *o, double T, sobj *prot)
     }
 }
 
+static const double PUFF_RELAX_DUR = 0.5;
+
 static inline void puff_init(sobj *o)
 {
     o->h = 2;
@@ -193,16 +204,27 @@ static inline void puff_init(sobj *o)
 
 static inline void puff_update_pred(sobj *o, double T, sobj *prot)
 {
-    if (o->is_on && prot->vy >= 0) {
-        prot->vy *= (1 - SIM_STEPLEN * 2000);
+    if ((o->is_on && prot->vy >= 0) || (o->t != -1 && is_near(o, prot))) {
+        prot->vy *= (1 - SIM_STEPLEN * 20);
         take_max(prot->tag, PROT_TAG_PUFF);
         prot->t = T;
+        o->t = T;
+        o->tag =
+            o->tag < OBJID_PUFF_R ? OBJID_PUFF_L_CURL : OBJID_PUFF_R_CURL;
+    } else if (o->t != -1 && T - o->t < PUFF_RELAX_DUR) {
+        o->tag =
+            o->tag < OBJID_PUFF_R ? OBJID_PUFF_L_AFTER : OBJID_PUFF_R_AFTER;
+    } else {
+        o->tag =
+            o->tag < OBJID_PUFF_R ? OBJID_PUFF_L : OBJID_PUFF_R;
+        o->t = -1;
     }
 }
 
 static inline void nxstage_init(sobj *o)
 {
     o->w = o->h = 0;
+    o->t = -1;
 }
 
 void sobj_init(sobj *o)
