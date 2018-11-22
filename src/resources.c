@@ -68,6 +68,10 @@ void load_images()
     load_image("mushroom_t.png");
     load_image("mushroom_b.png");
     load_image("mushroom_tl.png");
+    load_image("refill1.png");
+    load_image("refill2.png");
+    load_image("refill3.png");
+    load_image("refill4.png");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 }
 

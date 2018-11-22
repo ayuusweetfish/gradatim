@@ -18,6 +18,19 @@ static inline bool is_above(sobj *o, sobj *prot)
     return prot->y + prot->h <= o->y + o->h / 16;
 }
 
+static inline bool in_range(double x, double l, double h)
+{
+    return l <= x && x <= h;
+}
+
+static inline bool is_touching(sobj *o, sobj *prot, double w, double h)
+{
+    return (in_range(prot->x, o->x, o->x + w) ||
+        in_range(prot->x + prot->w, o->x, o->x + w)) &&
+        (in_range(prot->y, o->y, o->y + h) ||
+        in_range(prot->y + prot->h, o->y, o->y + h));
+}
+
 static inline void fragile_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->t != -1) {
@@ -136,6 +149,43 @@ static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
     }
 }
 
+static const double REFILL_FRM1 = 4./3;
+static const double REFILL_FRM2 = 6./3;
+static const double REFILL_FRM3 = 10./3;
+static const double REFILL_FRM4 = 12./3;
+static const double REFILL_REGEN_DUR = 4;
+
+static inline void refill_init(sobj *o)
+{
+    o->x = (int)o->x + 4./16;
+    o->y = (int)o->y + 4./16;
+    o->w = o->h = 0;
+    o->t = -1;
+}
+
+static inline void refill_update_pred(sobj *o, double T, sobj *prot)
+{
+    if (o->tag == OBJID_REFILL_WAIT && T - o->t >= REFILL_REGEN_DUR) o->t = -1;
+    if (o->t == -1) {
+        double phase = fmod(T, REFILL_FRM4);
+        if (phase < REFILL_FRM1) o->tag = OBJID_REFILL;
+        else if (phase < REFILL_FRM2) o->tag = OBJID_REFILL + 1;
+        else if (phase < REFILL_FRM3) o->tag = OBJID_REFILL + 2;
+        else o->tag = OBJID_REFILL + 3;
+    }
+}
+
+static inline void refill_update_post(sobj *o, double T, sobj *prot)
+{
+    if (o->tag != OBJID_REFILL_WAIT && is_touching(o, prot, 8./16, 8./16)) {
+        prot->is_on = true;
+        prot->tag = PROT_TAG_REFILL;
+        prot->t = T;
+        o->tag = OBJID_REFILL_WAIT;
+        o->t = T;
+    }
+}
+
 static inline void nxstage_init(sobj *o)
 {
     o->w = o->h = 0;
@@ -149,6 +199,8 @@ void sobj_init(sobj *o)
         cloud_init(o);
     else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
         mushroom_init(o);
+    else if (o->tag >= OBJID_REFILL && o->tag <= OBJID_REFILL_WAIT)
+        refill_init(o);
     else if (o->tag == OBJID_NXSTAGE)
         nxstage_init(o);
 }
@@ -161,6 +213,8 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
         spring_update_pred(o, T, prot);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
         cloud_update_pred(o, T, prot);
+    else if (o->tag >= OBJID_REFILL && o->tag <= OBJID_REFILL_WAIT)
+        refill_update_pred(o, T, prot);
 }
 
 void sobj_update_post(sobj *o, double T, sobj *prot)
@@ -171,6 +225,8 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
         spring_update_post(o, T, prot);
     else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
         mushroom_update_post(o, T, prot);
+    else if (o->tag >= OBJID_REFILL && o->tag <= OBJID_REFILL_WAIT)
+        refill_update_post(o, T, prot);
 }
 
 bool sobj_needs_update(sobj *o)

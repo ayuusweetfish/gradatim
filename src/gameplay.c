@@ -106,6 +106,10 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                 this->simulator->prot.is_on = false;
                 break;
             }
+        case PROT_TAG_REFILL:
+            puts("Refill");
+            this->simulator->prot.is_on = false;
+            break;
     }
 
     this->simulator->prot.ay =
@@ -355,6 +359,10 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_MUSHROOM_BL] =
     ret->grid_tex[OBJID_MUSHROOM_TR] =
     ret->grid_tex[OBJID_MUSHROOM_TL] = retrieve_texture("mushroom_tl.png");
+    ret->grid_tex[OBJID_REFILL] = retrieve_texture("refill1.png");
+    ret->grid_tex[OBJID_REFILL + 1] = retrieve_texture("refill2.png");
+    ret->grid_tex[OBJID_REFILL + 2] = retrieve_texture("refill3.png");
+    ret->grid_tex[OBJID_REFILL + 3] = retrieve_texture("refill4.png");
     ret->facing = HOR_STATE_RIGHT;
 
     ret->prev_sim = NULL;

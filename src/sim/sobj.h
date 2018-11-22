@@ -38,10 +38,15 @@ typedef struct _sobj {
 #define OBJID_MUSHROOM_FIRST OBJID_MUSHROOM_T
 #define OBJID_MUSHROOM_LAST  OBJID_MUSHROOM_BR
 
+#define OBJID_REFILL        47
+#define OBJID_REFILL_WAIT   51
+
 #define OBJID_NXSTAGE       127
 
+/* TODO: Resolve conflicts between different tags */
 #define PROT_TAG_FAILURE    1
 #define PROT_TAG_NXSTAGE    2
+#define PROT_TAG_REFILL     3
 
 void sobj_init(sobj *o);
 bool sobj_needs_update(sobj *o);
