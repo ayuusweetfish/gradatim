@@ -14,7 +14,7 @@ static const double BEAT = 60.0 / 132;  /* Temporary */
 static const double HOP_PRED_DUR = 0.2;
 static const double HOP_GRACE_DUR = 0.15;
 #define ANTHOP_DELUGE_SPD (6.0 * SIM_GRAVITY)
-static const double HOR_SPD = 2;
+static const double HOR_SPD = 4;
 static const double DASH_DUR = 1;
 #define DASH_HOR_V0     (6.5 * 1.414213562)
 #define DASH_HOR_ACCEL  (6.5 * 1.414213562)
