@@ -170,7 +170,10 @@ void sim_tick(sim *this)
             }
         }
         if (dir == -1) {
-            puts("> <");
+            /* Most probably, the protagonist is stuck somewhere */
+            this->prot.is_on = true;
+            this->prot.tag = PROT_TAG_FAILURE;
+            this->prot.t = this->cur_time;
         } else {
             this->prot.x = x0 + dx[dir];
             this->prot.y = y0 + dy[dir];
