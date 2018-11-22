@@ -194,7 +194,7 @@ static inline void puff_init(sobj *o)
 static inline void puff_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->is_on && prot->vy >= 0) {
-        prot->vy = 0;
+        prot->vy *= (1 - SIM_STEPLEN * 2000);
         take_max(prot->tag, PROT_TAG_PUFF);
         prot->t = T;
     }
