@@ -3,6 +3,7 @@
 #include "global.h"
 #include "bekter.h"
 #include "unary_transition.h"
+#include "pause.h"
 
 #include <math.h>
 
@@ -398,6 +399,10 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
         case SDLK_RIGHT:
             if (ev->state == SDL_PRESSED) this->facing = HOR_STATE_RIGHT;
             toggle(this->hor_state, ev->state, HOR_STATE_RIGHT, HOR_STATE_NONE);
+            break;
+        case SDLK_ESCAPE:
+            if (ev->state == SDL_PRESSED)
+                g_stage = (scene *)pause_scene_create(&g_stage, this->bg);
             break;
         default: break;
     }
