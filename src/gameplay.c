@@ -186,7 +186,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         (this->ver_state == VER_STATE_DOWN) ? 4.0 * SIM_GRAVITY : 0;
     double plunge_vy = this->simulator->prot.ay;
     if (this->mov_state == MOV_ANTHOP) {
-        if ((this->mov_time -= dt / BEAT) <= 0) {
+        if (this->mov_time <= 0) {
             /* Perform a jump */
             this->mov_state = MOV_NORMAL;
             this->simulator->prot.vy = -HOP_SPD;
@@ -194,8 +194,9 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             /* Deluging */
             this->simulator->prot.ay = ANTHOP_DELUGE_SPD;
         }
+        this->mov_time -= dt / BEAT;
     } else if (this->mov_state & MOV_DASH_BASE) {
-        if ((this->mov_time -= dt / BEAT) <= 0) {
+        if (this->mov_time <= 0) {
             /* XXX: Avoid duplicates? */
             this->mov_state = MOV_NORMAL;
             this->simulator->prot.ax = 0;
@@ -227,6 +228,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
              * should be taken into account */
             this->simulator->prot.ay += plunge_vy;
         }
+        this->mov_time -= dt / BEAT;
     } else {
         /* Normal state */
         this->simulator->prot.vx = 0;
