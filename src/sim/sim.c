@@ -136,6 +136,7 @@ static inline bool check_intsc_mov(sim *this, double x, double y)
 void sim_tick(sim *this)
 {
     if (!this->grid_initialized) init_grid(this);
+    sobj_new_round();
 
     this->cur_time += SIM_STEPLEN;
 

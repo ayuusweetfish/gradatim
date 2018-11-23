@@ -486,6 +486,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_PUFF_L_CURL] = retrieve_texture("spring1.png");
     ret->grid_tex[OBJID_PUFF_L_AFTER] = retrieve_texture("fragile2.png");
     ret->grid_tex[OBJID_PUFF_R] = retrieve_texture("puff_r.png");
+    ret->grid_tex[OBJID_MUD] = retrieve_texture("fragile1.png");
+    ret->grid_tex[OBJID_WET] = retrieve_texture("fragile2.png");
     ret->facing = HOR_STATE_RIGHT;
 
     ret->prev_sim = NULL;

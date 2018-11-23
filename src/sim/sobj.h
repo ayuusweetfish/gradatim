@@ -49,6 +49,8 @@ typedef struct _sobj {
 #define OBJID_PUFF_R_AFTER  57
 #define OBJID_PUFF_FIRST    OBJID_PUFF_L
 #define OBJID_PUFF_LAST     OBJID_PUFF_R_AFTER
+#define OBJID_MUD           58
+#define OBJID_WET           59
 
 #define OBJID_NXSTAGE       127
 
@@ -61,6 +63,6 @@ void sobj_init(sobj *o);
 bool sobj_needs_update(sobj *o);
 void sobj_update_pred(sobj *o, double T, sobj *prot);
 void sobj_update_post(sobj *o, double T, sobj *prot);
-void sobj_trigger(sobj *o, double T, sobj *prot);
+void sobj_new_round();
 
 #endif

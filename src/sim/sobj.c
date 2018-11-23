@@ -199,6 +199,7 @@ static inline void refill_update_post(sobj *o, double T, sobj *prot)
 }
 
 static const double PUFF_RELAX_DUR = 0.5;
+static bool puff_used;
 
 static inline void puff_init(sobj *o)
 {
@@ -207,7 +208,10 @@ static inline void puff_init(sobj *o)
 
 static inline void puff_update_pred(sobj *o, double T, sobj *prot)
 {
-    if (prot->vy >= 0 && (o->is_on || (o->t != -1 && is_near(o, prot)))) {
+    if (!puff_used && prot->vy >= 0 &&
+        (o->is_on || (o->t != -1 && is_near(o, prot))))
+    {
+        puff_used = true;
         prot->vy *= (1 - SIM_STEPLEN * 20);
         take_max(prot->tag, PROT_TAG_PUFF);
         prot->t = T;
@@ -221,6 +225,16 @@ static inline void puff_update_pred(sobj *o, double T, sobj *prot)
         o->tag =
             o->tag < OBJID_PUFF_R ? OBJID_PUFF_L : OBJID_PUFF_R;
         o->t = -1;
+    }
+}
+
+static bool mud_wet_used;
+
+static inline void mud_wet_update_pred(sobj *o, double T, sobj *prot)
+{
+    if (!mud_wet_used && o->is_on) {
+        mud_wet_used = true;
+        prot->vx *= (1 + SIM_STEPLEN * (o->tag == OBJID_MUD ? -80 : 20));
     }
 }
 
@@ -258,6 +272,8 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
         refill_update_pred(o, T, prot);
     else if (o->tag >= OBJID_PUFF_FIRST && o->tag <= OBJID_PUFF_LAST)
         puff_update_pred(o, T, prot);
+    else if (o->tag == OBJID_MUD || o->tag == OBJID_WET)
+        mud_wet_update_pred(o, T, prot);
 }
 
 void sobj_update_post(sobj *o, double T, sobj *prot)
@@ -275,4 +291,10 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
 bool sobj_needs_update(sobj *o)
 {
     return o->tag >= 30;
+}
+
+void sobj_new_round()
+{
+    puff_used = false;
+    mud_wet_used = false;
 }
