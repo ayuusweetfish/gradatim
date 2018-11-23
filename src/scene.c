@@ -68,6 +68,7 @@ void scene_clear_children(scene *this)
 
 static void colour_scene_draw(colour_scene *this)
 {
+    if ((scene *)this == g_stage) orion_resume(&g_orion, TRACKID_MAIN_BGM);
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
     SDL_RenderClear(g_renderer);
     SDL_SetRenderDrawColor(g_renderer, this->r, this->g, this->b, 128);
@@ -95,6 +96,7 @@ static void cb(void *ud)
 
     if (this->r == 255) {
         g_stage = (scene *)gameplay_scene_create(&g_stage);
+        orion_pause(&g_orion, TRACKID_MAIN_BGM);
         return;
     }
 

@@ -6,10 +6,14 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#include "orion/orion.h"
 #include "scene.h"
 
 #define WIN_W   1080
 #define WIN_H   720
+
+#define TRACKID_MAIN_BGM    0
+#define TRACKID_STAGE_BGM   1
 
 #define round(__x)  ((int)((__x) + 0.5))
 #define sqr(__x) ((__x) * (__x))
@@ -17,6 +21,7 @@
     ((__p) < 0.5 ? 2 * sqr(__p) : 1 - 2 * sqr(1 - (__p)))
 double ease_elastic_out(double t, double p);
 
+extern struct orion g_orion;
 extern SDL_Window *g_window;
 extern SDL_Renderer *g_renderer;
 extern scene *g_stage;

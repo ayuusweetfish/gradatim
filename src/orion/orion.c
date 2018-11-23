@@ -195,7 +195,7 @@ int orion_tell(struct orion *o, int tid)
 {
     SDL_AtomicLock(&o->lock);
     int ret;
-    if (o->track[tid].state <= ORION_STOPPED) ret = -1;
+    if (o->track[tid].state == ORION_UNINIT) ret = -1;
     else ret = o->track[tid].play_pos;
     SDL_AtomicUnlock(&o->lock);
     return ret;

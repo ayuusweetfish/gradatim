@@ -9,6 +9,7 @@ double ease_elastic_out(double x, double p)
     return exp(-10 * x) * sin((x * 2 - p / 2) * M_PI / p) + 1;
 }
 
+struct orion g_orion;
 SDL_Window *g_window;
 SDL_Renderer *g_renderer;
 scene *g_stage;

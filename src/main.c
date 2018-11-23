@@ -1,4 +1,3 @@
-#include "orion/orion.h"
 #include "global.h"
 #include "element.h"
 #include "scene.h"
@@ -42,11 +41,10 @@ int main()
 
     load_images();
 
-    /*struct orion o = orion_create(44100, 2);
-    orion_load_ogg(&o, 0, "sketchch.ogg");
-    orion_apply_stretch(&o, 0, 1, +3000);
-    orion_play_loop(&o, 1, 0, 0, -1);
-    orion_overall_play(&o);*/
+    g_orion = orion_create(44100, 2);
+    orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "sketchch.ogg");
+    orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, 0, -1);
+    orion_overall_play(&g_orion);
 
     g_stage = (scene *)colour_scene_create(0, 192, 255);
 
@@ -86,7 +84,7 @@ int main()
         fps_last_flush = SDL_GetTicks();
     }
 
-    /*orion_drop(&o);*/
+    orion_drop(&g_orion);
     release_images();
     TTF_Quit();
     IMG_Quit();

@@ -12,7 +12,8 @@ static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 static const double SPR_SCALE = 3;
 
-static const double BEAT = 60.0 / 132;  /* Temporary */
+static const double AUD_OFFSET = +0.07;
+static const double BEAT = 60.0 / 128;  /* Temporary */
 #define HOP_SPD SIM_GRAVITY
 static const double HOP_PRED_DUR = 0.2;
 static const double HOP_GRACE_DUR = 0.15;
@@ -31,6 +32,35 @@ static const double STAGE_TRANSITION_DUR = 2;
 static const double LEADIN_INIT = 1.2;
 static const double LEADIN_DUR = 0.5; /* Seconds */
 static const double FAILURE_SPF = 0.1;
+
+/* Short for metronome - too long! */
+static const int MT_PADDING = 12;
+static const int MT_WEIGHT = 8;
+static const SDL_Rect MT_DOWNBEAT[4] = {
+    (SDL_Rect){
+        MT_PADDING, MT_PADDING,
+        WIN_W - MT_PADDING * 2, MT_WEIGHT
+    }, (SDL_Rect) {
+        MT_PADDING, MT_PADDING + MT_WEIGHT,
+        MT_WEIGHT, WIN_H - MT_PADDING * 2 - MT_WEIGHT * 2
+    }, (SDL_Rect) {
+        MT_PADDING, WIN_H - MT_PADDING - MT_WEIGHT,
+        WIN_W - MT_PADDING * 2, MT_WEIGHT
+    }, (SDL_Rect) {
+        WIN_W - MT_PADDING - MT_WEIGHT, MT_PADDING + MT_WEIGHT,
+        MT_WEIGHT, WIN_H - MT_PADDING * 2 - MT_WEIGHT * 2
+    }
+};
+static const SDL_Rect MT_UPBEAT[2] = {
+    (SDL_Rect){
+        MT_PADDING, MT_PADDING,
+        WIN_W - MT_PADDING * 2, WIN_H - MT_PADDING * 2
+    }, (SDL_Rect){
+        MT_PADDING + MT_WEIGHT, MT_PADDING + MT_WEIGHT,
+        WIN_W - MT_PADDING * 2 - MT_WEIGHT * 2,
+        WIN_H - MT_PADDING * 2 - MT_WEIGHT * 2
+    }
+};
 
 static inline double clamp(double x, double l, double u)
 {
@@ -273,8 +303,28 @@ static inline void run_leadin(gameplay_scene *this)
     SDL_SetTextureBlendMode(this->leadin_tex, SDL_BLENDMODE_BLEND);
 }
 
+static inline void draw_overlay(gameplay_scene *this)
+{
+    double sec = (double)orion_tell(&g_orion, TRACKID_STAGE_BGM) / 44100;
+    double beats = (sec + AUD_OFFSET) / BEAT;
+    int beats_i = (int)(beats - 1./16);
+    double beats_d = beats - beats_i;
+    double is_downbeat = (beats_i % 4 == 0);
+    int opacity = round((
+        beats_d < 0 ? (1 + beats_d * 16) :
+        beats_d < 0.5 ? (1 - beats_d * 2) : 0) * 255);
+    SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, opacity);
+    if (is_downbeat)
+        SDL_RenderFillRects(g_renderer, MT_DOWNBEAT, 4);
+    else
+        SDL_RenderDrawRects(g_renderer, MT_UPBEAT, 2);
+}
+
 static void gameplay_scene_draw(gameplay_scene *this)
 {
+    if ((scene *)this == g_stage) orion_resume(&g_orion, TRACKID_STAGE_BGM);
+
     SDL_SetRenderDrawColor(g_renderer, 216, 224, 255, 255);
     SDL_RenderClear(g_renderer);
 
@@ -348,11 +398,14 @@ static void gameplay_scene_draw(gameplay_scene *this)
         SDL_UnlockTexture(this->leadin_tex);
         SDL_RenderCopy(g_renderer, this->leadin_tex, NULL, NULL);
     }
+
+    draw_overlay(this);
 }
 
 static void gameplay_scene_drop(gameplay_scene *this)
 {
     sim_drop(this->simulator);
+    orion_pause(&g_orion, TRACKID_STAGE_BGM);
 }
 
 static void try_hop(gameplay_scene *this)
@@ -436,8 +489,10 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
             toggle(this->hor_state, ev->state, HOR_STATE_RIGHT, HOR_STATE_NONE);
             break;
         case SDLK_ESCAPE:
-            if (ev->state == SDL_PRESSED)
+            if (ev->state == SDL_PRESSED) {
                 g_stage = (scene *)pause_scene_create(&g_stage, this->bg);
+                orion_pause(&g_orion, TRACKID_STAGE_BGM);
+            }
             break;
         default: break;
     }
@@ -496,6 +551,9 @@ gameplay_scene *gameplay_scene_create(scene **bg)
         WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
     ret->cam_y = clamp(ret->simulator->prot.y,
         WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
+
+    orion_load_ogg(&g_orion, TRACKID_STAGE_BGM, "4-5.ogg");
+    orion_play_loop(&g_orion, TRACKID_STAGE_BGM, 0, 0, -1);
 
     return ret;
 }
