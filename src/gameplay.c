@@ -99,6 +99,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
     if (this->disp_state == DISP_LEADIN) {
         if ((this->disp_time -= dt) <= 0) {
             this->disp_state = DISP_NORMAL;
+            SDL_DestroyTexture(this->leadin_tex);
+            this->leadin_tex = NULL;
         } else {
             return;
         }
@@ -248,6 +250,17 @@ static inline void render_objects(gameplay_scene *this,
     }
 }
 
+static inline void run_leadin(gameplay_scene *this)
+{
+    this->disp_state = DISP_LEADIN;
+    this->disp_time = LEADIN_DUR + LEADIN_WAIT;
+
+    this->leadin_tex = SDL_CreateTexture(
+        g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
+        WIN_W, WIN_H);
+    SDL_SetTextureBlendMode(this->leadin_tex, SDL_BLENDMODE_BLEND);
+}
+
 static void gameplay_scene_draw(gameplay_scene *this)
 {
     SDL_SetRenderDrawColor(g_renderer, 216, 224, 255, 255);
@@ -281,28 +294,24 @@ static void gameplay_scene_draw(gameplay_scene *this)
             0 : WIN_W * (1 - this->disp_time / LEADIN_DUR);
         double radius_sqr = sqr(radius + UNIT_PX);
         double radius_o_sqr = sqr(radius + UNIT_PX * 1.5);
-        SDL_Texture *mask_tex = SDL_CreateTexture(
-            g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC,
-            WIN_W, WIN_H);
-        unsigned char *pixdata = malloc(WIN_W * WIN_H * 4);
-        memset(pixdata, 0, WIN_W * WIN_H * 4);
         int i, j;
+        void *pixdata;
+        int pitch;
+        SDL_LockTexture(this->leadin_tex, NULL, &pixdata, &pitch);
         for (j = 0; j < WIN_H; ++j)
             for (i = 0; i < WIN_W; ++i) {
                 double r = sqr(i - prot_disp_x) + sqr(j - prot_disp_y);
                 if (r <= radius_sqr) {
+                    *((int *)(pixdata + j * pitch) + i) = 0;
                 } else if (r <= radius_o_sqr) {
                     int a = round(255 * (r - radius_sqr) / (radius_o_sqr - radius_sqr));
-                    *((int *)pixdata + j * WIN_W + i) = a;
+                    *((int *)(pixdata + j * pitch) + i) = a;
                 } else {
-                    *((int *)pixdata + j * WIN_W + i) = 255;
+                    *((int *)(pixdata + j * pitch) + i) = 255;
                 }
             }
-        SDL_SetTextureBlendMode(mask_tex, SDL_BLENDMODE_BLEND);
-        SDL_UpdateTexture(mask_tex, NULL, pixdata, WIN_W * 4);
-        SDL_RenderCopy(g_renderer, mask_tex, NULL, NULL);
-        SDL_DestroyTexture(mask_tex);
-        free(pixdata);
+        SDL_UnlockTexture(this->leadin_tex);
+        SDL_RenderCopy(g_renderer, this->leadin_tex, NULL, NULL);
     }
 }
 
@@ -406,8 +415,7 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->bg = *bg;
     ret->bg_ptr = bg;
 
-    ret->disp_state = DISP_LEADIN;
-    ret->disp_time = LEADIN_DUR + LEADIN_WAIT;
+    run_leadin(ret);
 
     ret->rem_time = 0;
     ret->prot_tex = retrieve_texture("uwu.png");

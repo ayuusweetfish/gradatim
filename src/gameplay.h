@@ -21,6 +21,7 @@ typedef struct _gameplay_scene {
         DISP_FAILURE    /* Failure animation */
     } disp_state;
     double disp_time;   /* Remaining time of global animation, in seconds */
+    SDL_Texture *leadin_tex;
 
     texture prot_tex;
     texture grid_tex[256];
