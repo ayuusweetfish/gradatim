@@ -10,6 +10,7 @@
 static const double UNIT_PX = 48;
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
+static const double SPR_SCALE = 3;
 
 static const double BEAT = 60.0 / 132;  /* Temporary */
 #define HOP_SPD SIM_GRAVITY
@@ -247,7 +248,7 @@ static inline void render_objects(gameplay_scene *this,
                 render_texture_scaled(this->grid_tex[o->tag],
                     ((int)o->x - cx) * UNIT_PX,
                     ((int)o->y - cy) * UNIT_PX,
-                    3
+                    SPR_SCALE
                 );
             }
         }
@@ -256,7 +257,7 @@ static inline void render_objects(gameplay_scene *this,
         render_texture_scaled(this->grid_tex[o->tag],
             (o->x + o->tx - cx) * UNIT_PX,
             (o->y + o->ty - cy) * UNIT_PX,
-            3
+            SPR_SCALE
         );
     }
 }
@@ -289,21 +290,28 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
     double prot_disp_x = (this->simulator->prot.x - this->cam_x) * UNIT_PX;
     double prot_disp_y = (this->simulator->prot.y - this->cam_y) * UNIT_PX;
+    double prot_w = this->simulator->prot.w * UNIT_PX;
+    double prot_h = this->simulator->prot.h * UNIT_PX;
 
     texture prot_tex = this->prot_tex;
     if (this->disp_state == DISP_FAILURE) {
         int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
             0, FAILURE_NF - 1);
         prot_tex = this->prot_fail_tex[f_idx];
+        /* The failure animation should be displayed above everything else */
+        render_objects(this, false, true, 0, 0);
+        prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
+        prot_disp_y -= (prot_tex.range.h * SPR_SCALE - prot_h) / 2;
+        prot_w = prot_tex.range.w * SPR_SCALE;
+        prot_h = prot_tex.range.h * SPR_SCALE;
     }
 
     render_texture_ex(prot_tex, &(SDL_Rect){
-        prot_disp_x, prot_disp_y,
-        round(this->simulator->prot.w * UNIT_PX),
-        round(this->simulator->prot.h * UNIT_PX),
+        prot_disp_x, prot_disp_y, round(prot_w), round(prot_h),
     }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
 
-    render_objects(this, false, true, 0, 0);
+    if (this->disp_state != DISP_FAILURE)
+        render_objects(this, false, true, 0, 0);
 
     if (this->disp_state == DISP_LEADIN) {
         prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
