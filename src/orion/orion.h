@@ -38,6 +38,7 @@ struct orion {
     int srate;      /* Sample rate of all tracks */
     int nch;        /* Number of channels; all tracks should have `nch` or 1 */
     unsigned char is_playing;
+    long timestamp; /* Total number of samples played */
     struct orion_track track[ORION_NUM_TRACKS];
     SDL_SpinLock lock;
     SDL_Thread *playback_thread;
@@ -58,5 +59,6 @@ int orion_tell(struct orion *o, int tid);
 void orion_ramp(struct orion *o, int tid, float secs, float dst);
 void orion_overall_play(struct orion *o);
 void orion_overall_pause(struct orion *o);
+long orion_overall_tell(struct orion *o);
 
 #endif

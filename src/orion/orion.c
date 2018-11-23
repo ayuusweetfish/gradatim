@@ -273,6 +273,7 @@ static int _orion_portaudio_callback(
     for (i = 0; i < ORION_NUM_TRACKS; ++i)
         if (o->track[i].state > ORION_STOPPED)
             _orion_track_step(&o->track[i], obuf, nch, nframes);
+    o->timestamp += nframes;
     SDL_AtomicUnlock(&o->lock);
 
     return 0;
@@ -362,4 +363,12 @@ void orion_overall_pause(struct orion *o)
     return;
 exit:
     SDL_AtomicUnlock(&o->lock);
+}
+
+long orion_overall_tell(struct orion *o)
+{
+    SDL_AtomicLock(&o->lock);
+    long ret = o->timestamp;
+    SDL_AtomicUnlock(&o->lock);
+    return ret;
 }
