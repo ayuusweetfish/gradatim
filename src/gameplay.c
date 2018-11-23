@@ -27,7 +27,7 @@ static const double DASH_DIAG_SCALE = 0.8;
 static const double CAM_MOV_FAC = 8;
 static const double STAGE_TRANSITION_DUR = 2;
 
-static const double LEADIN_WAIT = 1;
+static const double LEADIN_INIT = 1.2;
 static const double LEADIN_DUR = 0.5; /* Seconds */
 static const double FAILURE_SPF = 0.1;
 
@@ -264,7 +264,7 @@ static inline void render_objects(gameplay_scene *this,
 static inline void run_leadin(gameplay_scene *this)
 {
     this->disp_state = DISP_LEADIN;
-    this->disp_time = LEADIN_DUR + LEADIN_WAIT;
+    this->disp_time = LEADIN_DUR + LEADIN_INIT;
 
     this->leadin_tex = SDL_CreateTexture(
         g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
@@ -308,10 +308,19 @@ static void gameplay_scene_draw(gameplay_scene *this)
     if (this->disp_state == DISP_LEADIN) {
         prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
         prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX;
-        double radius = this->disp_time >= LEADIN_DUR ?
-            0 : WIN_W * (1 - this->disp_time / LEADIN_DUR);
-        double radius_sqr = sqr(radius + UNIT_PX);
-        double radius_o_sqr = sqr(radius + UNIT_PX * 1.5);
+        double radius = 0, radius_o = 0;
+        if (this->disp_time <= LEADIN_DUR) {
+            radius = UNIT_PX + WIN_W * (1 - this->disp_time / LEADIN_DUR);
+            radius_o = radius + UNIT_PX * 0.5;
+        } else {
+            double t = this->disp_time - LEADIN_DUR;
+            double p = ease_elastic_out(1 - t / LEADIN_INIT, 0.3);
+            radius_o = p * UNIT_PX * 1.5;
+            radius = radius_o - UNIT_PX * 0.5;
+            if (radius < 0) radius = 0;
+        }
+        double radius_sqr = sqr(radius);
+        double radius_o_sqr = sqr(radius_o);
         int i, j;
         void *pixdata;
         int pitch;

@@ -15,6 +15,7 @@
 #define sqr(__x) ((__x) * (__x))
 #define ease_quad_inout(__p) \
     ((__p) < 0.5 ? 2 * sqr(__p) : 1 - 2 * sqr(1 - (__p)))
+double ease_elastic_out(double t, double p);
 
 extern SDL_Window *g_window;
 extern SDL_Renderer *g_renderer;
