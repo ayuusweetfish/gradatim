@@ -25,6 +25,8 @@ typedef struct _gameplay_scene {
 
     texture prot_tex;
     texture grid_tex[256];
+#define FAILURE_NF 4
+    texture prot_fail_tex[FAILURE_NF];
     /* The position of the camera's top-left corner in the
      * simulated world, expressed in units */
     double cam_x, cam_y;

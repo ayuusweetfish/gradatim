@@ -29,6 +29,7 @@ static const double STAGE_TRANSITION_DUR = 2;
 
 static const double LEADIN_WAIT = 1;
 static const double LEADIN_DUR = 0.5; /* Seconds */
+static const double FAILURE_SPF = 0.1;
 
 static inline double clamp(double x, double l, double u)
 {
@@ -93,6 +94,7 @@ static void retry_reinit(gameplay_scene *this)
         WIN_W_UNITS / 2, this->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
     this->cam_y = clamp(this->simulator->prot.y,
         WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
+    this->disp_state = DISP_NORMAL;
 }
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
@@ -105,14 +107,22 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         } else {
             return;
         }
+    } else if (this->disp_state == DISP_FAILURE) {
+        if ((this->disp_time -= dt) <= 0) {
+            /* Run a transition to reset the stage */
+            if (g_stage == (scene *)this)
+                g_stage = (scene *)utransition_fade_create(
+                    &g_stage, 1, (utransition_callback)retry_reinit);
+        }
+        return;
     }
 
     switch (this->simulator->prot.tag) {
         case PROT_TAG_FAILURE:
             /* Failure */
-            if (g_stage == (scene *)this)
-                g_stage = (scene *)utransition_fade_create(
-                    &g_stage, 1, (utransition_callback)retry_reinit);
+            this->disp_state = DISP_FAILURE;
+            this->disp_time = FAILURE_SPF * FAILURE_NF;
+            this->simulator->prot.tag = 0;
             break;
         case PROT_TAG_NXSTAGE:
             /* Move on to the next stage */
@@ -280,7 +290,14 @@ static void gameplay_scene_draw(gameplay_scene *this)
     double prot_disp_x = (this->simulator->prot.x - this->cam_x) * UNIT_PX;
     double prot_disp_y = (this->simulator->prot.y - this->cam_y) * UNIT_PX;
 
-    render_texture_ex(this->prot_tex, &(SDL_Rect){
+    texture prot_tex = this->prot_tex;
+    if (this->disp_state == DISP_FAILURE) {
+        int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
+            0, FAILURE_NF - 1);
+        prot_tex = this->prot_fail_tex[f_idx];
+    }
+
+    render_texture_ex(prot_tex, &(SDL_Rect){
         prot_disp_x, prot_disp_y,
         round(this->simulator->prot.w * UNIT_PX),
         round(this->simulator->prot.h * UNIT_PX),
@@ -424,6 +441,10 @@ gameplay_scene *gameplay_scene_create(scene **bg)
 
     ret->rem_time = 0;
     ret->prot_tex = retrieve_texture("uwu.png");
+    ret->prot_fail_tex[0] = retrieve_texture("fragile1.png");
+    ret->prot_fail_tex[1] = retrieve_texture("fragile2.png");
+    ret->prot_fail_tex[2] = retrieve_texture("fragile3.png");
+    ret->prot_fail_tex[3] = retrieve_texture("fragile4.png");
     ret->grid_tex[1] = retrieve_texture("block.png");
     ret->grid_tex[OBJID_SPRING] = retrieve_texture("spring1.png");
     ret->grid_tex[OBJID_SPRING_PRESS] = retrieve_texture("spring2.png");
