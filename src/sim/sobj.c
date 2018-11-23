@@ -25,12 +25,15 @@ static inline bool in_range(double x, double l, double h)
     return l <= x && x <= h;
 }
 
+static inline bool intsc_1d(double x1, double w1, double x2, double w2)
+{
+    return (x1 >= x2) ? (x2 + w2 >= x1) : (x1 + w1 >= x2);
+}
+
 static inline bool is_touching(sobj *o, sobj *prot, double w, double h)
 {
-    return (in_range(prot->x, o->x, o->x + w) ||
-        in_range(prot->x + prot->w, o->x, o->x + w)) &&
-        (in_range(prot->y, o->y, o->y + h) ||
-        in_range(prot->y + prot->h, o->y, o->y + h));
+    return intsc_1d(prot->x, prot->w, o->x, w) &&
+        intsc_1d(prot->y, prot->h, o->y, h);
 }
 
 static inline bool is_near(sobj *o, sobj *prot)
