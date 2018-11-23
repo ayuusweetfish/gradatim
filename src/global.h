@@ -11,7 +11,10 @@
 #define WIN_W   1080
 #define WIN_H   720
 
-#define round(__x)  ((int)(__x + 0.5))
+#define round(__x)  ((int)((__x) + 0.5))
+#define sqr(__x) ((__x) * (__x))
+#define ease_quad_inout(__p) \
+    ((__p) < 0.5 ? 2 * sqr(__p) : 1 - 2 * sqr(1 - (__p)))
 
 extern SDL_Window *g_window;
 extern SDL_Renderer *g_renderer;

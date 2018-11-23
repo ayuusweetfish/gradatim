@@ -14,6 +14,14 @@ typedef struct _gameplay_scene {
     sim *simulator, *prev_sim;
     double rem_time;
 
+    /* Display states */
+    enum display_state {
+        DISP_NORMAL,    /* Normal simulation and gameplay */
+        DISP_LEADIN,    /* Flashlight lead in */
+        DISP_FAILURE    /* Failure animation */
+    } disp_state;
+    double disp_time;   /* Remaining time of global animation, in seconds */
+
     texture prot_tex;
     texture grid_tex[256];
     /* The position of the camera's top-left corner in the

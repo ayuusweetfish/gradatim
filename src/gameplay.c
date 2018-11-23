@@ -26,6 +26,9 @@ static const double DASH_DIAG_SCALE = 0.8;
 static const double CAM_MOV_FAC = 8;
 static const double STAGE_TRANSITION_DUR = 2;
 
+static const double LEADIN_WAIT = 1;
+static const double LEADIN_DUR = 0.5; /* Seconds */
+
 static inline double clamp(double x, double l, double u)
 {
     return (x < l ? l : (x > u ? u : x));
@@ -86,13 +89,21 @@ static void retry_reinit(gameplay_scene *this)
     this->simulator->prot.x = this->spawn_c;
     this->simulator->prot.y = this->spawn_r;
     this->cam_x = clamp(this->simulator->prot.x,
-        WIN_W_UNITS / 2, this->simulator->gcols - WIN_W_UNITS / 2);
+        WIN_W_UNITS / 2, this->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
     this->cam_y = clamp(this->simulator->prot.y,
-        WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2);
+        WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
 }
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
+    if (this->disp_state == DISP_LEADIN) {
+        if ((this->disp_time -= dt) <= 0) {
+            this->disp_state = DISP_NORMAL;
+        } else {
+            return;
+        }
+    }
+
     switch (this->simulator->prot.tag) {
         case PROT_TAG_FAILURE:
             /* Failure */
@@ -252,14 +263,47 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
     render_objects(this, false, false, 0, 0);
 
+    double prot_disp_x = (this->simulator->prot.x - this->cam_x) * UNIT_PX;
+    double prot_disp_y = (this->simulator->prot.y - this->cam_y) * UNIT_PX;
+
     render_texture_ex(this->prot_tex, &(SDL_Rect){
-        (this->simulator->prot.x - this->cam_x) * UNIT_PX,
-        (this->simulator->prot.y - this->cam_y) * UNIT_PX,
+        prot_disp_x, prot_disp_y,
         round(this->simulator->prot.w * UNIT_PX),
         round(this->simulator->prot.h * UNIT_PX),
     }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
 
     render_objects(this, false, true, 0, 0);
+
+    if (this->disp_state == DISP_LEADIN) {
+        prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
+        prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX;
+        double radius = this->disp_time >= LEADIN_DUR ?
+            0 : WIN_W * (1 - this->disp_time / LEADIN_DUR);
+        double radius_sqr = sqr(radius + UNIT_PX);
+        double radius_o_sqr = sqr(radius + UNIT_PX * 1.5);
+        SDL_Texture *mask_tex = SDL_CreateTexture(
+            g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC,
+            WIN_W, WIN_H);
+        unsigned char *pixdata = malloc(WIN_W * WIN_H * 4);
+        memset(pixdata, 0, WIN_W * WIN_H * 4);
+        int i, j;
+        for (j = 0; j < WIN_H; ++j)
+            for (i = 0; i < WIN_W; ++i) {
+                double r = sqr(i - prot_disp_x) + sqr(j - prot_disp_y);
+                if (r <= radius_sqr) {
+                } else if (r <= radius_o_sqr) {
+                    int a = round(255 * (r - radius_sqr) / (radius_o_sqr - radius_sqr));
+                    *((int *)pixdata + j * WIN_W + i) = a;
+                } else {
+                    *((int *)pixdata + j * WIN_W + i) = 255;
+                }
+            }
+        SDL_SetTextureBlendMode(mask_tex, SDL_BLENDMODE_BLEND);
+        SDL_UpdateTexture(mask_tex, NULL, pixdata, WIN_W * 4);
+        SDL_RenderCopy(g_renderer, mask_tex, NULL, NULL);
+        SDL_DestroyTexture(mask_tex);
+        free(pixdata);
+    }
 }
 
 static void gameplay_scene_drop(gameplay_scene *this)
@@ -362,6 +406,9 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->bg = *bg;
     ret->bg_ptr = bg;
 
+    ret->disp_state = DISP_LEADIN;
+    ret->disp_time = LEADIN_DUR + LEADIN_WAIT;
+
     ret->rem_time = 0;
     ret->prot_tex = retrieve_texture("uwu.png");
     ret->grid_tex[1] = retrieve_texture("block.png");
@@ -392,9 +439,9 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->prev_sim = NULL;
     load_csv(ret, "rua.csv");
     ret->cam_x = clamp(ret->simulator->prot.x,
-        WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2);
+        WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
     ret->cam_y = clamp(ret->simulator->prot.y,
-        WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2);
+        WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
 
     return ret;
 }
