@@ -204,6 +204,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             this->simulator->prot.ay = ANTHOP_DELUGE_SPD;
         }
         this->mov_time -= dt / BEAT;
+        this->simulator->prot.vx = 0;
     } else if (this->mov_state & MOV_DASH_BASE) {
         if (this->mov_time <= 0) {
             /* XXX: Avoid duplicates? */
