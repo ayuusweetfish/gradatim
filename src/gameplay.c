@@ -100,17 +100,26 @@ static inline void load_csv(gameplay_scene *this, const char *path)
     fscanf(f, "%d", &m);
     for (i = 0; i < m; ++i) {
         int r, c, tag;
-        fscanf(f, "%d,%d,%d", &r, &c, &tag);
+        double x1, y1, x2, y2, t;
+        fscanf(f, "%d,%d,%d,%lf,%lf,%lf,%lf,%lf",
+            &r, &c, &tag, &y1, &x1, &y2, &x2, &t);
         sobj *o = malloc(sizeof(sobj));
         memset(o, 0, sizeof(sobj));
         o->tag = tag;
         o->x = c;
         o->y = r;
         o->w = o->h = 1;
+        o->vx = x1;
+        o->vy = y1;
+        o->ax = x2;
+        o->ay = y2;
+        o->t = t;
         sim_add(this->simulator, o);
     }
 
     fclose(f);
+
+    sim_tick(this->simulator);
 }
 
 static void retry_reinit(gameplay_scene *this)
