@@ -21,9 +21,10 @@ static const double HOP_GRACE_DUR = 0.15;
 static const double HOR_SPD = 4;
 static const double DASH_DUR = 1;
 #define DASH_HOR_V0     (6.5 * 1.414213562)
-#define DASH_HOR_ACCEL  (6.5 * 1.414213562)
+#define DASH_HOR_ACCEL  (DASH_HOR_V0 * DASH_DUR)
 #define DASH_VER_V0     (5.5 * 1.414213562)
-#define DASH_VER_ACCEL  (5.5 * 1.414213562 - SIM_GRAVITY)
+#define DASH_VER_ACCEL  (DASH_VER_V0 * DASH_DUR - SIM_GRAVITY)
+static const double DASH_MIN_DUR = 0.95;    /* TODO: Keep sync with overall toleration */
 static const double DASH_DIAG_SCALE = 0.8;
 
 static const double CAM_MOV_FAC = 8;
@@ -447,11 +448,14 @@ static void try_hop(gameplay_scene *this)
 
 static void try_dash(gameplay_scene *this)
 {
+    /* In case of direction updates, the time should not be reset */
+    double dur = (this->mov_state & MOV_DASH_BASE) ? this->mov_time : DASH_DUR;
+    if (dur < DASH_MIN_DUR) return;
     int dir_has = 0, dir_denotes = 0;
     if (this->ver_state == VER_STATE_UP) {
         dir_has |= 2;
         dir_denotes |= MOV_DASH_UP;
-        this->simulator->prot.vy = -DASH_VER_V0;
+        this->simulator->prot.vy = -DASH_VER_V0 * dur;
     }
     if (this->hor_state != HOR_STATE_NONE || dir_has == 0) {
         int s = (this->hor_state == HOR_STATE_NONE ?
@@ -459,7 +463,7 @@ static void try_dash(gameplay_scene *this)
         dir_has |= 1;
         dir_denotes |= (s == HOR_STATE_LEFT ? MOV_DASH_LEFT : 0);
         this->simulator->prot.vx =
-            (s == HOR_STATE_LEFT ? -DASH_HOR_V0 : +DASH_HOR_V0);
+            (s == HOR_STATE_LEFT ? -DASH_HOR_V0 : +DASH_HOR_V0) * dur;
     }
     if (dir_has == 3) {
         this->simulator->prot.vx *= DASH_DIAG_SCALE;
@@ -467,7 +471,7 @@ static void try_dash(gameplay_scene *this)
     }
     this->simulator->last_land = -1e10; /* Disable grace jumps */
     this->mov_state = MOV_DASH_BASE | dir_has | dir_denotes;
-    this->mov_time = DASH_DUR;
+    this->mov_time = dur;
 }
 
 static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *ev)
@@ -488,17 +492,25 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
             break;
         case SDLK_UP:
             toggle(this->ver_state, ev->state, VER_STATE_UP, VER_STATE_NONE);
+            if (ev->state == SDL_PRESSED && (this->mov_state & MOV_DASH_BASE))
+                try_dash(this);
             break;
         case SDLK_DOWN:
             toggle(this->ver_state, ev->state, VER_STATE_DOWN, VER_STATE_NONE);
+            if (ev->state == SDL_PRESSED && (this->mov_state & MOV_DASH_BASE))
+                try_dash(this);
             break;
         case SDLK_LEFT:
             if (ev->state == SDL_PRESSED) this->facing = HOR_STATE_LEFT;
             toggle(this->hor_state, ev->state, HOR_STATE_LEFT, HOR_STATE_NONE);
+            if (ev->state == SDL_PRESSED && (this->mov_state & MOV_DASH_BASE))
+                try_dash(this);
             break;
         case SDLK_RIGHT:
             if (ev->state == SDL_PRESSED) this->facing = HOR_STATE_RIGHT;
             toggle(this->hor_state, ev->state, HOR_STATE_RIGHT, HOR_STATE_NONE);
+            if (ev->state == SDL_PRESSED && (this->mov_state & MOV_DASH_BASE))
+                try_dash(this);
             break;
         case SDLK_ESCAPE:
             if (ev->state == SDL_PRESSED) {
