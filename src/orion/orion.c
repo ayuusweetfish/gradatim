@@ -57,10 +57,10 @@ const char *orion_load_ogg(struct orion *o, int tid, const char *path)
 
     /* Store information into the track struct */
     SDL_AtomicLock(&o->lock);
-    memset(&o->track[tid], 0, sizeof o->track[tid]);
     /* In order to minimize the work done when holding the lock,
      * we store the address and defer the memory deallocation */
     orion_smp *free_ptr = o->track[tid].pcm;
+    memset(&o->track[tid], 0, sizeof o->track[tid]);
     o->track[tid].nch = nch;
     o->track[tid].len = buf_ptr / nch / sizeof(orion_smp);
     o->track[tid].pcm = (orion_smp *)buf;

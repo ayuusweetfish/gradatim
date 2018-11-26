@@ -391,6 +391,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
 static void gameplay_scene_drop(gameplay_scene *this)
 {
     sim_drop(this->simulator);
+    if (this->prev_sim) sim_drop(this->prev_sim);
+    stage_drop(this->rec);
     orion_pause(&g_orion, TRACKID_STAGE_BGM);
 }
 
