@@ -113,12 +113,12 @@ static void retry_reinit(gameplay_scene *this)
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
     if (this->disp_state == DISP_LEADIN) {
-        this->simulator->cur_time = get_audio_position();
         if ((this->disp_time -= dt) <= 0) {
             this->disp_state = DISP_NORMAL;
             SDL_DestroyTexture(this->leadin_tex);
             this->leadin_tex = NULL;
-            this->simulator->cur_time -= this->aud_sim_offset;
+            this->aud_sim_offset /= this->aud_sim_offset_n_samples;
+            this->simulator->cur_time = get_audio_position() - this->aud_sim_offset;
         } else {
             return;
         }
@@ -294,8 +294,10 @@ static inline void run_leadin(gameplay_scene *this)
 static inline void draw_overlay(gameplay_scene *this)
 {
     double beats = get_audio_position();
-    if (this->disp_state == DISP_LEADIN)
+    if (this->disp_state == DISP_LEADIN) {
         this->aud_sim_offset = beats - this->simulator->cur_time;
+        this->aud_sim_offset_n_samples++;
+    }
     int beats_i = (int)(beats + 1./16);
     double beats_d = beats - beats_i;
     double is_downbeat = (beats_i % 4 == 0);
