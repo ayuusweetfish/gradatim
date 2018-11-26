@@ -12,7 +12,7 @@ static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 static const double SPR_SCALE = 3;
 
-static const double AUD_OFFSET = +0.07;
+static const double AUD_OFFSET = +0.04;
 static const double BEAT = 60.0 / 128;  /* Temporary */
 #define HOP_SPD SIM_GRAVITY
 static const double HOP_PRED_DUR = 0.2;
@@ -68,6 +68,12 @@ static inline double clamp(double x, double l, double u)
     return (x < l ? l : (x > u ? u : x));
 }
 
+static inline double get_audio_position()
+{
+    double sec = (double)orion_tell(&g_orion, TRACKID_STAGE_BGM) / 44100;
+    return (sec + AUD_OFFSET) / BEAT;
+}
+
 static inline void load_csv(gameplay_scene *this, const char *path)
 {
     FILE *f = fopen(path, "r");
@@ -119,8 +125,6 @@ static inline void load_csv(gameplay_scene *this, const char *path)
     }
 
     fclose(f);
-
-    sim_tick(this->simulator);
 }
 
 static void retry_reinit(gameplay_scene *this)
@@ -141,10 +145,12 @@ static void retry_reinit(gameplay_scene *this)
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
     if (this->disp_state == DISP_LEADIN) {
+        this->simulator->cur_time = get_audio_position();
         if ((this->disp_time -= dt) <= 0) {
             this->disp_state = DISP_NORMAL;
             SDL_DestroyTexture(this->leadin_tex);
             this->leadin_tex = NULL;
+            this->simulator->cur_time -= this->aud_sim_offset;
         } else {
             return;
         }
@@ -318,9 +324,9 @@ static inline void run_leadin(gameplay_scene *this)
 
 static inline void draw_overlay(gameplay_scene *this)
 {
-    double sec = (double)orion_tell(&g_orion, TRACKID_STAGE_BGM) / 44100;
-    double beats = (sec + AUD_OFFSET) / BEAT;
-    int beats_i = (int)(beats - 1./16);
+    double beats = get_audio_position();
+    this->aud_sim_offset = beats - this->simulator->cur_time;
+    int beats_i = (int)(beats + 1./16);
     double beats_d = beats - beats_i;
     double is_downbeat = (beats_i % 4 == 0);
     int opacity = round((
@@ -552,8 +558,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("fragile3.png");
     ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("fragile4.png");
     ret->grid_tex[OBJID_BILLOW] = retrieve_texture("fragile1.png");
-    ret->grid_tex[OBJID_BILLOW + 1] = retrieve_texture("fragile3.png");
-    ret->grid_tex[OBJID_BILLOW + 2] = retrieve_texture("fragile2.png");
+    //ret->grid_tex[OBJID_BILLOW + 1] = retrieve_texture("fragile3.png");
+    //ret->grid_tex[OBJID_BILLOW + 2] = retrieve_texture("fragile2.png");
     ret->grid_tex[OBJID_MUSHROOM_T] = retrieve_texture("mushroom_t.png");
     ret->grid_tex[OBJID_MUSHROOM_B] = retrieve_texture("mushroom_b.png");
     ret->grid_tex[OBJID_MUSHROOM_BR] =

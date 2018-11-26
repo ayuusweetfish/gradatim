@@ -13,6 +13,7 @@ typedef struct _gameplay_scene {
 
     sim *simulator, *prev_sim;
     double rem_time;
+    double aud_sim_offset;
 
     /* Display states */
     enum display_state {

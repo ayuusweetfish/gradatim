@@ -12,11 +12,14 @@
 
 static void draw_loop()
 {
+    static Uint32 last_time = 0;
+    Uint32 cur_time = SDL_GetTicks();
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
     SDL_RenderClear(g_renderer);
-    scene_tick(g_stage, 1.0 / 60);
+    scene_tick(g_stage, (cur_time - last_time) * 0.001);
     scene_draw(g_stage);
     SDL_RenderPresent(g_renderer);
+    last_time = cur_time;
 }
 
 int main()
