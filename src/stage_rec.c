@@ -1,4 +1,5 @@
 #include "stage_rec.h"
+#include <ctype.h>
 #include <stdio.h>
 
 struct stage_rec *stage_read(const char *path)
@@ -9,6 +10,9 @@ struct stage_rec *stage_read(const char *path)
     struct stage_rec *this = malloc(sizeof(*this));
     if (!this) return NULL;
     memset(this, 0, sizeof(*this));
+
+    this->strtab = bekter_create();
+    this->plot = bekter_create();
 
     int worldr, worldc, nrows, ncols;
     int cam_r1, cam_c1, cam_r2, cam_c2;
@@ -41,6 +45,7 @@ struct stage_rec *stage_read(const char *path)
 
     int m;
 
+    /* Animate objects; or objects that do not fit into the grid */
     fscanf(f, "%d", &m);
     for (i = 0; i < m; ++i) {
         int r, c, tag;
@@ -59,6 +64,17 @@ struct stage_rec *stage_read(const char *path)
         o->ay = y2;
         o->t = t;
         sim_add(this->sim, o);
+    }
+
+    /* String table */
+    fscanf(f, "%d", &m);
+    fgetc(f);   /* Skip the newline character */
+    char s[1024];
+    for (i = 0; i < m; ++i) {
+        fgets(s, sizeof s, f);
+        int p = strlen(s) - 1;
+        while (p > 0 && isspace(s[p])) s[p--] = '\0';
+        bekter_pushback(this->strtab, strdup(s));
     }
 
     /* TODO: This should be replaced */
@@ -96,15 +112,15 @@ struct stage_rec *stage_read(const char *path)
     this->grid_tex[OBJID_MUD] = retrieve_texture("fragile1.png");
     this->grid_tex[OBJID_WET] = retrieve_texture("fragile2.png");
 
-    this->strtab = bekter_create();
-    this->plot = bekter_create();
-
     fclose(f);
     return this;
 }
 
 void stage_drop(struct stage_rec *this)
 {
+    int i;
+    char *s;
+    for bekter_each(this->strtab, i, s) free(s);
     bekter_drop(this->strtab);
     bekter_drop(this->plot);
     free(this);

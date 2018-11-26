@@ -241,9 +241,9 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
 static inline texture get_texture(gameplay_scene *this, sobj *o)
 {
     return o->tag == OBJID_DISPONLY ?
-        retrieve_texture(
-            (int)(this->simulator->cur_time / o->t) % 2 == 0 ? "rua1.png" : "rua2.png") :
-        this->rec->grid_tex[o->tag];
+        retrieve_texture(bekter_at(this->rec->strtab, (int)
+            ((int)(this->simulator->cur_time / o->t) % 2 == 0 ? o->vx : o->vy),
+        char *)) : this->rec->grid_tex[o->tag];
 }
 
 static inline void render_objects(gameplay_scene *this,
