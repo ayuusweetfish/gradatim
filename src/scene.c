@@ -118,6 +118,7 @@ static void cb(void *ud)
         "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     }));
     g_stage = (scene *)dialogue_create(&g_stage, script);
+    bekter_drop(script);
 }
 
 colour_scene *colour_scene_create(int r, int g, int b)
