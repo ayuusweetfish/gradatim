@@ -37,6 +37,12 @@ static inline bool is_touching(sobj *o, sobj *prot, double w, double h)
         intsc_1d(prot->y, prot->h, o->y, h);
 }
 
+static inline bool is_intersecting(sobj *o, sobj *prot, double w, double h)
+{
+    return intsc_1d(prot->x, prot->w, o->x + w / 4, w / 2) &&
+        intsc_1d(prot->y, prot->h, o->y + h / 4, h / 2);
+}
+
 static inline bool is_near(sobj *o, sobj *prot)
 {
     static const double EPS = 1e-8;
@@ -89,7 +95,13 @@ static inline void billow_update_pred(sobj *o, double T, sobj *prot)
     bool last_beat = mask & (1 << ((beat_i + sig - 1) % sig));
     bool next_beat = mask & (1 << ((beat_i + 1) % sig));
 
-    if (cur_beat && !next_beat && beat_d >= 1 - BILLOW_ANIM) {
+    /* Prevent getting the protagonist stuck inside
+     * This is caused by the inaccuracy of event refreshes */
+    if (o->t != -1 && is_intersecting(o, prot, 1, 1)) o->t = -1;
+
+    if (o->tag != OBJID_BILLOW_EMPTY &&
+        cur_beat && !next_beat && beat_d >= 1 - BILLOW_ANIM)
+    {
         /* Starts disappearing */
         o->t = -1;
         int f_idx = (beat_d - 1 + BILLOW_ANIM) / BILLOW_FRMLEN;
