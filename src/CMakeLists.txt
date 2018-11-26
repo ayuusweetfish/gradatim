@@ -11,5 +11,5 @@ include_directories(${SDL2_IMAGE_INCLUDE_DIR})
 find_package(SDL2_ttf REQUIRED)
 include_directories(${SDL2_TTF_INCLUDE_DIR})
 
-add_executable(g global.c resources.c main.c bekter.c element.c button.c label.c scene.c dialogue.c transition.c unary_transition.c pause.c sim/schnitt.c sim/sobj.c sim/sim.c gameplay.c)
+add_executable(g global.c resources.c main.c bekter.c element.c button.c label.c scene.c dialogue.c transition.c unary_transition.c pause.c sim/schnitt.c sim/sobj.c sim/sim.c stage_rec.c gameplay.c)
 target_link_libraries(g orion ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_TTF_LIBRARY})
