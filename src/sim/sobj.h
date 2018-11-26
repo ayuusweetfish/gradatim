@@ -54,6 +54,7 @@ typedef struct _sobj {
 #define OBJID_MUD           58
 #define OBJID_WET           59
 
+#define OBJID_DISPONLY      126
 #define OBJID_NXSTAGE       127
 
 #define PROT_TAG_FAILURE    9

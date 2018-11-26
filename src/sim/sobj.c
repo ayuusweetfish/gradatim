@@ -282,6 +282,11 @@ static inline void mud_wet_update_pred(sobj *o, double T, sobj *prot)
     }
 }
 
+static inline void disponly_init(sobj *o)
+{
+    o->w = o->h = 0;
+}
+
 static inline void nxstage_init(sobj *o)
 {
     o->w = o->h = 0;
@@ -302,6 +307,8 @@ void sobj_init(sobj *o)
         refill_init(o);
     else if (o->tag >= OBJID_PUFF_FIRST && o->tag <= OBJID_PUFF_LAST)
         puff_init(o);
+    else if (o->tag == OBJID_DISPONLY)
+        disponly_init(o);
     else if (o->tag == OBJID_NXSTAGE)
         nxstage_init(o);
 }

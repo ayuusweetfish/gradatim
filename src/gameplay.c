@@ -287,6 +287,14 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
     update_camera(this, rate);
 }
 
+static inline texture get_texture(gameplay_scene *this, sobj *o)
+{
+    return o->tag == OBJID_DISPONLY ?
+        retrieve_texture(
+            (int)(this->simulator->cur_time / o->t) % 2 == 0 ? "rua1.png" : "rua2.png") :
+        this->grid_tex[o->tag];
+}
+
 static inline void render_objects(gameplay_scene *this,
     bool is_prev, bool is_after, double offsx, double offsy)
 {
@@ -302,7 +310,7 @@ static inline void render_objects(gameplay_scene *this,
         for (c = cmin; c < cmax; ++c) {
             sobj *o = &sim_grid(sim, r, c);
             if (o->tag != 0) {
-                render_texture_scaled(this->grid_tex[o->tag],
+                render_texture_scaled(get_texture(this, o),
                     ((int)o->x - cx) * UNIT_PX,
                     ((int)o->y - cy) * UNIT_PX,
                     SPR_SCALE
@@ -311,7 +319,7 @@ static inline void render_objects(gameplay_scene *this,
         }
     for (r = 0; r < sim->anim_sz; ++r) {
         sobj *o = sim->anim[r];
-        render_texture_scaled(this->grid_tex[o->tag],
+        render_texture_scaled(get_texture(this, o),
             (o->x + o->tx - cx) * UNIT_PX,
             (o->y + o->ty - cy) * UNIT_PX,
             SPR_SCALE

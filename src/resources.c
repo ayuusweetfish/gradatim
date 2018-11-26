@@ -74,6 +74,8 @@ void load_images()
     load_image("refill4.png");
     load_image("puff_l.png");
     load_image("puff_r.png");
+    load_image("rua1.png");
+    load_image("rua2.png");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 }
 
