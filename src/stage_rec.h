@@ -7,10 +7,10 @@
 #include "bekter.h"
 #include "resources.h"
 
-struct _stage_dialogue {
+typedef struct _stage_dialogue {
     int r1, c1, r2, c2; /* Trigger area */
     bekter(dialogue_entry) content;
-};
+} stage_dialogue;
 
 struct stage_rec {
     int world_r, world_c;
@@ -29,6 +29,7 @@ struct stage_rec {
 
     /* Dialogues */
     bekter(struct _stage_dialogue) plot;
+    int plot_ct;
 };
 
 struct stage_rec *stage_read(const char *path);

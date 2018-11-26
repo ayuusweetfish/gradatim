@@ -5,6 +5,7 @@
 #include "stage_rec.h"
 #include "unary_transition.h"
 #include "pause.h"
+#include "dialogue.h"
 
 #include <math.h>
 
@@ -107,6 +108,7 @@ static void retry_reinit(gameplay_scene *this)
     this->disp_state = DISP_NORMAL;
     sim_reinit(this->simulator);
     this->simulator->cur_time = get_audio_position() - this->aud_sim_offset;
+    this->dialogue_triggered = 0;
     update_camera(this, 1);
 }
 
@@ -234,6 +236,25 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
      * However, not if such will result in a 'bounce' */
     if (this->simulator->prot.vx * (this->simulator->prot.vx - hor_mov_vx) > 0)
         this->simulator->prot.vx -= hor_mov_vx;
+
+    /* Check for dialogues */
+    int i;
+    int px = (int)this->simulator->prot.x,
+        py = (int)this->simulator->prot.y;
+    for (i = 0; i < this->rec->plot_ct; ++i) {
+        stage_dialogue *d = bekter_at_ptr(this->rec->plot, i, stage_dialogue);
+        if (!(this->dialogue_triggered & (1 << i)) &&
+            px >= d->c1 && px <= d->c2 && py >= d->r1 && py <= d->r2)
+        {
+            this->mov_state = MOV_NORMAL;
+            this->ver_state = VER_STATE_NONE;
+            this->hor_state = HOR_STATE_NONE;
+            this->simulator->prot.ax = this->simulator->prot.ay =
+            this->simulator->prot.vx = this->simulator->prot.vy = 0;
+            this->dialogue_triggered |= (1 << i);
+            g_stage = (scene *)dialogue_create(&g_stage, d->content);
+        }
+    }
 
     /* Move the camera */
     double rate = (dt > 0.1 ? 0.1 : dt) * CAM_MOV_FAC;

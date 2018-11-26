@@ -1,4 +1,5 @@
 #include "stage_rec.h"
+#include "dialogue.h"
 #include <ctype.h>
 #include <stdio.h>
 
@@ -77,6 +78,28 @@ struct stage_rec *stage_read(const char *path)
         bekter_pushback(this->strtab, strdup(s));
     }
 
+    /* List of dialogues */
+    fscanf(f, "%d", &m);
+    fgetc(f);
+    this->plot_ct = m;
+    for (i = 0; i < m; ++i) {
+        struct _stage_dialogue d;
+        fscanf(f, "%d,%d,%d,%d,", &d.r1, &d.c1, &d.r2, &d.c2);
+        d.content = bekter_create();
+        int j = 0, a, b, c;
+        while (true) {
+            fscanf(f, "%d,%d,%d", &a, &b, &c);
+            dialogue_entry e = (dialogue_entry){
+                retrieve_texture(bekter_at(this->strtab, a, char *)),
+                bekter_at(this->strtab, b, char *),
+                bekter_at(this->strtab, c, char *)
+            };
+            bekter_pushback(d.content, e);
+            if (fgetc(f) == '\n') break;
+        }
+        bekter_pushback(this->plot, d);
+    }
+
     /* TODO: This should be replaced */
     this->prot_tex = retrieve_texture("uwu.png");
     this->prot_fail_tex[0] = retrieve_texture("fragile1.png");
@@ -122,6 +145,9 @@ void stage_drop(struct stage_rec *this)
     char *s;
     for bekter_each(this->strtab, i, s) free(s);
     bekter_drop(this->strtab);
+
+    struct _stage_dialogue d;
+    for bekter_each(this->plot, i, d) bekter_drop(d.content);
     bekter_drop(this->plot);
     free(this);
 }

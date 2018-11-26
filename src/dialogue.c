@@ -159,7 +159,7 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
     ret->_base.key_handler = (scene_key_func)dialogue_key_handler;
     ret->bg = *bg;
     ret->bg_ptr = bg;
-    ret->script = script;
+    ret->script = bekter_create();
     ret->script_idx = 0;
     ret->script_len = bekter_size(script) / sizeof(dialogue_entry);
     ret->last_tick = ret->entry_lasted = -CTNR_FADE_DUR;
@@ -187,16 +187,18 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
     element_place((element *)l, WIN_W / 4, WIN_H * 50 / 72);
 
     int i;
-    dialogue_entry *entry;
+    dialogue_entry *orig_entry, entry;
     char *last_name = NULL;
-    for bekter_each_ptr(ret->script, i, entry) {
-        if (i != 0 && strcmp(last_name, entry->name) == 0)
-            entry->name = NULL;
+    for bekter_each_ptr(script, i, orig_entry) {
+        entry = *orig_entry;
+        if (i != 0 && strcmp(last_name, entry.name) == 0)
+            entry.name = NULL;
         else
-            last_name = entry->name = strdup(entry->name);
-        entry->text = strdup(entry->text);
-        entry->text_len = strlen(entry->text);
-        preprocess_text(entry->text, l->font, l->wid);
+            last_name = entry.name = strdup(entry.name);
+        entry.text = strdup(entry.text);
+        entry.text_len = strlen(entry.text);
+        preprocess_text(entry.text, l->font, l->wid);
+        bekter_pushback(ret->script, entry);
     }
 
     return ret;

@@ -19,6 +19,7 @@ typedef struct _gameplay_scene {
     double rem_time;
     double aud_sim_offset;
     int aud_sim_offset_n_samples;
+    unsigned int dialogue_triggered;
 
     /* Display states */
     enum display_state {
