@@ -124,6 +124,12 @@ static void dialogue_draw(dialogue_scene *this)
 
 static void dialogue_drop(dialogue_scene *this)
 {
+    int i;
+    dialogue_entry e;
+    for bekter_each(this->script, i, e) {
+        free(e.name);
+        free(e.text);
+    }
     bekter_drop(this->script);
     SDL_DestroyTexture(this->bg_tex);
 }
