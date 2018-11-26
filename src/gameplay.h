@@ -14,6 +14,7 @@ typedef struct _gameplay_scene {
     sim *simulator, *prev_sim;
     double rem_time;
     double aud_sim_offset;
+    int cam_r1, cam_c1, cam_r2, cam_c2;
 
     /* Display states */
     enum display_state {
