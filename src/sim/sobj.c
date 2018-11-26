@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdbool.h>
 
+#define max(__a, __b) ((__a) > (__b) ? (__a) : (__b))
 #define take_max(__var, __val) if ((__var) < (__val)) (__var) = (__val)
 
 static const int FRAGILE_FRAMES = OBJID_FRAGILE_EMPTY - OBJID_FRAGILE - 1;
@@ -68,38 +69,40 @@ static inline void fragile_update_post(sobj *o, double T, sobj *prot)
 
 #define billow_sig(__o) ((int)(__o)->ay)
 #define billow_beatmask(__o) ((int)(__o)->ax)
-static const double BILLOW_SUST = 0.25;
+static const double BILLOW_ANIM = 0.25;
 static const double BILLOW_FRMLEN =
-    BILLOW_SUST / (OBJID_BILLOW_EMPTY - OBJID_BILLOW - 1);
+    BILLOW_ANIM / (OBJID_BILLOW_EMPTY - OBJID_BILLOW - 1);
 
 static inline void billow_init(sobj *o)
 {
     o->tag = (billow_beatmask(o) & 1) ? OBJID_BILLOW : OBJID_BILLOW_EMPTY;
+    o->t = -1;
 }
 
 static inline void billow_update_pred(sobj *o, double T, sobj *prot)
 {
-    //if (!is_touching(o, prot, 1, 1)) {
-        int sig = billow_sig(o);
-        int mask = billow_beatmask(o);
-        int beat_i = (int)T % sig;
-        double beat_d = T - (int)T;
-        if (mask & (1 << beat_i)) {
-            o->tag = OBJID_BILLOW;
-        } else if ((mask & (1 << ((beat_i + 1) % sig)))
-            && beat_d >= 1 - BILLOW_SUST)
-        {
-            int f_idx = (beat_d - 1 + BILLOW_SUST) / BILLOW_FRMLEN;
-            o->tag = OBJID_BILLOW_EMPTY - 1 - f_idx;
-        } else if ((mask & (1 << ((beat_i + sig - 1) % sig)))
-            && beat_d < BILLOW_SUST)
-        {
-            int f_idx = beat_d / BILLOW_FRMLEN;
-            o->tag = OBJID_BILLOW_EMPTY - 1 - f_idx;
-        } else {
-            o->tag = OBJID_BILLOW_EMPTY;
-        }
-    //}
+    int sig = billow_sig(o);
+    int mask = billow_beatmask(o);
+    int beat_i = (int)T % sig;
+    double beat_d = T - (int)T;
+    bool cur_beat = mask & (1 << beat_i);
+    bool last_beat = mask & (1 << ((beat_i + sig - 1) % sig));
+    bool next_beat = mask & (1 << ((beat_i + 1) % sig));
+
+    if (cur_beat && !next_beat && beat_d >= 1 - BILLOW_ANIM) {
+        /* Starts disappearing */
+        o->t = -1;
+        int f_idx = (beat_d - 1 + BILLOW_ANIM) / BILLOW_FRMLEN;
+        o->tag = OBJID_BILLOW_EMPTY - 1 - f_idx;
+    } else if (o->t != -1) {
+        int f_idx = (T - o->t) / BILLOW_FRMLEN;
+        o->tag = max(OBJID_BILLOW, OBJID_BILLOW_EMPTY - 1 - f_idx);
+    } else if (o->t == -1 && !is_touching(o, prot, 1, 1) && cur_beat) {
+        /* Starts appearing */
+        o->t = T;
+    } else {
+        o->tag = OBJID_BILLOW_EMPTY;
+    }
     o->w = o->h = (o->tag == OBJID_BILLOW ? 1 : 0);
 }
 
