@@ -551,6 +551,9 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->grid_tex[OBJID_FRAGILE + 1] = retrieve_texture("fragile2.png");
     ret->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("fragile3.png");
     ret->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("fragile4.png");
+    ret->grid_tex[OBJID_BILLOW] = retrieve_texture("fragile1.png");
+    ret->grid_tex[OBJID_BILLOW + 1] = retrieve_texture("fragile3.png");
+    ret->grid_tex[OBJID_BILLOW + 2] = retrieve_texture("fragile2.png");
     ret->grid_tex[OBJID_MUSHROOM_T] = retrieve_texture("mushroom_t.png");
     ret->grid_tex[OBJID_MUSHROOM_B] = retrieve_texture("mushroom_b.png");
     ret->grid_tex[OBJID_MUSHROOM_BR] =

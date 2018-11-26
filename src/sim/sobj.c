@@ -66,6 +66,47 @@ static inline void fragile_update_post(sobj *o, double T, sobj *prot)
     if (o->tag == OBJID_FRAGILE && is_landing(o, prot)) o->t = T;
 }
 
+#define billow_sig(__o) ((int)(__o)->ay)
+#define billow_beatmask(__o) ((int)(__o)->ax)
+static const double BILLOW_SUST = 0.25;
+static const double BILLOW_FRMLEN =
+    BILLOW_SUST / (OBJID_BILLOW_EMPTY - OBJID_BILLOW - 1);
+
+static inline void billow_init(sobj *o)
+{
+    o->tag = (billow_beatmask(o) & 1) ? OBJID_BILLOW : OBJID_BILLOW_EMPTY;
+}
+
+static inline void billow_update_pred(sobj *o, double T, sobj *prot)
+{
+    //if (!is_touching(o, prot, 1, 1)) {
+        int sig = billow_sig(o);
+        int mask = billow_beatmask(o);
+        int beat_i = (int)T % sig;
+        double beat_d = T - (int)T;
+        if (mask & (1 << beat_i)) {
+            o->tag = OBJID_BILLOW;
+        } else if ((mask & (1 << ((beat_i + 1) % sig)))
+            && beat_d >= 1 - BILLOW_SUST)
+        {
+            int f_idx = (beat_d - 1 + BILLOW_SUST) / BILLOW_FRMLEN;
+            o->tag = OBJID_BILLOW_EMPTY - 1 - f_idx;
+        } else if ((mask & (1 << ((beat_i + sig - 1) % sig)))
+            && beat_d < BILLOW_SUST)
+        {
+            int f_idx = beat_d / BILLOW_FRMLEN;
+            o->tag = OBJID_BILLOW_EMPTY - 1 - f_idx;
+        } else {
+            o->tag = OBJID_BILLOW_EMPTY;
+        }
+    //}
+    o->w = o->h = (o->tag == OBJID_BILLOW ? 1 : 0);
+}
+
+static inline void billow_update_post(sobj *o, double T, sobj *prot)
+{
+}
+
 static inline void spring_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->t != -1 && T - o->t >= SPRING_RECOVER_DUR) {
@@ -246,7 +287,9 @@ static inline void nxstage_init(sobj *o)
 
 void sobj_init(sobj *o)
 {
-    if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
+    if (o->tag >= OBJID_BILLOW && o->tag <= OBJID_BILLOW_EMPTY)
+        billow_init(o);
+    else if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_init(o);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
         cloud_init(o);
@@ -264,6 +307,8 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->tag >= OBJID_FRAGILE && o->tag <= OBJID_FRAGILE_EMPTY)
         fragile_update_pred(o, T, prot);
+    else if (o->tag >= OBJID_BILLOW && o->tag <= OBJID_BILLOW_EMPTY)
+        billow_update_pred(o, T, prot);
     else if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_update_pred(o, T, prot);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
@@ -280,6 +325,8 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
 {
     if (o->tag >= OBJID_FRAGILE && o->tag <= OBJID_FRAGILE_EMPTY)
         fragile_update_post(o, T, prot);
+    else if (o->tag >= OBJID_BILLOW && o->tag <= OBJID_BILLOW_EMPTY)
+        billow_update_post(o, T, prot);
     else if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_update_post(o, T, prot);
     else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)

@@ -20,6 +20,8 @@ typedef struct _sobj {
 
 #define OBJID_FRAGILE       30
 #define OBJID_FRAGILE_EMPTY 34
+#define OBJID_BILLOW        60
+#define OBJID_BILLOW_EMPTY  63
 #define OBJID_SPRING        35
 #define OBJID_SPRING_PRESS  36
 #define OBJID_CLOUD_ONEWAY  37
