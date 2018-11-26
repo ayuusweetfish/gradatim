@@ -105,6 +105,8 @@ static void retry_reinit(gameplay_scene *this)
     this->simulator->prot.x = this->rec->spawn_c;
     this->simulator->prot.y = this->rec->spawn_r;
     this->disp_state = DISP_NORMAL;
+    sim_reinit(this->simulator);
+    this->simulator->cur_time = get_audio_position() - this->aud_sim_offset;
     update_camera(this, 1);
 }
 
@@ -292,7 +294,8 @@ static inline void run_leadin(gameplay_scene *this)
 static inline void draw_overlay(gameplay_scene *this)
 {
     double beats = get_audio_position();
-    this->aud_sim_offset = beats - this->simulator->cur_time;
+    if (this->disp_state == DISP_LEADIN)
+        this->aud_sim_offset = beats - this->simulator->cur_time;
     int beats_i = (int)(beats + 1./16);
     double beats_d = beats - beats_i;
     double is_downbeat = (beats_i % 4 == 0);

@@ -87,6 +87,14 @@ static inline void init_grid(sim *this)
         }
 }
 
+void sim_reinit(sim *this)
+{
+    init_grid(this);
+    int i;
+    for (i = 0; i < this->anim_sz; ++i)
+        sobj_init(this->anim[i]);
+}
+
 /* Sends a rectangle to schnitt for checking. */
 static inline bool apply_intsc(sim *this, sobj *o)
 {

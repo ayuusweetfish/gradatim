@@ -35,6 +35,7 @@ void sim_drop(sim *this);
 
 void sim_add(sim *this, sobj *o);
 void sim_check_volat(sim *this, sobj *o);
+void sim_reinit(sim *this);
 void sim_tick(sim *this);
 bool sim_prophecy(sim *this, double time);
 
