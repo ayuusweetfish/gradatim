@@ -1,6 +1,6 @@
 #include "scene.h"
 #include "global.h"
-#include "gameplay.h"
+#include "overworld.h"
 #include "dialogue.h"
 #include "transition.h"
 #include "element.h"
@@ -95,7 +95,7 @@ static void cb(void *ud)
     if ((scene *)this != g_stage) return;
 
     if (this->r == 255) {
-        g_stage = (scene *)gameplay_scene_create(&g_stage);
+        g_stage = (scene *)overworld_create(g_stage);
         orion_pause(&g_orion, TRACKID_MAIN_BGM);
         return;
     }
