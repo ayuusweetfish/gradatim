@@ -39,8 +39,14 @@ static inline bool is_touching(sobj *o, sobj *prot, double w, double h)
 
 static inline bool is_intersecting(sobj *o, sobj *prot, double w, double h)
 {
-    return intsc_1d(prot->x, prot->w, o->x + w / 4, w / 2) &&
-        intsc_1d(prot->y, prot->h, o->y + h / 4, h / 2);
+    return intsc_1d(prot->x + prot->w / 16, prot->w * 7 / 8, o->x, w) &&
+        intsc_1d(prot->y + prot->w / 16, prot->h * 7 / 8, o->y, h);
+}
+
+static inline bool is_stuck(sobj *o, sobj *prot, double w, double h)
+{
+    return prot->x <= o->x + w / 2 && prot->x + prot->w >= o->x + w / 2 &&
+        prot->y <= o->y + h / 2 && prot->y + prot->h >= o->y + h / 2;
 }
 
 static inline bool is_near(sobj *o, sobj *prot)
@@ -115,7 +121,7 @@ static inline void billow_update_pred(sobj *o, double T, sobj *prot)
     } else {
         o->tag = OBJID_BILLOW_EMPTY;
     }
-    o->w = o->h = (o->tag == OBJID_BILLOW ? 1 : 0);
+    o->w = o->h = (o->tag != OBJID_BILLOW_EMPTY ? 1 : 0);
 }
 
 static inline void billow_update_post(sobj *o, double T, sobj *prot)
