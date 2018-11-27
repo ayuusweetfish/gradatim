@@ -7,6 +7,8 @@
 #include "bekter.h"
 #include "resources.h"
 
+/* For stages */
+
 typedef struct _stage_dialogue {
     int r1, c1, r2, c2; /* Trigger area */
     bekter(dialogue_entry) content;
@@ -34,5 +36,35 @@ struct stage_rec {
 
 struct stage_rec *stage_read(const char *path);
 void stage_drop(struct stage_rec *this);
+
+/* For chapters */
+
+struct _chap_track {
+    char src_id;    /* Index of source track; -1 if reading from file */
+    char *str;      /* File name or filter name */
+    double arg;     /* Offset or filter argument */
+};
+
+struct chap_rec {
+    /* Beats per minute for all BG music */
+    int bpm;
+    /* Beats per measure */
+    int sig;
+    /* Bitmask denoting availability of dash at each beat */
+    unsigned int dash_mask;
+    /* Bitmask denoting availability of hop at each beat */
+    unsigned int hop_mask;
+    /* Tracks */
+#define MAX_CHAP_TRACKS 8
+    struct _chap_track tracks[MAX_CHAP_TRACKS];
+    int n_tracks;
+    /* Stages */
+#define MAX_CHAP_STAGES 64
+    struct stage_rec *stages[MAX_CHAP_STAGES];
+    int n_stages;
+};
+
+struct chap_rec *chap_read(const char *path);
+void chap_drop(struct chap_rec *this);
 
 #endif

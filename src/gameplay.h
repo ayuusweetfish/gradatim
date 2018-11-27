@@ -12,6 +12,9 @@ typedef struct _gameplay_scene {
     scene _base;
     scene *bg, **bg_ptr;
 
+    /* Struct holding all chapter-specific data */
+    struct chap_rec *chap;
+    int cur_stage_idx;
     /* Struct holding all stage-specific data
      * (objects, dialogues, textures etc.) */
     struct stage_rec *rec;

@@ -9,7 +9,7 @@ struct stage_rec *stage_read(const char *path)
     if (!f) return NULL;
 
     struct stage_rec *this = malloc(sizeof(*this));
-    if (!this) return NULL;
+    if (!this) { fclose(f); return NULL; }
     memset(this, 0, sizeof(*this));
 
     this->strtab = bekter_create();
@@ -149,5 +149,74 @@ void stage_drop(struct stage_rec *this)
     struct _stage_dialogue d;
     for bekter_each(this->plot, i, d) bekter_drop(d.content);
     bekter_drop(this->plot);
+
+    sim_drop(this->sim);
+    free(this);
+}
+
+struct chap_rec *chap_read(const char *path)
+{
+    FILE *f = fopen(path, "r");
+    if (!f) return NULL;
+
+    struct chap_rec *this = malloc(sizeof(*this));
+    if (!this) { fclose(f); return NULL; }
+    memset(this, 0, sizeof(*this));
+
+    int bpm, sig, dmask = 0, hmask = 0;
+    char measure[64];
+    int m, i;
+
+    fscanf(f, "%d\n", &bpm);
+    if (bpm <= 0) { free(this); fclose(f); return NULL; }
+    fgets(measure, sizeof measure, f);
+
+    sig = strlen(measure) - 1;
+    while (sig >= 0 && isspace(measure[sig])) measure[sig--] = '\0';
+    if (++sig == 0) { free(this); fclose(f); return NULL; }
+    for (; sig >= 0; --sig) switch (measure[sig]) {
+        case 'x': dmask |= (1 << sig);  /* Fallthrough */
+        case 'o': hmask |= (1 << sig);
+        default: break;
+    }
+
+    this->bpm = bpm;
+    this->sig = sig;
+    this->dash_mask = dmask;
+    this->hop_mask = hmask;
+
+    fscanf(f, "%d", &m);
+    if (m > MAX_CHAP_TRACKS) { free(this); fclose(f); return NULL; }
+    this->n_tracks = m;
+    for (i = 0; i < m; ++i) {
+        int src_id;
+        char str[64];
+        double arg;
+        fscanf(f, "%d,%s,%lf", &src_id, str, &arg);
+        printf("%d | %s | %lf\n", src_id, str, arg);
+        this->tracks[i] = (struct _chap_track){src_id, strdup(str), arg};
+    }
+
+    fscanf(f, "%d", &m);
+    fgetc(f);   /* Skip the newline character */
+    if (m > MAX_CHAP_STAGES) { free(this); fclose(f); return NULL; }
+    this->n_stages = m;
+    for (i = 0; i < m; ++i) {
+        char s[64];
+        fgets(s, sizeof s, f);
+        int p = strlen(s) - 1;
+        while (p > 0 && isspace(s[p])) s[p--] = '\0';
+        this->stages[i] = stage_read(s);
+    }
+
+    fclose(f);
+    return this;
+}
+
+void chap_drop(struct chap_rec *this)
+{
+    int i;
+    for (i = 0; i < this->n_tracks; ++i) free(this->tracks[i].str);
+    for (i = 0; i < this->n_stages; ++i) stage_drop(this->stages[i]);
     free(this);
 }

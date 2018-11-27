@@ -76,13 +76,10 @@ static inline double get_audio_position()
     return (sec + AUD_OFFSET) / BEAT;
 }
 
-static inline void load_csv(gameplay_scene *this, const char *path)
+static inline void switch_stage_ctx(gameplay_scene *this)
 {
-    struct stage_rec *rec = stage_read(path);
-    if (!rec) return;   /* XXX: Uneffective error handling */
-    if (this->rec) stage_drop(this->rec);
-    this->simulator = rec->sim;
-    this->rec = rec;
+    this->rec = this->chap->stages[++this->cur_stage_idx];
+    this->simulator = this->rec->sim;
 }
 
 static inline void update_camera(gameplay_scene *this, double rate)
@@ -145,7 +142,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             /* Move on to the next stage */
             if (this->prev_sim == NULL) {
                 this->prev_sim = this->simulator;
-                load_csv(this, "rub.csv");
+                switch_stage_ctx(this);
                 this->simulator->cur_time = this->prev_sim->cur_time;
                 this->simulator->prot = this->prev_sim->prot;
                 int delta_x = this->simulator->worldc - this->prev_sim->worldc;
@@ -416,9 +413,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
 static void gameplay_scene_drop(gameplay_scene *this)
 {
-    sim_drop(this->simulator);
-    if (this->prev_sim) sim_drop(this->prev_sim);
-    stage_drop(this->rec);
+    chap_drop(this->chap);
     orion_pause(&g_orion, TRACKID_STAGE_BGM);
 }
 
@@ -541,7 +536,10 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->facing = HOR_STATE_RIGHT;
 
     ret->prev_sim = NULL;
-    load_csv(ret, "rua.csv");
+    ret->chap = chap_read("chap.csv");
+    ret->cur_stage_idx = -1;
+    switch_stage_ctx(ret);
+
     ret->cam_x = clamp(ret->simulator->prot.x,
         WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
     ret->cam_y = clamp(ret->simulator->prot.y,
