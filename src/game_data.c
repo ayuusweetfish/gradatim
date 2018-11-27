@@ -191,9 +191,13 @@ struct chap_rec *chap_read(const char *path)
     for (i = 0; i < m; ++i) {
         int src_id;
         char str[64];
+        int p;
         double arg;
-        fscanf(f, "%d,%s,%lf", &src_id, str, &arg);
-        printf("%d | %s | %lf\n", src_id, str, arg);
+        fscanf(f, "%d", &src_id);
+        fgetc(f);   /* Skip the comma */
+        for (p = 0; (str[p] = fgetc(f)) != ','; ++p) ;
+        str[p] = '\0';
+        fscanf(f, "%lf", &arg);
         this->tracks[i] = (struct _chap_track){src_id, strdup(str), arg};
     }
 
