@@ -39,8 +39,8 @@ static inline bool is_touching(sobj *o, sobj *prot, double w, double h)
 
 static inline bool is_intersecting(sobj *o, sobj *prot, double w, double h)
 {
-    return intsc_1d(prot->x + prot->w / 16, prot->w * 7 / 8, o->x, w) &&
-        intsc_1d(prot->y + prot->w / 16, prot->h * 7 / 8, o->y, h);
+    return intsc_1d(prot->x + prot->w / 4, prot->w / 2, o->x, w) &&
+        intsc_1d(prot->y + prot->w / 4, prot->h / 2, o->y, h);
 }
 
 static inline bool is_stuck(sobj *o, sobj *prot, double w, double h)
