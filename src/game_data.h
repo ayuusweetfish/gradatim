@@ -1,7 +1,7 @@
-/* Representation of all data in a CSV stage data file */
+/* Representation of all data in a CSV stage/chapter data file */
 
-#ifndef _STAGE_REC_H
-#define _STAGE_REC_H
+#ifndef _GAME_DATA_H
+#define _GAME_DATA_H
 
 #include "sim/sim.h"
 #include "bekter.h"

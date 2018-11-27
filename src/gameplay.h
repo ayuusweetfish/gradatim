@@ -6,7 +6,7 @@
 #include "resources.h"
 #include "scene.h"
 #include "sim/sim.h"
-#include "stage_rec.h"
+#include "game_data.h"
 
 typedef struct _gameplay_scene {
     scene _base;

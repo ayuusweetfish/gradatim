@@ -2,7 +2,7 @@
 
 #include "global.h"
 #include "bekter.h"
-#include "stage_rec.h"
+#include "game_data.h"
 #include "unary_transition.h"
 #include "pause.h"
 #include "dialogue.h"

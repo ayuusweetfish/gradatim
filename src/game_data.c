@@ -1,4 +1,4 @@
-#include "stage_rec.h"
+#include "game_data.h"
 #include "dialogue.h"
 #include <ctype.h>
 #include <stdio.h>
