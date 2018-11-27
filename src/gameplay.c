@@ -223,7 +223,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
     this->simulator->prot.vx += hor_mov_vx;
 
-    double rt = this->rem_time + dt / BEAT;
+    double rt = this->rem_time + dt / (BEAT * this->chap->beat_mul);
     while (rt >= SIM_STEPLEN) {
         sim_tick(this->simulator);
         rt -= SIM_STEPLEN;
@@ -320,6 +320,7 @@ static inline void draw_overlay(gameplay_scene *this)
     int beats_i = (int)(beats + 1./16);
     double beats_d = beats - beats_i;
     beats_i %= this->chap->sig;
+    beats_d /= this->chap->beat_mul;
     bool is_downbeat = this->chap->dash_mask & (1 << beats_i),
         is_upbeat = this->chap->hop_mask & (1 << beats_i);
     if (!is_upbeat) return;

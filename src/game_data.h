@@ -50,6 +50,9 @@ struct chap_rec {
     int bpm;
     /* Beat length in seconds; calculated from `bpm` */
     double beat;
+    /* Multiplier for simulation and display;
+     * This is only useful under irregular time signatures (e.g. 14/8) */
+    int beat_mul;
     /* Beats per measure */
     int sig;
     /* Bitmask denoting availability of dash at each beat */
