@@ -15,7 +15,7 @@ static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 static const double SPR_SCALE = 3;
 
 static const double AUD_OFFSET = +0.04;
-static const double BEAT = 60.0 / 128;  /* Temporary */
+#define BEAT    (this->chap->beat)
 #define HOP_SPD SIM_GRAVITY
 static const double HOP_PRED_DUR = 0.2;
 static const double HOP_GRACE_DUR = 0.15;
@@ -70,7 +70,7 @@ static inline double clamp(double x, double l, double u)
     return (x < l ? l : (x > u ? u : x));
 }
 
-static inline double get_audio_position()
+static inline double get_audio_position(gameplay_scene *this)
 {
     double sec = (double)orion_tell(&g_orion, TRACKID_STAGE_BGM) / 44100;
     return (sec + AUD_OFFSET) / BEAT;
@@ -104,7 +104,7 @@ static void retry_reinit(gameplay_scene *this)
     this->simulator->prot.y = this->rec->spawn_r;
     this->disp_state = DISP_NORMAL;
     sim_reinit(this->simulator);
-    this->simulator->cur_time = get_audio_position() - this->aud_sim_offset;
+    this->simulator->cur_time = get_audio_position(this) - this->aud_sim_offset;
     this->dialogue_triggered = 0;
     update_camera(this, 1);
 }
@@ -117,7 +117,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             SDL_DestroyTexture(this->leadin_tex);
             this->leadin_tex = NULL;
             this->aud_sim_offset /= this->aud_sim_offset_n_samples;
-            this->simulator->cur_time = get_audio_position() - this->aud_sim_offset;
+            this->simulator->cur_time =
+                get_audio_position(this) - this->aud_sim_offset;
         } else {
             return;
         }
@@ -311,14 +312,17 @@ static inline void run_leadin(gameplay_scene *this)
 
 static inline void draw_overlay(gameplay_scene *this)
 {
-    double beats = get_audio_position();
+    double beats = get_audio_position(this);
     if (this->disp_state == DISP_LEADIN) {
         this->aud_sim_offset = beats - this->simulator->cur_time;
         this->aud_sim_offset_n_samples++;
     }
     int beats_i = (int)(beats + 1./16);
     double beats_d = beats - beats_i;
-    double is_downbeat = (beats_i % 4 == 0);
+    beats_i %= this->chap->sig;
+    bool is_downbeat = this->chap->dash_mask & (1 << beats_i),
+        is_upbeat = this->chap->hop_mask & (1 << beats_i);
+    if (!is_upbeat) return;
     int opacity = round((
         beats_d < 0 ? (1 + beats_d * 16) :
         beats_d < 0.5 ? (1 - beats_d * 2) : 0) * 255);

@@ -48,6 +48,8 @@ struct _chap_track {
 struct chap_rec {
     /* Beats per minute for all BG music */
     int bpm;
+    /* Beat length in seconds; calculated from `bpm` */
+    double beat;
     /* Beats per measure */
     int sig;
     /* Bitmask denoting availability of dash at each beat */

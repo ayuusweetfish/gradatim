@@ -174,13 +174,14 @@ struct chap_rec *chap_read(const char *path)
     sig = strlen(measure) - 1;
     while (sig >= 0 && isspace(measure[sig])) measure[sig--] = '\0';
     if (++sig == 0) { free(this); fclose(f); return NULL; }
-    for (; sig >= 0; --sig) switch (measure[sig]) {
-        case 'x': dmask |= (1 << sig);  /* Fallthrough */
-        case 'o': hmask |= (1 << sig);
+    for (i = 0; i < sig; ++i) switch (measure[i]) {
+        case 'x': dmask |= (1 << i);    /* Fallthrough */
+        case 'o': hmask |= (1 << i);
         default: break;
     }
 
     this->bpm = bpm;
+    this->beat = 60.0 / bpm;
     this->sig = sig;
     this->dash_mask = dmask;
     this->hop_mask = hmask;
