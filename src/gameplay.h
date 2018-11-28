@@ -55,6 +55,6 @@ typedef struct _gameplay_scene {
     double mov_time;    /* Time remaining until movement state resets */
 } gameplay_scene;
 
-gameplay_scene *gameplay_scene_create(scene **bg);
+gameplay_scene *gameplay_scene_create(scene **bg, struct chap_rec *chap, int idx);
 
 #endif

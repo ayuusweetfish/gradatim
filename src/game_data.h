@@ -4,6 +4,7 @@
 #define _GAME_DATA_H
 
 #include "sim/sim.h"
+#include "sim/sobj.h"
 #include "bekter.h"
 #include "resources.h"
 
@@ -16,9 +17,15 @@ typedef struct _stage_dialogue {
 
 struct stage_rec {
     int world_r, world_c;
-    sim *sim;
+    int n_rows, n_cols;
     int cam_r1, cam_c1, cam_r2, cam_c2;
     int spawn_r, spawn_c;
+
+    /* Grid data */
+    char *grid;
+    /* Animate & extra objects */
+    int n_anim;
+    sobj *anim;
 
     /* String table */
     bekter(char *) strtab;
@@ -35,6 +42,7 @@ struct stage_rec {
 };
 
 struct stage_rec *stage_read(const char *path);
+sim *stage_create_sim(struct stage_rec *this);
 void stage_drop(struct stage_rec *this);
 
 /* For chapters */

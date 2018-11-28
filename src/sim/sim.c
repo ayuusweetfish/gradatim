@@ -44,8 +44,6 @@ sim *sim_create(int grows, int gcols)
 
 void sim_drop(sim *this)
 {
-    int i;
-    for (i = 0; i < this->anim_sz; ++i) free(this->anim[i]);
     free(this->grid);
     free(this->anim);
     free(this->volat);

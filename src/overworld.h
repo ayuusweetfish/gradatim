@@ -10,7 +10,7 @@ typedef struct _overworld_scene {
     scene _base;
     scene *bg;
 
-    bekter(struct chap_rec) chaps;
+    bekter(struct chap_rec *) chaps;
     int n_chaps;
 } overworld_scene;
 

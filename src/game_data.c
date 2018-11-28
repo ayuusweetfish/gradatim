@@ -15,45 +15,41 @@ struct stage_rec *stage_read(const char *path)
     this->strtab = bekter_create();
     this->plot = bekter_create();
 
-    int worldr, worldc, nrows, ncols;
-    int cam_r1, cam_c1, cam_r2, cam_c2;
     int i, j;
 
     /* TODO: Report all fscanf()'s incorrect return values? */
-    fscanf(f, "%d,%d", &worldr, &worldc);
-    fscanf(f, "%d,%d", &nrows, &ncols);
-    fscanf(f, "%d,%d,%d,%d", &cam_r1, &cam_c1, &cam_r2, &cam_c2);
+    fscanf(f, "%d,%d", &this->world_r, &this->world_c);
+    fscanf(f, "%d,%d", &this->n_rows, &this->n_cols);
+    fscanf(f, "%d,%d,%d,%d",
+        &this->cam_r1, &this->cam_c1, &this->cam_r2, &this->cam_c2);
     fscanf(f, "%d,%d", &this->spawn_r, &this->spawn_c);
 
-    this->sim = sim_create(nrows, ncols);
-    this->sim->worldr = worldr;
-    this->sim->worldc = worldc;
-    this->sim->prot.x = this->spawn_c;
-    this->sim->prot.y = this->spawn_r;
-    this->sim->prot.w = this->sim->prot.h = 0.6;
-    this->cam_r1 = cam_r1;
-    this->cam_c1 = cam_c1;
-    this->cam_r2 = cam_r2;
-    this->cam_c2 = cam_c2;
+    /* The grid needs only tags, in order to save memory */
+    this->grid = malloc(sizeof(*this->grid) * this->n_rows * this->n_cols);
+    if (!this->grid) { fclose(f); return NULL; }
 
-    for (i = 0; i < nrows; ++i)
-        for (j = 0; j < ncols; ++j) {
+    for (i = 0; i < this->n_rows; ++i)
+        for (j = 0; j < this->n_cols; ++j) {
             int t;
             fscanf(f, "%d", &t);
             fgetc(f);
-            sim_grid(this->sim, i, j).tag = t;
+            this->grid[i * this->n_cols + j] = t;
         }
 
     int m;
 
     /* Animate objects; or objects that do not fit into the grid */
     fscanf(f, "%d", &m);
+    this->n_anim = m;
+    this->anim = malloc(sizeof(*this->anim) * m);
+    if (!this->anim) { fclose(f); return NULL; }
+
     for (i = 0; i < m; ++i) {
         int r, c, tag;
         double x1, y1, x2, y2, t;
         fscanf(f, "%d,%d,%d,%lf,%lf,%lf,%lf,%lf",
             &r, &c, &tag, &y1, &x1, &y2, &x2, &t);
-        sobj *o = malloc(sizeof(sobj));
+        sobj *o = &this->anim[i];
         memset(o, 0, sizeof(sobj));
         o->tag = tag;
         o->x = c;
@@ -64,7 +60,6 @@ struct stage_rec *stage_read(const char *path)
         o->ax = x2;
         o->ay = y2;
         o->t = t;
-        sim_add(this->sim, o);
     }
 
     /* String table */
@@ -139,6 +134,30 @@ struct stage_rec *stage_read(const char *path)
     return this;
 }
 
+sim *stage_create_sim(struct stage_rec *this)
+{
+    sim *s = sim_create(this->n_rows, this->n_cols);
+    s->worldr = this->world_r;
+    s->worldc = this->world_c;
+    s->prot.x = this->spawn_c;
+    s->prot.y = this->spawn_r;
+    s->prot.w = s->prot.h = 0.6;
+
+    int i, j;
+
+    /* Populate the grid */
+    for (i = 0; i < this->n_rows; ++i)
+        for (j = 0; j < this->n_cols; ++j)
+            sim_grid(s, i, j).tag = this->grid[i * this->n_cols + j];
+
+    /* Initialize all animate objects */
+    for (i = 0; i < this->n_anim; ++i)
+        sim_add(s, &this->anim[i]);
+
+    sim_reinit(s);
+    return s;
+}
+
 void stage_drop(struct stage_rec *this)
 {
     int i;
@@ -150,7 +169,7 @@ void stage_drop(struct stage_rec *this)
     for bekter_each(this->plot, i, d) bekter_drop(d.content);
     bekter_drop(this->plot);
 
-    sim_drop(this->sim);
+    free(this->anim);
     free(this);
 }
 

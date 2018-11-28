@@ -79,7 +79,7 @@ static inline double get_audio_position(gameplay_scene *this)
 static inline void switch_stage_ctx(gameplay_scene *this)
 {
     this->rec = this->chap->stages[++this->cur_stage_idx];
-    this->simulator = this->rec->sim;
+    this->simulator = stage_create_sim(this->rec);
 }
 
 static inline void update_camera(gameplay_scene *this, double rate)
@@ -418,7 +418,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
 static void gameplay_scene_drop(gameplay_scene *this)
 {
-    chap_drop(this->chap);
+    if (this->simulator != NULL) sim_drop(this->simulator);
     orion_pause(&g_orion, TRACKID_STAGE_BGM);
 }
 
@@ -523,7 +523,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     }
 }
 
-gameplay_scene *gameplay_scene_create(scene **bg)
+gameplay_scene *gameplay_scene_create(scene **bg, struct chap_rec *chap, int idx)
 {
     gameplay_scene *ret = malloc(sizeof(gameplay_scene));
     memset(ret, 0, sizeof(gameplay_scene));
@@ -541,8 +541,8 @@ gameplay_scene *gameplay_scene_create(scene **bg)
     ret->facing = HOR_STATE_RIGHT;
 
     ret->prev_sim = NULL;
-    ret->chap = chap_read("chap.csv");
-    ret->cur_stage_idx = -1;
+    ret->chap = chap;
+    ret->cur_stage_idx = idx - 1;
     switch_stage_ctx(ret);
 
     ret->cam_x = clamp(ret->simulator->prot.x,
