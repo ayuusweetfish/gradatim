@@ -18,6 +18,7 @@ static void ow_drop(overworld_scene *this)
     struct chap_rec *p;
     for bekter_each(this->chaps, i, p) chap_drop(p);
     bekter_drop(this->chaps);
+    free(this);
 }
 
 static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)

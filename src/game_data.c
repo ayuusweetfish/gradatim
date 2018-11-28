@@ -169,6 +169,7 @@ void stage_drop(struct stage_rec *this)
     for bekter_each(this->plot, i, d) bekter_drop(d.content);
     bekter_drop(this->plot);
 
+    free(this->grid);
     free(this->anim);
     free(this);
 }
