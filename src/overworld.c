@@ -18,10 +18,16 @@ static void ow_draw(overworld_scene *this)
     int i;
     struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, typeof(ch));
     SDL_Texture **tex = bekter_at(this->stage_tex, this->cur_chap_idx, typeof(tex));
-    /*for (i = 0; i < ch->n_stages; ++i) {
-        SDL_RenderCopy(g_renderer, tex[i], NULL, NULL);
-    }*/
-    SDL_RenderCopy(g_renderer, tex[this->cur_stage_idx], NULL, NULL);
+    for (i = 0; i < ch->n_stages; ++i) {
+        int c = (i == this->cur_stage_idx) ? 255 : 128;
+        SDL_SetTextureColorMod(tex[i], c, c, c);
+        SDL_RenderCopy(g_renderer, tex[i], NULL, &(SDL_Rect){
+            (ch->stages[i]->world_c + ch->stages[i]->cam_c1) * 2,
+            (ch->stages[i]->world_r + ch->stages[i]->cam_r1) * 2,
+            (ch->stages[i]->cam_c2 - ch->stages[i]->cam_c1) * 2,
+            (ch->stages[i]->cam_r2 - ch->stages[i]->cam_r1) * 2
+        });
+    }
 }
 
 static void ow_drop(overworld_scene *this)
@@ -181,6 +187,9 @@ overworld_scene *overworld_create(scene *bg)
 
     ret->cur_chap_idx = 0;
     ret->cur_stage_idx = 0;
+
+    ret->cam_r = -1000;
+    ret->cam_c = -1000;
 
     return ret;
 }
