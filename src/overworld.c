@@ -56,9 +56,27 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
     }
 }
 
-static inline Uint32 retrieve_colour(char tag)
+#define SAMPLER_TEX_SZ 64
+
+/* TODO: Averaging does not work well, make modifications */
+static inline Uint32 retrieve_colour(Uint32 *buf, const texture tex)
 {
-    return tag != 0 ? ((tag * 0x01010100) | 0xff) : 0;
+    if (tex.sdl_tex == NULL) return 0;
+    render_texture(tex, NULL);
+    SDL_RenderReadPixels(g_renderer, NULL,
+        SDL_PIXELFORMAT_RGBA8888, buf, SAMPLER_TEX_SZ * 4);
+    int i;
+    int ct = 0, r_sum = 0, g_sum = 0, b_sum = 0;
+    for (i = 0; i < SAMPLER_TEX_SZ * SAMPLER_TEX_SZ; ++i) {
+        Uint32 pix = buf[i];
+        ct += pix & 0xff;
+        r_sum += (pix & 0xff) * (pix >> 24);
+        g_sum += (pix & 0xff) * ((pix >> 16) & 0xff);
+        b_sum += (pix & 0xff) * ((pix >> 8) & 0xff);
+    }
+    return (round((double)r_sum / ct) << 24) |
+        (round((double)r_sum / ct) << 16) |
+        (round((double)b_sum / ct) << 8) | 0xff;
 }
 
 static inline void load_chapter(overworld_scene *this, const char *path)
@@ -71,6 +89,18 @@ static inline void load_chapter(overworld_scene *this, const char *path)
     SDL_Texture **tex_arr = malloc(sizeof(SDL_Texture *) * ch->n_stages);
 
     int i, r, c;
+    Uint32 repr_colour[256];
+    SDL_Texture *tmp_tex = SDL_CreateTexture(
+        g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
+        SAMPLER_TEX_SZ, SAMPLER_TEX_SZ);
+    SDL_SetRenderTarget(g_renderer, tmp_tex);
+    Uint32 *buf = malloc(SAMPLER_TEX_SZ * SAMPLER_TEX_SZ * 4);
+    for (i = 0; i < 256; ++i)
+        repr_colour[i] = retrieve_colour(buf, ch->stages[0]->grid_tex[i]);
+    SDL_SetRenderTarget(g_renderer, NULL);
+    SDL_DestroyTexture(tmp_tex);
+    free(buf);
+
     for (i = 0; i < ch->n_stages; ++i) {
         struct stage_rec *st = ch->stages[i];
         int nr = st->cam_r2 - st->cam_r1,
@@ -84,9 +114,9 @@ static inline void load_chapter(overworld_scene *this, const char *path)
         memset(pix, 0, w * h * 4);
         for (r = 0; r < nr; ++r)
             for (c = 0; c < nc; ++c) {
-                Uint32 cell = retrieve_colour(
+                Uint32 cell = repr_colour[
                     st->grid[(r + st->cam_r1) * st->n_cols + (c + st->cam_c1)]
-                );
+                ];
                 pix[(r * 2) * w + (c * 2)] =
                 pix[(r * 2) * w + (c * 2 + 1)] =
                 pix[(r * 2 + 1) * w + (c * 2)] =
