@@ -316,6 +316,7 @@ static inline void draw_overlay(gameplay_scene *this)
     if (this->disp_state == DISP_LEADIN) {
         this->aud_sim_offset = beats - this->simulator->cur_time;
         this->aud_sim_offset_n_samples++;
+        return;
     }
     int beats_i = (int)(beats + 1./16);
     double beats_d = beats - beats_i;
