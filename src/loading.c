@@ -13,8 +13,10 @@ static const double CHK_INTERVAL = 1;
 static inline int loading_thread(loading_scene *this)
 {
     scene *ret = this->func(this->userdata);
+    SDL_AtomicLock(&this->rw_lock);
     this->_base.b = ret;
-    SDL_AtomicUnlock(&this->lock);
+    SDL_AtomicUnlock(&this->rw_lock);
+    SDL_AtomicUnlock(&this->fin_lock);
     return 0;
 }
 
@@ -29,12 +31,13 @@ static void loading_tick(loading_scene *this, double dt)
             scene_drop(this);
         }
     } else if ((this->until_next_check -= dt) <= 0) {
-        if (SDL_AtomicTryLock(&this->lock)) {
+        if (SDL_AtomicTryLock(&this->fin_lock)) {
             /* The routine has completed! */
             this->since_finish = 0;
             /* Resource deallocation */
-            SDL_AtomicUnlock(&this->lock);
+            SDL_AtomicUnlock(&this->fin_lock);
             SDL_WaitThread(this->thread, NULL);
+            if (this->postfunc) this->postfunc(this->userdata, this->_base.b);
         }
         this->until_next_check = CHK_INTERVAL;
     }
@@ -42,6 +45,18 @@ static void loading_tick(loading_scene *this, double dt)
 
 static void loading_draw(loading_scene *this)
 {
+    SDL_AtomicLock(&this->rw_lock);
+    scene *b = this->_base.b;
+    SDL_AtomicUnlock(&this->rw_lock);
+    if (b != NULL) {
+        SDL_SetRenderTarget(g_renderer, this->_base.b_tex);
+        scene_draw(b);
+    } else {
+        SDL_SetRenderTarget(g_renderer, this->_base.a_tex);
+        scene_draw(this->_base.a);
+    }
+    SDL_SetRenderTarget(g_renderer, NULL);
+
     double t;
     int i;
     static SDL_Rect r[N_STRIPS];
@@ -74,22 +89,24 @@ static void loading_draw(loading_scene *this)
     SDL_RenderFillRects(g_renderer, r, i);
 }
 
-loading_scene *loading_create(scene **a, loading_routine func, void *userdata)
+loading_scene *loading_create(scene **a,
+    loading_routine func, loading_postroutine postfunc, void *userdata)
 {
     transition_scene *_ret = transition_create(a, NULL, 1e10);
     loading_scene *ret = realloc(_ret, sizeof(loading_scene));
     if (!ret) return NULL;
     ret->_base.preserves_a = true;
-    ret->_base.t_draw = (transition_draw_func)loading_draw;
     ret->_base._base.tick = (scene_tick_func)loading_tick;
+    ret->_base._base.draw = (scene_draw_func)loading_draw;
     ret->func = func;
+    ret->postfunc = postfunc;
     ret->userdata = userdata;
-    ret->lock = 0;
+    ret->fin_lock = ret->rw_lock = 0;
     ret->until_next_check = CHK_INTERVAL;
     ret->since_finish = -1;
 
     /* Start the thread */
-    SDL_AtomicLock(&ret->lock);
+    SDL_AtomicLock(&ret->fin_lock);
     ret->thread = SDL_CreateThread(
         (SDL_ThreadFunction)loading_thread, "Loading thread", ret);
 

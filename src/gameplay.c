@@ -299,7 +299,7 @@ static inline void render_objects(gameplay_scene *this,
     }
 }
 
-static inline void run_leadin(gameplay_scene *this)
+void gameplay_run_leadin(gameplay_scene *this)
 {
     this->disp_state = DISP_LEADIN;
     this->disp_time = LEADIN_DUR + LEADIN_INIT;
@@ -524,7 +524,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     }
 }
 
-gameplay_scene *gameplay_scene_create(scene **bg, struct chap_rec *chap, int idx)
+gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx)
 {
     gameplay_scene *ret = malloc(sizeof(gameplay_scene));
     memset(ret, 0, sizeof(gameplay_scene));
@@ -533,10 +533,7 @@ gameplay_scene *gameplay_scene_create(scene **bg, struct chap_rec *chap, int idx
     ret->_base.draw = (scene_draw_func)gameplay_scene_draw;
     ret->_base.drop = (scene_drop_func)gameplay_scene_drop;
     ret->_base.key_handler = (scene_key_func)gameplay_scene_key_handler;
-    ret->bg = *bg;
-    ret->bg_ptr = bg;
-
-    run_leadin(ret);
+    ret->bg = bg;
 
     ret->rem_time = 0;
     ret->facing = HOR_STATE_RIGHT;

@@ -74,9 +74,14 @@ static void ow_drop(overworld_scene *this)
 
 static inline scene *run_stage(overworld_scene *this)
 {
-    gameplay_scene *gp = gameplay_scene_create(&g_stage,
+    gameplay_scene *gp = gameplay_scene_create((scene *)this,
         bekter_at(this->chaps, 0, struct chap_rec *), this->cur_stage_idx);
     return (scene *)gp;
+}
+
+static inline void init_stage(overworld_scene *this, gameplay_scene *gp)
+{
+    gameplay_run_leadin(gp);
 }
 
 static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
@@ -88,7 +93,10 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
             ow_drop(this);
             break;
         case SDLK_SPACE:
-            g_stage = (scene *)loading_create(&g_stage, (loading_routine)run_stage, this);
+            g_stage = (scene *)loading_create(&g_stage,
+                (loading_routine)run_stage, (loading_postroutine)init_stage, this);
+            //g_stage = (scene *)gameplay_scene_create((scene *)this,
+            //    bekter_at(this->chaps, 0, struct chap_rec *), this->cur_stage_idx);
             break;
         case SDLK_LEFT:
             if (this->cur_stage_idx > 0) {
