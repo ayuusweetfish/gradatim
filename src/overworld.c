@@ -1,6 +1,7 @@
 #include "overworld.h"
 #include "global.h"
 #include "loading.h"
+#include "overworld_menu.h"
 #include "gameplay.h"
 
 #include <stdlib.h>
@@ -93,10 +94,7 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
             ow_drop(this);
             break;
         case SDLK_SPACE:
-            g_stage = (scene *)loading_create(&g_stage,
-                (loading_routine)run_stage, (loading_postroutine)init_stage, this);
-            //g_stage = (scene *)gameplay_scene_create((scene *)this,
-            //    bekter_at(this->chaps, 0, struct chap_rec *), this->cur_stage_idx);
+            g_stage = (scene *)overworld_menu_create(this);
             break;
         case SDLK_LEFT:
             if (this->cur_stage_idx > 0) {
