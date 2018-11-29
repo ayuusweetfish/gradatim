@@ -17,7 +17,9 @@ typedef struct _overworld_scene {
     bekter(SDL_Texture **) stage_tex;
     int cur_stage_idx;
 
+    /* Camera position (centre), in pixels */
     double cam_x, cam_y, cam_scale;
+    double cam_targx, cam_targy, cam_targscale;
 } overworld_scene;
 
 overworld_scene *overworld_create(scene *bg);
