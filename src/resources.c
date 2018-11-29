@@ -77,6 +77,8 @@ void load_images()
     load_image("rua1.png");
     load_image("rua2.png");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+    load_image("clock.png");
+    load_image("retry_count.png");
 }
 
 void release_images()
