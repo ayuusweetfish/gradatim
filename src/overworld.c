@@ -73,18 +73,6 @@ static void ow_drop(overworld_scene *this)
     free(this);
 }
 
-static inline scene *run_stage(overworld_scene *this)
-{
-    gameplay_scene *gp = gameplay_scene_create((scene *)this,
-        bekter_at(this->chaps, 0, struct chap_rec *), this->cur_stage_idx);
-    return (scene *)gp;
-}
-
-static inline void init_stage(overworld_scene *this, gameplay_scene *gp)
-{
-    gameplay_run_leadin(gp);
-}
-
 static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
 {
     if (ev->state != SDL_PRESSED) return;

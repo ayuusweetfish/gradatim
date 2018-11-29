@@ -1,6 +1,8 @@
 #include "overworld_menu.h"
 #include "global.h"
 #include "label.h"
+#include "loading.h"
+#include "gameplay.h"
 
 static const double MOV_X = 30;
 static const double SCALE = 1.3;
@@ -55,6 +57,18 @@ static inline void owm_drop(overworld_menu *this)
 {
 }
 
+static inline scene *run_stage(overworld_scene *this)
+{
+    gameplay_scene *gp = gameplay_scene_create((scene *)this,
+        bekter_at(this->chaps, 0, struct chap_rec *), this->cur_stage_idx);
+    return (scene *)gp;
+}
+
+static inline void init_stage(overworld_scene *this, gameplay_scene *gp)
+{
+    gameplay_run_leadin(gp);
+}
+
 static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
 {
     if (ev->state != SDL_PRESSED) return;
@@ -65,6 +79,12 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
                 this->bg->cam_targx -= MOV_X;
                 this->bg->cam_targscale /= SCALE;
             }
+            break;
+        case SDLK_RETURN:
+            g_stage = (scene *)loading_create(&g_stage,
+                (loading_routine)run_stage, (loading_postroutine)init_stage, this->bg);
+            this->bg->cam_targx -= MOV_X;
+            this->bg->cam_targscale /= SCALE;
             break;
     }
 }
