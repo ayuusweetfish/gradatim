@@ -56,27 +56,51 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
     }
 }
 
-#define SAMPLER_TEX_SZ 64
+#define SAMPLER_TEX_SZ 16
+#define PITCH (SAMPLER_TEX_SZ * 4)
 
-/* TODO: Averaging does not work well, make modifications */
-static inline Uint32 retrieve_colour(Uint32 *buf, const texture tex)
+static inline Uint32 weighted_average(Uint32 *buf, int r0, int c0)
 {
-    if (tex.sdl_tex == NULL) return 0;
-    render_texture(tex, NULL);
-    SDL_RenderReadPixels(g_renderer, NULL,
-        SDL_PIXELFORMAT_RGBA8888, buf, SAMPLER_TEX_SZ * 4);
-    int i;
-    int ct = 0, r_sum = 0, g_sum = 0, b_sum = 0;
-    for (i = 0; i < SAMPLER_TEX_SZ * SAMPLER_TEX_SZ; ++i) {
-        Uint32 pix = buf[i];
-        ct += pix & 0xff;
-        r_sum += (pix & 0xff) * (pix >> 24);
-        g_sum += (pix & 0xff) * ((pix >> 16) & 0xff);
-        b_sum += (pix & 0xff) * ((pix >> 8) & 0xff);
+    int i1, j1, i2, j2;
+    Uint64 raw_a = 0, ct = 0, rs = 0, gs = 0, bs = 0;
+    for (i1 = r0; i1 < r0 + SAMPLER_TEX_SZ / 2; ++i1)
+    for (j1 = c0; j1 < c0 + SAMPLER_TEX_SZ / 2; ++j1) {
+        int r = (buf[i1 * SAMPLER_TEX_SZ + j1] >> 24),
+            g = (buf[i1 * SAMPLER_TEX_SZ + j1] >> 16) & 0xff,
+            b = (buf[i1 * SAMPLER_TEX_SZ + j1] >> 8) & 0xff,
+            a = (buf[i1 * SAMPLER_TEX_SZ + j1]) & 0xff;
+        if (a == 0) continue;
+        raw_a += a;
+        for (i2 = r0; i2 < r0 + SAMPLER_TEX_SZ / 2; ++i2)
+        for (j2 = c0; j2 < c0 + SAMPLER_TEX_SZ / 2; ++j2)
+            if (buf[i1 * SAMPLER_TEX_SZ + j1] == buf[i2 * SAMPLER_TEX_SZ + j2]) {
+                ct += a;
+                rs += r * a;
+                gs += g * a;
+                bs += b * a;
+            }
     }
-    return (round((double)r_sum / ct) << 24) |
-        (round((double)r_sum / ct) << 16) |
-        (round((double)b_sum / ct) << 8) | 0xff;
+    if (raw_a == 0) return 0;
+    return (round((double)rs / ct) << 24) |
+        (round((double)gs / ct) << 16) |
+        (round((double)bs / ct) << 8) |
+        (round((double)raw_a / (SAMPLER_TEX_SZ * SAMPLER_TEX_SZ / 4)));
+}
+
+static inline void retrieve_colour(Uint32 *buf, const texture tex, Uint32 out[4])
+{
+    if (tex.sdl_tex == NULL) return;
+    SDL_RenderClear(g_renderer);
+    render_texture(tex, NULL);
+    SDL_RenderReadPixels(g_renderer, NULL, SDL_PIXELFORMAT_RGBA8888, buf, PITCH);
+    /*int i, j;
+    for (i = 0; i < SAMPLER_TEX_SZ; ++i)
+    for (j = 0; j < SAMPLER_TEX_SZ; ++j)
+        printf("%08x%c", buf[i * SAMPLER_TEX_SZ + j], j == SAMPLER_TEX_SZ - 1 ? '\n' : ' ');*/
+    out[0] = weighted_average(buf, 0, 0);
+    out[1] = weighted_average(buf, 0, SAMPLER_TEX_SZ / 2);
+    out[2] = weighted_average(buf, SAMPLER_TEX_SZ / 2, 0);
+    out[3] = weighted_average(buf, SAMPLER_TEX_SZ / 2, SAMPLER_TEX_SZ / 2);
 }
 
 static inline void load_chapter(overworld_scene *this, const char *path)
@@ -89,14 +113,16 @@ static inline void load_chapter(overworld_scene *this, const char *path)
     SDL_Texture **tex_arr = malloc(sizeof(SDL_Texture *) * ch->n_stages);
 
     int i, r, c;
-    Uint32 repr_colour[256];
+    Uint32 repr_colour[256][4] = {{ 0 }};
     SDL_Texture *tmp_tex = SDL_CreateTexture(
         g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
         SAMPLER_TEX_SZ, SAMPLER_TEX_SZ);
     SDL_SetRenderTarget(g_renderer, tmp_tex);
-    Uint32 *buf = malloc(SAMPLER_TEX_SZ * SAMPLER_TEX_SZ * 4);
+    SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 0);
+    Uint32 *buf = malloc(SAMPLER_TEX_SZ * PITCH);
     for (i = 0; i < 256; ++i)
-        repr_colour[i] = retrieve_colour(buf, ch->stages[0]->grid_tex[i]);
+        retrieve_colour(buf, ch->stages[0]->grid_tex[i], repr_colour[i]);
     SDL_SetRenderTarget(g_renderer, NULL);
     SDL_DestroyTexture(tmp_tex);
     free(buf);
@@ -114,13 +140,13 @@ static inline void load_chapter(overworld_scene *this, const char *path)
         memset(pix, 0, w * h * 4);
         for (r = 0; r < nr; ++r)
             for (c = 0; c < nc; ++c) {
-                Uint32 cell = repr_colour[
+                Uint32 *cell = repr_colour[
                     st->grid[(r + st->cam_r1) * st->n_cols + (c + st->cam_c1)]
                 ];
-                pix[(r * 2) * w + (c * 2)] =
-                pix[(r * 2) * w + (c * 2 + 1)] =
-                pix[(r * 2 + 1) * w + (c * 2)] =
-                pix[(r * 2 + 1) * w + (c * 2 + 1)] = cell;
+                pix[(r * 2) * w + (c * 2)] = cell[0];
+                pix[(r * 2) * w + (c * 2 + 1)] = cell[1];
+                pix[(r * 2 + 1) * w + (c * 2)] = cell[2];
+                pix[(r * 2 + 1) * w + (c * 2 + 1)] = cell[3];
             }
         SDL_UpdateTexture(tex, NULL, pix, w * 4);
         free(pix);
