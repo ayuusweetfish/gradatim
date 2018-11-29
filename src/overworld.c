@@ -93,14 +93,18 @@ static inline void retrieve_colour(Uint32 *buf, const texture tex, Uint32 out[4]
     SDL_RenderClear(g_renderer);
     render_texture(tex, NULL);
     SDL_RenderReadPixels(g_renderer, NULL, SDL_PIXELFORMAT_RGBA8888, buf, PITCH);
-    /*int i, j;
-    for (i = 0; i < SAMPLER_TEX_SZ; ++i)
-    for (j = 0; j < SAMPLER_TEX_SZ; ++j)
-        printf("%08x%c", buf[i * SAMPLER_TEX_SZ + j], j == SAMPLER_TEX_SZ - 1 ? '\n' : ' ');*/
     out[0] = weighted_average(buf, 0, 0);
     out[1] = weighted_average(buf, 0, SAMPLER_TEX_SZ / 2);
     out[2] = weighted_average(buf, SAMPLER_TEX_SZ / 2, 0);
     out[3] = weighted_average(buf, SAMPLER_TEX_SZ / 2, SAMPLER_TEX_SZ / 2);
+}
+
+static inline Uint32 manipulate(Uint32 colour, int r, int c)
+{
+    if ((colour & 0xff) == 0) return colour;
+    int a = (colour & 0xff) + 3 - ((r * (r + 1) + c * (c + r * 3)) & 7);
+    if (a < 0) a = 0; else if (a > 255) a = 255;
+    return (colour & 0xffffff00) | a;
 }
 
 static inline void load_chapter(overworld_scene *this, const char *path)
@@ -143,10 +147,14 @@ static inline void load_chapter(overworld_scene *this, const char *path)
                 Uint32 *cell = repr_colour[
                     st->grid[(r + st->cam_r1) * st->n_cols + (c + st->cam_c1)]
                 ];
-                pix[(r * 2) * w + (c * 2)] = cell[0];
-                pix[(r * 2) * w + (c * 2 + 1)] = cell[1];
-                pix[(r * 2 + 1) * w + (c * 2)] = cell[2];
-                pix[(r * 2 + 1) * w + (c * 2 + 1)] = cell[3];
+                pix[(r * 2) * w + (c * 2)] = manipulate(cell[0],
+                    r + st->world_r + st->cam_r1, c + st->world_c + st->cam_c1);
+                pix[(r * 2) * w + (c * 2 + 1)] = manipulate(cell[1],
+                    r + st->world_r + st->cam_r1, c + st->world_c + st->cam_c1 + 256);
+                pix[(r * 2 + 1) * w + (c * 2)] = manipulate(cell[2],
+                    r + st->world_r + st->cam_r1 + 256, c + st->world_c + st->cam_c1);
+                pix[(r * 2 + 1) * w + (c * 2 + 1)] = manipulate(cell[3],
+                    r + st->world_r + st->cam_r1 + 256, c + st->world_c + st->cam_c1 + 256);
             }
         SDL_UpdateTexture(tex, NULL, pix, w * 4);
         free(pix);
