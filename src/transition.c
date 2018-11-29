@@ -24,8 +24,10 @@ static void transition_draw(transition_scene *this)
 {
     SDL_SetRenderTarget(g_renderer, this->a_tex);
     scene_draw(this->a);
-    SDL_SetRenderTarget(g_renderer, this->b_tex);
-    scene_draw(this->b);
+    if (this->b != NULL) {
+        SDL_SetRenderTarget(g_renderer, this->b_tex);
+        scene_draw(this->b);
+    }
     SDL_SetRenderTarget(g_renderer, NULL);
     this->t_draw(this);
 }
