@@ -6,6 +6,18 @@
 
 static const int PIX_PER_UNIT = 2;
 
+static inline void update_cam(overworld_scene *this)
+{
+    struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, typeof(ch));
+    struct stage_rec *st = ch->stages[this->cur_stage_idx];
+    int x = (st->world_c + st->cam_c1) * 2,
+        y = (st->world_r + st->cam_r1) * 2,
+        w = (st->cam_c2 - st->cam_c1) * 2,
+        h = (st->cam_r2 - st->cam_r1) * 2;
+    this->cam_x = x + w / 2 - WIN_W / 2;
+    this->cam_y = y + h / 2 - WIN_H / 2;
+}
+
 static void ow_tick(overworld_scene *this, double dt)
 {
 }
@@ -22,8 +34,8 @@ static void ow_draw(overworld_scene *this)
         int c = (i == this->cur_stage_idx) ? 255 : 128;
         SDL_SetTextureColorMod(tex[i], c, c, c);
         SDL_RenderCopy(g_renderer, tex[i], NULL, &(SDL_Rect){
-            (ch->stages[i]->world_c + ch->stages[i]->cam_c1) * 2,
-            (ch->stages[i]->world_r + ch->stages[i]->cam_r1) * 2,
+            (ch->stages[i]->world_c + ch->stages[i]->cam_c1) * 2 - this->cam_x,
+            (ch->stages[i]->world_r + ch->stages[i]->cam_r1) * 2 - this->cam_y,
             (ch->stages[i]->cam_c2 - ch->stages[i]->cam_c1) * 2,
             (ch->stages[i]->cam_r2 - ch->stages[i]->cam_r1) * 2
         });
@@ -53,11 +65,13 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
             break;
         case SDLK_LEFT:
             if (this->cur_stage_idx > 0) this->cur_stage_idx--;
+            update_cam(this);
             break;
         case SDLK_RIGHT:
             if (this->cur_stage_idx <
                 bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages - 1)
                 this->cur_stage_idx++;
+            update_cam(this);
             break;
     }
 }
@@ -188,8 +202,7 @@ overworld_scene *overworld_create(scene *bg)
     ret->cur_chap_idx = 0;
     ret->cur_stage_idx = 0;
 
-    ret->cam_r = -1000;
-    ret->cam_c = -1000;
+    update_cam(ret);
 
     return ret;
 }
