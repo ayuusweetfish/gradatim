@@ -84,14 +84,34 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
                 bekter_at(this->chaps, 0, struct chap_rec *), this->cur_stage_idx);
             break;
         case SDLK_LEFT:
-            if (this->cur_stage_idx > 0) this->cur_stage_idx--;
-            move_camera(this);
+            if (this->cur_stage_idx > 0) {
+                this->cur_stage_idx--;
+                move_camera(this);
+            }
             break;
         case SDLK_RIGHT:
             if (this->cur_stage_idx <
                 bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages - 1)
+            {
                 this->cur_stage_idx++;
-            move_camera(this);
+                move_camera(this);
+            }
+            break;
+        case SDLK_UP:
+            if (this->cur_chap_idx > 0) {
+                this->cur_chap_idx--;
+                int x = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages;
+                this->cur_stage_idx = min(this->cur_stage_idx, x - 1);
+                move_camera(this);
+            }
+            break;
+        case SDLK_DOWN:
+            if (this->cur_chap_idx < this->cam_targscale - 1) {
+                this->cur_chap_idx++;
+                int x = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages;
+                this->cur_stage_idx = min(this->cur_stage_idx, x - 1);
+                move_camera(this);
+            }
             break;
     }
 }
@@ -218,6 +238,7 @@ overworld_scene *overworld_create(scene *bg)
     ret->chaps = bekter_create();
     ret->stage_tex = bekter_create();
     load_chapter(ret, "chap.csv");
+    load_chapter(ret, "chap2.csv");
 
     ret->cur_chap_idx = 0;
     ret->cur_stage_idx = 0;
