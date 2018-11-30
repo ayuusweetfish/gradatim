@@ -189,6 +189,11 @@ static inline void cloud_update_pred(sobj *o, double T, sobj *prot)
     }
 }
 
+static inline void oneway_update_pred(sobj *o, double T, sobj *prot)
+{
+    o->h = (prot->vy >= (o->ay - o->vy) / o->t && is_above(o, prot) ? 0.3 : 0);
+}
+
 static inline void mushroom_init(sobj *o)
 {
     switch (o->tag) {
@@ -341,6 +346,8 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
         spring_update_pred(o, T, prot);
     else if (o->tag >= OBJID_CLOUD_FIRST && o->tag <= OBJID_CLOUD_LAST)
         cloud_update_pred(o, T, prot);
+    else if (o->tag >= OBJID_ONEWAY_FIRST && o->tag <= OBJID_ONEWAY_LAST)
+        oneway_update_pred(o, T, prot);
     else if (o->tag >= OBJID_REFILL && o->tag <= OBJID_REFILL_WAIT)
         refill_update_pred(o, T, prot);
     else if (o->tag >= OBJID_PUFF_FIRST && o->tag <= OBJID_PUFF_LAST)
