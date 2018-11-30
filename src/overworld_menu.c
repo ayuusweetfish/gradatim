@@ -14,6 +14,8 @@ static const double MENU_W = WIN_W * 0.382;
 static const double MENU_TR_DUR = 0.15;
 static const double BLINK_DUR = 0.75;
 
+static int glob_menu_val[N_MODS] = { 0 };
+
 static inline void owm_tick(overworld_menu *this, double dt)
 {
     scene_tick(&this->bg->_base, dt);
@@ -151,6 +153,7 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
             break;
     }
     if (this->menu_idx == N_MODS) return;
+    glob_menu_val[this->menu_idx] = this->menu_val[this->menu_idx];
     this->mod_icon[this->menu_idx]->tex =
         retrieve_texture(MODS[this->menu_idx][this->menu_val[this->menu_idx]].icon);
     label_set_text(this->mod_title[this->menu_idx],
@@ -227,9 +230,9 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
 
     int i;
     for (i = 0; i < N_MODS; ++i) {
-        ret->menu_val[i] = 0;
+        ret->menu_val[i] = glob_menu_val[i];
 
-        sp = sprite_create(MODS[i][0].icon);
+        sp = sprite_create(MODS[i][ret->menu_val[i]].icon);
         sp->_base.dim.w /= 2;
         sp->_base.dim.h /= 2;
         element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * (0.425 + i * 0.125), 0, 0.5);
@@ -237,14 +240,14 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
         ret->mod_icon[i] = sp;
 
         l = label_create("KiteOne-Regular.ttf", 32,
-            (SDL_Color){255, 255, 255}, WIN_W, MODS[i][0].title);
+            (SDL_Color){255, 255, 255}, WIN_W, MODS[i][ret->menu_val[i]].title);
         element_place_anchored((element *)l,
             WIN_W - MENU_W + WIN_W / 10, WIN_H * (0.425 + i * 0.125), 0, 0.8);
         bekter_pushback(ret->_base.children, l);
         ret->mod_title[i] = l;
 
         l = label_create("KiteOne-Regular.ttf", 20,
-            (SDL_Color){255, 255, 255}, WIN_W, MODS[i][0].desc);
+            (SDL_Color){255, 255, 255}, WIN_W, MODS[i][ret->menu_val[i]].desc);
         element_place_anchored((element *)l,
             WIN_W - MENU_W + WIN_W / 10, WIN_H * (0.425 + i * 0.125), 0, -0.2);
         bekter_pushback(ret->_base.children, l);
