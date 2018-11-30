@@ -53,7 +53,7 @@ static inline void owm_draw(overworld_menu *this)
     int i;
     for (i = 0; i < N_MODS; ++i) {
         int c = MODS[i][this->menu_val[i]].colour;
-        SDL_SetRenderDrawColor(g_renderer, c >> 16, (c >> 8) & 0xff, c & 0xff, 192);
+        SDL_SetRenderDrawColor(g_renderer, c >> 16, (c >> 8) & 0xff, c & 0xff, round(t * t * 192));
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){
             round(WIN_W - MENU_W + delta_x), WIN_H * (0.425 - 0.0625 + i * 0.125),
             WIN_W, WIN_H * 0.125
