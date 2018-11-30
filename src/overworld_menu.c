@@ -53,19 +53,19 @@ static inline void owm_draw(overworld_menu *this)
         int c = MODS[i][this->menu_val[i]].colour;
         SDL_SetRenderDrawColor(g_renderer, c >> 16, (c >> 8) & 0xff, c & 0xff, 192);
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-            round(WIN_W - MENU_W + delta_x), WIN_H * (0.43 - 0.06 + i * 0.12),
-            WIN_W, WIN_H * 0.12
+            round(WIN_W - MENU_W + delta_x), WIN_H * (0.425 - 0.0625 + i * 0.125),
+            WIN_W, WIN_H * 0.125
         });
     }
 
     /* Draw highlight */
     double cur_y = (this->menu_idx == N_MODS ?
-        (0.85 - 0.06) : (0.43 - 0.06 + this->menu_idx * 0.12));
+        (0.85 - 0.0625) : (0.425 - 0.0625 + this->menu_idx * 0.125));
     if (this->time < this->menu_time + MENU_TR_DUR) {
         double p = (this->time - this->menu_time) / MENU_TR_DUR;
         p = 1 - (1 - p) * (1 - p) * (1 - p);
         double last_y = (this->last_menu_idx == N_MODS ?
-            (0.85 - 0.06) : (0.43 - 0.06 + this->last_menu_idx * 0.12));
+            (0.85 - 0.0625) : (0.425 - 0.0625 + this->last_menu_idx * 0.125));
         cur_y = last_y + p * (cur_y - last_y);
     }
     double phase = fabs(BLINK_DUR - fmod(this->time, BLINK_DUR * 2)) / BLINK_DUR;
@@ -73,7 +73,7 @@ static inline void owm_draw(overworld_menu *this)
     int opacity = 128 + round(phase * 24);
     SDL_SetRenderDrawColor(g_renderer, 255, 255, 128, opacity);
     SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-        round(WIN_W - MENU_W + delta_x), round(cur_y * WIN_H), WIN_W, WIN_H * 0.12
+        round(WIN_W - MENU_W + delta_x), round(cur_y * WIN_H), WIN_W, WIN_H * 0.125
     });
 
     /* Draw children */
@@ -204,25 +204,25 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     sprite *sp = sprite_create("clock.png");
     sp->_base.dim.w /= 2;
     sp->_base.dim.h /= 2;
-    element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * 0.18, 0, 0.5);
+    element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * 0.175, 0, 0.5);
     bekter_pushback(ret->_base.children, sp);
 
     sp = sprite_create("retry_count.png");
     sp->_base.dim.w /= 2;
     sp->_base.dim.h /= 2;
-    element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * 0.28, 0, 0.5);
+    element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * 0.275, 0, 0.5);
     bekter_pushback(ret->_base.children, sp);
 
     l = label_create("KiteOne-Regular.ttf", 32,
         (SDL_Color){255, 255, 255}, WIN_W, "02:50:52");
     element_place_anchored((element *)l,
-        WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.18, 0, 0.5);
+        WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.175, 0, 0.5);
     bekter_pushback(ret->_base.children, l);
 
     l = label_create("KiteOne-Regular.ttf", 32,
         (SDL_Color){255, 255, 255}, WIN_W, "1665");
     element_place_anchored((element *)l,
-        WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.28, 0, 0.5);
+        WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.275, 0, 0.5);
     bekter_pushback(ret->_base.children, l);
 
     int i;
@@ -232,21 +232,21 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
         sp = sprite_create(MODS[i][0].icon);
         sp->_base.dim.w /= 2;
         sp->_base.dim.h /= 2;
-        element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * (0.43 + i * 0.12), 0, 0.5);
+        element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * (0.425 + i * 0.125), 0, 0.5);
         bekter_pushback(ret->_base.children, sp);
         ret->mod_icon[i] = sp;
 
         l = label_create("KiteOne-Regular.ttf", 32,
             (SDL_Color){255, 255, 255}, WIN_W, MODS[i][0].title);
         element_place_anchored((element *)l,
-            WIN_W - MENU_W + WIN_W / 10, WIN_H * (0.43 + i * 0.12), 0, 0.8);
+            WIN_W - MENU_W + WIN_W / 10, WIN_H * (0.425 + i * 0.125), 0, 0.8);
         bekter_pushback(ret->_base.children, l);
         ret->mod_title[i] = l;
 
         l = label_create("KiteOne-Regular.ttf", 20,
             (SDL_Color){255, 255, 255}, WIN_W, MODS[i][0].desc);
         element_place_anchored((element *)l,
-            WIN_W - MENU_W + WIN_W / 10, WIN_H * (0.43 + i * 0.12), 0, -0.2);
+            WIN_W - MENU_W + WIN_W / 10, WIN_H * (0.425 + i * 0.125), 0, -0.2);
         bekter_pushback(ret->_base.children, l);
         ret->mod_desc[i] = l;
     }
