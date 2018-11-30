@@ -79,6 +79,9 @@ void load_images()
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     load_image("clock.png");
     load_image("retry_count.png");
+    load_image("minim.png");
+    load_image("crotchet.png");
+    load_image("quaver.png");
 }
 
 void release_images()
