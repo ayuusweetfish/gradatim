@@ -101,8 +101,11 @@ static inline void owm_drop(overworld_menu *this)
 
 static inline scene *run_stage(overworld_scene *this)
 {
+    int mods = 0, i;
+    for (i = 0; i < N_MODS; ++i)
+        mods |= (glob_menu_val[i]) << (i * 2);
     gameplay_scene *gp = gameplay_scene_create((scene *)this,
-        bekter_at(this->chaps, 0, struct chap_rec *), this->cur_stage_idx);
+        bekter_at(this->chaps, 0, struct chap_rec *), this->cur_stage_idx, mods);
     return (scene *)gp;
 }
 

@@ -7,6 +7,7 @@
 #include "scene.h"
 #include "sim/sim.h"
 #include "game_data.h"
+#include "mod.h"
 
 typedef struct _gameplay_scene {
     scene _base;
@@ -23,6 +24,9 @@ typedef struct _gameplay_scene {
     double aud_sim_offset;
     int aud_sim_offset_n_samples;
     unsigned int dialogue_triggered;
+
+    /* Modifier states as a bitmask */
+    int mods;
 
     /* Display states */
     enum display_state {
@@ -55,7 +59,7 @@ typedef struct _gameplay_scene {
     double mov_time;    /* Time remaining until movement state resets */
 } gameplay_scene;
 
-gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx);
+gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx, int mods);
 void gameplay_run_leadin(gameplay_scene *this);
 
 #endif

@@ -526,7 +526,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     }
 }
 
-gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx)
+gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx, int mods)
 {
     gameplay_scene *ret = malloc(sizeof(gameplay_scene));
     memset(ret, 0, sizeof(gameplay_scene));
@@ -539,6 +539,7 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx)
 
     ret->rem_time = 0;
     ret->facing = HOR_STATE_RIGHT;
+    ret->mods = mods;
 
     ret->prev_sim = NULL;
     ret->chap = chap;
