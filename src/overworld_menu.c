@@ -99,19 +99,20 @@ static inline void owm_drop(overworld_menu *this)
 {
 }
 
-static inline scene *run_stage(overworld_scene *this)
+static inline scene *run_stage(overworld_menu *this)
 {
     int mods = 0, i;
     for (i = 0; i < N_MODS; ++i)
         mods |= (glob_menu_val[i]) << (i * 2);
-    gameplay_scene *gp = gameplay_scene_create((scene *)this,
-        bekter_at(this->chaps, 0, struct chap_rec *), this->cur_stage_idx, mods);
+    gameplay_scene *gp = gameplay_scene_create((scene *)this->bg,
+        bekter_at(this->bg->chaps, 0, struct chap_rec *), this->bg->cur_stage_idx, mods);
     return (scene *)gp;
 }
 
-static inline void init_stage(overworld_scene *this, gameplay_scene *gp)
+static inline void init_stage(overworld_menu *this, gameplay_scene *gp)
 {
     gameplay_run_leadin(gp);
+    scene_drop(this);
 }
 
 static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
@@ -128,7 +129,7 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
         case SDLK_RETURN:
             if (this->menu_idx == N_MODS) {
                 g_stage = (scene *)loading_create(&g_stage,
-                    (loading_routine)run_stage, (loading_postroutine)init_stage, this->bg);
+                    (loading_routine)run_stage, (loading_postroutine)init_stage, this);
                 this->bg->cam_targx -= MOV_X;
                 this->bg->cam_targscale /= SCALE;
             } else {

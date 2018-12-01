@@ -66,10 +66,20 @@ static void ow_draw(overworld_scene *this)
 
 static void ow_drop(overworld_scene *this)
 {
-    int i;
+    int i, j;
+
+    SDL_Texture **q;
+    for bekter_each(this->stage_tex, i, q) {
+        int n = bekter_at(this->chaps, i / sizeof(struct chap_rec *), struct chap_rec *)->n_stages;
+        for (j = 0; j < n; ++j) SDL_DestroyTexture(q[j]);
+        free(q);
+    }
+    bekter_drop(this->stage_tex);
+
     struct chap_rec *p;
     for bekter_each(this->chaps, i, p) chap_drop(p);
     bekter_drop(this->chaps);
+
     free(this);
 }
 
