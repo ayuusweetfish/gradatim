@@ -3,7 +3,7 @@
 #ifndef _MOD_H
 #define _MOD_H
 
-#define N_MODS      3
+#define N_MODS      4
 #define N_MODSTATES 3
 
 struct mod_text {

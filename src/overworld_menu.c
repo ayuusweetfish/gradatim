@@ -14,6 +14,10 @@ static const double MENU_W = WIN_W * 0.382;
 static const double MENU_TR_DUR = 0.15;
 static const double BLINK_DUR = 0.75;
 
+static const double ITEM_H = 0.1;
+static const double START_Y = 0.85;
+static const double ITEM_OFFSET_Y = 0.4;
+
 static int glob_menu_val[N_MODS] = { 0 };
 
 static inline void owm_tick(overworld_menu *this, double dt)
@@ -55,19 +59,19 @@ static inline void owm_draw(overworld_menu *this)
         int c = MODS[i][this->menu_val[i]].colour;
         SDL_SetRenderDrawColor(g_renderer, c >> 16, (c >> 8) & 0xff, c & 0xff, round(t * t * 192));
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-            round(WIN_W - MENU_W + delta_x), WIN_H * (0.425 - 0.0625 + i * 0.125),
-            WIN_W, WIN_H * 0.125
+            round(WIN_W - MENU_W + delta_x), WIN_H * (ITEM_OFFSET_Y - ITEM_H / 2 + i * ITEM_H),
+            WIN_W, WIN_H * ITEM_H
         });
     }
 
     /* Draw highlight */
     double cur_y = (this->menu_idx == N_MODS ?
-        (0.85 - 0.0625) : (0.425 - 0.0625 + this->menu_idx * 0.125));
+        (START_Y - ITEM_H / 2) : (ITEM_OFFSET_Y - ITEM_H / 2 + this->menu_idx * ITEM_H));
     if (this->time < this->menu_time + MENU_TR_DUR) {
         double p = (this->time - this->menu_time) / MENU_TR_DUR;
         p = 1 - (1 - p) * (1 - p) * (1 - p);
         double last_y = (this->last_menu_idx == N_MODS ?
-            (0.85 - 0.0625) : (0.425 - 0.0625 + this->last_menu_idx * 0.125));
+            (START_Y - ITEM_H / 2) : (ITEM_OFFSET_Y - ITEM_H / 2 + this->last_menu_idx * ITEM_H));
         cur_y = last_y + p * (cur_y - last_y);
     }
     double phase = fabs(BLINK_DUR - fmod(this->time, BLINK_DUR * 2)) / BLINK_DUR;
@@ -75,7 +79,7 @@ static inline void owm_draw(overworld_menu *this)
     int opacity = 128 + round(phase * 24);
     SDL_SetRenderDrawColor(g_renderer, 255, 255, 128, opacity);
     SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-        round(WIN_W - MENU_W + delta_x), round(cur_y * WIN_H), WIN_W, WIN_H * 0.125
+        round(WIN_W - MENU_W + delta_x), round(cur_y * WIN_H), WIN_W, WIN_H * ITEM_H
     });
 
     /* Draw children */
@@ -235,21 +239,21 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
         sp = sprite_create(MODS[i][ret->menu_val[i]].icon);
         sp->_base.dim.w /= 2;
         sp->_base.dim.h /= 2;
-        element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * (0.425 + i * 0.125), 0, 0.5);
+        element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * (ITEM_OFFSET_Y + i * ITEM_H), 0, 0.5);
         bekter_pushback(ret->_base.children, sp);
         ret->mod_icon[i] = sp;
 
-        l = label_create("KiteOne-Regular.ttf", 32,
+        l = label_create("KiteOne-Regular.ttf", 28,
             (SDL_Color){255, 255, 255}, WIN_W, MODS[i][ret->menu_val[i]].title);
         element_place_anchored((element *)l,
-            WIN_W - MENU_W + WIN_W / 10, WIN_H * (0.425 + i * 0.125), 0, 0.8);
+            WIN_W - MENU_W + WIN_W / 10, WIN_H * (ITEM_OFFSET_Y + i * ITEM_H), 0, 0.8);
         bekter_pushback(ret->_base.children, l);
         ret->mod_title[i] = l;
 
-        l = label_create("KiteOne-Regular.ttf", 20,
+        l = label_create("KiteOne-Regular.ttf", 18,
             (SDL_Color){255, 255, 255}, WIN_W, MODS[i][ret->menu_val[i]].desc);
         element_place_anchored((element *)l,
-            WIN_W - MENU_W + WIN_W / 10, WIN_H * (0.425 + i * 0.125), 0, -0.2);
+            WIN_W - MENU_W + WIN_W / 10, WIN_H * (ITEM_OFFSET_Y + i * ITEM_H), 0, -0.2);
         bekter_pushback(ret->_base.children, l);
         ret->mod_desc[i] = l;
     }
@@ -257,7 +261,7 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     l = label_create("KiteOne-Regular.ttf", 40,
         (SDL_Color){255, 255, 255}, WIN_W, "Start");
     element_place_anchored((element *)l,
-        WIN_W - MENU_W / 2, WIN_H * 0.85, 0.5, 0.5);
+        WIN_W - MENU_W / 2, WIN_H * START_Y, 0.5, 0.5);
     bekter_pushback(ret->_base.children, l);
 
     bg->cam_targx += MOV_X;

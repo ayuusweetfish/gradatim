@@ -82,6 +82,15 @@ void load_images()
     load_image("minim.png");
     load_image("crotchet.png");
     load_image("quaver.png");
+    load_image("cantabile.png");
+    load_image("sotto_voco.png");
+    load_image("a_capella.png");
+    load_image("aria.png");
+    load_image("semplice.png");
+    load_image("stretto.png");
+    load_image("giusto.png");
+    load_image("rubato.png");
+    load_image("a_piacere.png");
 }
 
 void release_images()
