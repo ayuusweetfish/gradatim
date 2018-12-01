@@ -279,13 +279,15 @@ static inline void render_objects(gameplay_scene *this,
         cmin = clamp(floorf(cx), 0, sim->gcols),
         cmax = clamp(ceilf(cx + WIN_W_UNITS), 0, sim->gcols);
     int r, c;
+    int cxi = round(cx * UNIT_PX),
+        cyi = round(cy * UNIT_PX);
     for (r = rmin; r < rmax; ++r)
         for (c = cmin; c < cmax; ++c) {
             sobj *o = &sim_grid(sim, r, c);
             if (o->tag != 0) {
                 render_texture_scaled(get_texture(this, o),
-                    ((int)o->x - cx) * UNIT_PX,
-                    ((int)o->y - cy) * UNIT_PX,
+                    (int)o->x * UNIT_PX - cxi,
+                    (int)o->y * UNIT_PX - cyi,
                     SPR_SCALE
                 );
             }
@@ -293,8 +295,8 @@ static inline void render_objects(gameplay_scene *this,
     for (r = 0; r < sim->anim_sz; ++r) {
         sobj *o = sim->anim[r];
         render_texture_scaled(get_texture(this, o),
-            (o->x + o->tx - cx) * UNIT_PX,
-            (o->y + o->ty - cy) * UNIT_PX,
+            round((o->x + o->tx) * UNIT_PX) - cxi,
+            round((o->y + o->ty) * UNIT_PX) - cyi,
             SPR_SCALE
         );
     }
