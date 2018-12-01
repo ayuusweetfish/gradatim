@@ -5,11 +5,19 @@
 
 #include "scene.h"
 
+#include <stdbool.h>
+
 typedef struct _pause_scene {
     scene _base;
     scene *a, *b, **p;
 
     SDL_Texture *a_tex;
+
+    double time;
+    int menu_idx, last_menu_idx;
+    double menu_time;
+
+    bool quit;
 } pause_scene;
 
 /* `a` is the scene to Resume to, and `b` is the scene to Go Back to
