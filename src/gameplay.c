@@ -35,6 +35,7 @@ static const double STAGE_TRANSITION_DUR = 2;
 static const double LEADIN_INIT = 1;
 static const double LEADIN_DUR = 0.4; /* Seconds */
 static const double FAILURE_SPF = 0.1;
+static const double STRETTO_RANGE = 2.5;
 
 /* Short for metronome - too long! */
 static const int MT_PADDING = 12;
@@ -239,7 +240,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
     int i;
     int px = (int)this->simulator->prot.x,
         py = (int)this->simulator->prot.y;
-    for (i = 0; i < this->rec->plot_ct; ++i) {
+    if (!(this->mods & MOD_SEMPLICE)) for (i = 0; i < this->rec->plot_ct; ++i) {
         stage_dialogue *d = bekter_at_ptr(this->rec->plot, i, stage_dialogue);
         if (!(this->dialogue_triggered & (1 << i)) &&
             px >= d->c1 && px <= d->c2 && py >= d->r1 && py <= d->r2)
@@ -318,6 +319,7 @@ static inline void draw_overlay(gameplay_scene *this)
         this->aud_sim_offset_n_samples++;
         return;
     }
+    if (this->mods & MOD_SOTTO_VOCO) return;
     int beats_i = (int)(beats + 1./16);
     double beats_d = beats - beats_i;
     beats_i %= this->chap->sig;
@@ -334,6 +336,28 @@ static inline void draw_overlay(gameplay_scene *this)
         SDL_RenderFillRects(g_renderer, MT_DOWNBEAT, 4);
     else
         SDL_RenderDrawRects(g_renderer, MT_UPBEAT, 2);
+}
+
+static inline void flashlight_texture(SDL_Texture *tex,
+    int w, int h, double x, double y, double rsqr, double rosqr)
+{
+    int i, j;
+    void *pixdata;
+    int pitch;
+    SDL_LockTexture(tex, NULL, &pixdata, &pitch);
+    for (j = 0; j < h; ++j)
+        for (i = 0; i < w; ++i) {
+            double r = sqr(i - x) + sqr(j - y);
+            if (r <= rsqr) {
+                *((int *)(pixdata + j * pitch) + i) = 0;
+            } else if (r <= rosqr) {
+                int a = round(255 * (r - rsqr) / (rosqr - rsqr));
+                *((int *)(pixdata + j * pitch) + i) = a;
+            } else {
+                *((int *)(pixdata + j * pitch) + i) = 255;
+            }
+        }
+    SDL_UnlockTexture(tex);
 }
 
 static void gameplay_scene_draw(gameplay_scene *this)
@@ -378,12 +402,15 @@ static void gameplay_scene_draw(gameplay_scene *this)
     if (this->disp_state != DISP_FAILURE)
         render_objects(this, false, true, 0, 0);
 
+    prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
+    prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX;
     if (this->disp_state == DISP_LEADIN) {
-        prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
-        prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX;
         double radius = 0, radius_o = 0;
         if (this->disp_time <= LEADIN_DUR) {
-            radius = UNIT_PX + WIN_W * (1 - this->disp_time / LEADIN_DUR);
+            if (this->mods & MOD_STRETTO)
+                radius = UNIT_PX * (1 + (STRETTO_RANGE - 1) *
+                    ease_quad_inout(1 - this->disp_time / LEADIN_DUR));
+            else radius = UNIT_PX + WIN_W * (1 - this->disp_time / LEADIN_DUR);
             radius_o = radius + UNIT_PX * 0.5;
         } else {
             double t = this->disp_time - LEADIN_DUR;
@@ -392,26 +419,24 @@ static void gameplay_scene_draw(gameplay_scene *this)
             radius = radius_o - UNIT_PX * 0.5;
             if (radius < 0) radius = 0;
         }
-        double radius_sqr = sqr(radius);
-        double radius_o_sqr = sqr(radius_o);
-        int i, j;
-        void *pixdata;
-        int pitch;
-        SDL_LockTexture(this->leadin_tex, NULL, &pixdata, &pitch);
-        for (j = 0; j < WIN_H; ++j)
-            for (i = 0; i < WIN_W; ++i) {
-                double r = sqr(i - prot_disp_x) + sqr(j - prot_disp_y);
-                if (r <= radius_sqr) {
-                    *((int *)(pixdata + j * pitch) + i) = 0;
-                } else if (r <= radius_o_sqr) {
-                    int a = round(255 * (r - radius_sqr) / (radius_o_sqr - radius_sqr));
-                    *((int *)(pixdata + j * pitch) + i) = a;
-                } else {
-                    *((int *)(pixdata + j * pitch) + i) = 255;
-                }
-            }
-        SDL_UnlockTexture(this->leadin_tex);
+        flashlight_texture(this->leadin_tex,
+            WIN_W, WIN_H, prot_disp_x, prot_disp_y, sqr(radius), sqr(radius_o));
         SDL_RenderCopy(g_renderer, this->leadin_tex, NULL, NULL);
+    } else if (this->mods & MOD_STRETTO) {
+        /* Flashlight! */
+        if (this->leadin_tex == NULL) {
+            this->leadin_tex = SDL_CreateTexture(
+                g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
+                WIN_W * 2, WIN_H * 2);
+            SDL_SetTextureBlendMode(this->leadin_tex, SDL_BLENDMODE_BLEND);
+            flashlight_texture(this->leadin_tex,
+                WIN_W * 2, WIN_H * 2, WIN_W, WIN_H,
+                sqr(UNIT_PX * STRETTO_RANGE), sqr(UNIT_PX * (STRETTO_RANGE + 0.5)));
+        }
+        SDL_RenderCopy(g_renderer, this->leadin_tex, &(SDL_Rect) {
+            round(WIN_W - prot_disp_x), round(WIN_H - prot_disp_y),
+            WIN_W, WIN_H
+        }, NULL);
     }
 
     draw_overlay(this);
@@ -419,6 +444,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
 static void gameplay_scene_drop(gameplay_scene *this)
 {
+    if (this->leadin_tex != NULL) SDL_DestroyTexture(this->leadin_tex);
     if (this->prev_sim != NULL) sim_drop(this->prev_sim);
     if (this->simulator != NULL) sim_drop(this->simulator);
     orion_pause(&g_orion, TRACKID_STAGE_BGM);
@@ -539,6 +565,8 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
 
     ret->rem_time = 0;
     ret->facing = HOR_STATE_RIGHT;
+
+    if (mods & MOD_STRETTO) mods |= MOD_SEMPLICE;
     ret->mods = mods;
 
     ret->prev_sim = NULL;
@@ -553,6 +581,8 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
 
     orion_load_ogg(&g_orion, TRACKID_STAGE_BGM, "4-5.ogg");
     orion_play_loop(&g_orion, TRACKID_STAGE_BGM, 0, 0, -1);
+    if (ret->mods & MOD_A_CAPELLA)
+        orion_ramp(&g_orion, TRACKID_STAGE_BGM, 0, 0);
 
     return ret;
 }
