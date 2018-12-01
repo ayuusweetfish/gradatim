@@ -517,7 +517,8 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
             break;
         case SDLK_ESCAPE:
             if (ev->state == SDL_PRESSED) {
-                g_stage = (scene *)pause_scene_create(&g_stage, this->bg);
+                g_stage = (scene *)pause_scene_create(
+                    &g_stage, (retry_callback)retry_reinit, this->bg);
                 orion_pause(&g_orion, TRACKID_STAGE_BGM);
             }
             break;

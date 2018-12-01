@@ -2,6 +2,7 @@
 
 #include "global.h"
 #include "label.h"
+#include "loading.h"
 
 static const int N_MENU = 3;
 static const double ITEM_OFFSET_Y = 0.425;
@@ -22,10 +23,7 @@ static inline void pause_tick(pause_scene *this, double dt)
 
 static inline void pause_draw(pause_scene *this)
 {
-    SDL_SetRenderTarget(g_renderer, this->a_tex);
     scene_draw(this->a);
-    SDL_SetRenderTarget(g_renderer, NULL);
-    SDL_RenderCopy(g_renderer, this->a_tex, NULL, NULL);
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 192);
     SDL_RenderFillRect(g_renderer, NULL);
 
@@ -49,27 +47,46 @@ static inline void pause_draw(pause_scene *this)
     scene_draw_children((scene *)this);
 }
 
-static inline void pause_drop(pause_scene *this)
-{
-    SDL_DestroyTexture(this->a_tex);
-    if (this->quit) scene_drop(this->a);
-}
-
 static inline void resume(pause_scene *this)
 {
     *(this->p) = this->a;
     scene_drop(this);
 }
 
+static scene *retry_routine(pause_scene *this)
+{
+    return this->a;
+}
+
+static void retry_postroutine(pause_scene *this, void *unused)
+{
+    this->cb(this->a);
+    scene_drop(this);
+}
+
+static scene *quit_routine(pause_scene *this)
+{
+    return this->b;
+}
+
+static void quit_postroutine(pause_scene *this, void *unused)
+{
+    scene_drop(this->a);
+    scene_drop(this);
+}
+
 static inline void retry(pause_scene *this)
 {
+    g_stage = (scene *)loading_create(
+        &g_stage, (loading_routine)retry_routine,
+        (loading_postroutine)retry_postroutine, this);
 }
 
 static inline void quit(pause_scene *this)
 {
-    *(this->p) = this->b;
-    this->quit = true;
-    scene_drop(this);
+    g_stage = (scene *)loading_create(
+        &g_stage, (loading_routine)quit_routine,
+        (loading_postroutine)quit_postroutine, this);
 }
 
 static inline void pause_key_handler(pause_scene *this, SDL_KeyboardEvent *ev)
@@ -101,22 +118,20 @@ static inline void pause_key_handler(pause_scene *this, SDL_KeyboardEvent *ev)
     }
 }
 
-pause_scene *pause_scene_create(scene **a, scene *b)
+pause_scene *pause_scene_create(scene **a, retry_callback cb, scene *b)
 {
     pause_scene *ret = malloc(sizeof(pause_scene));
     ret->_base.children = bekter_create();
     ret->_base.tick = (scene_tick_func)pause_tick;
     ret->_base.draw = (scene_draw_func)pause_draw;
-    ret->_base.drop = (scene_drop_func)pause_drop;
+    ret->_base.drop = NULL;
     ret->_base.key_handler = (scene_key_func)pause_key_handler;
     ret->a = *a;
     ret->b = b;
     ret->p = a;
-    ret->a_tex = SDL_CreateTexture(g_renderer,
-        SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
+    ret->cb = cb;
     ret->menu_idx = ret->last_menu_idx = 0;
     ret->time = ret->menu_time = 0;
-    ret->quit = false;
 
     label *header = label_create("KiteOne-Regular.ttf", 60,
         (SDL_Color){255, 255, 255}, WIN_H, "PAUSED");

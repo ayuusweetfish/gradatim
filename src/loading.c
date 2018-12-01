@@ -48,7 +48,7 @@ static void loading_draw(loading_scene *this)
     SDL_AtomicLock(&this->rw_lock);
     scene *b = this->_base.b;
     SDL_AtomicUnlock(&this->rw_lock);
-    if (b != NULL) {
+    if (this->since_finish >= 0) {
         SDL_SetRenderTarget(g_renderer, this->_base.b_tex);
         scene_draw(b);
     } else {
