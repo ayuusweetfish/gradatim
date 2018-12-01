@@ -47,7 +47,7 @@ int main()
     g_orion = orion_create(44100, 2);
     orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "sketchch.ogg");
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, 0, -1);
-    /*orion_overall_play(&g_orion);*/
+    orion_overall_play(&g_orion);
 
     g_stage = (scene *)colour_scene_create(0, 192, 255);
 

@@ -32,8 +32,8 @@ static const double DASH_DIAG_SCALE = 0.8;
 static const double CAM_MOV_FAC = 8;
 static const double STAGE_TRANSITION_DUR = 2;
 
-static const double LEADIN_INIT = 1.2;
-static const double LEADIN_DUR = 0.5; /* Seconds */
+static const double LEADIN_INIT = 1;
+static const double LEADIN_DUR = 0.4; /* Seconds */
 static const double FAILURE_SPF = 0.1;
 
 /* Short for metronome - too long! */
