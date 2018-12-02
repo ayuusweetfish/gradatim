@@ -32,7 +32,8 @@ typedef struct _gameplay_scene {
     enum display_state {
         DISP_NORMAL,    /* Normal simulation and gameplay */
         DISP_LEADIN,    /* Flashlight lead in */
-        DISP_FAILURE    /* Failure animation */
+        DISP_FAILURE,   /* Failure animation */
+        DISP_CHAPFIN    /* End of chapter */
     } disp_state;
     double disp_time;   /* Remaining time of global animation, in seconds */
     SDL_Texture *leadin_tex;

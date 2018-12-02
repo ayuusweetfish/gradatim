@@ -56,6 +56,10 @@ struct _chap_track {
 struct chap_rec {
     /* Colours in the overworld */
     int r1, g1, b1, r2, g2, b2;
+    /* Index */
+    int idx;
+    /* Title */
+    char *title;
     /* Beats per minute for all BG music */
     int bpm;
     /* Beat length in seconds; calculated from `bpm` */

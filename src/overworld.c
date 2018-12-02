@@ -223,6 +223,7 @@ static inline void load_chapter(overworld_scene *this, const char *path)
 {
     struct chap_rec *ch = chap_read(path);
     if (ch == NULL) return;
+    ch->idx = this->n_chaps;
     bekter_pushback(this->chaps, ch);
     this->n_chaps++;
 

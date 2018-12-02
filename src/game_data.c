@@ -184,13 +184,20 @@ struct chap_rec *chap_read(const char *path)
     if (!this) { fclose(f); return NULL; }
     memset(this, 0, sizeof(*this));
 
-    fscanf(f, "%d,%d,%d,%d,%d,%d",
+    fscanf(f, "%d,%d,%d,%d,%d,%d\n",
         &this->r1, &this->g1, &this->b1,
         &this->r2, &this->g2, &this->b2);
+
+    this->idx = -1;
 
     int bpm, beat_mul, sig, dmask = 0, hmask = 0;
     char measure[64];
     int m, i;
+
+    fgets(measure, sizeof measure, f);
+    i = strlen(measure) - 1;
+    while (i >= 0 && isspace(measure[i])) measure[i--] = '\0';
+    this->title = strdup(measure);
 
     fscanf(f, "%d,%d\n", &bpm, &beat_mul);
     if (bpm <= 0) { free(this); fclose(f); return NULL; }
@@ -246,6 +253,7 @@ struct chap_rec *chap_read(const char *path)
 
 void chap_drop(struct chap_rec *this)
 {
+    free(this->title);
     int i;
     for (i = 0; i < this->n_tracks; ++i) free(this->tracks[i].str);
     for (i = 0; i < this->n_stages; ++i) stage_drop(this->stages[i]);

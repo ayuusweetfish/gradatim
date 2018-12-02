@@ -56,3 +56,8 @@ void label_set_text(label *this, const char *text)
     this->text = text;
     label_render_text(this);
 }
+
+void label_colour_mod(label *this, Uint8 r, Uint8 g, Uint8 b)
+{
+    SDL_SetTextureColorMod(this->_base.tex.sdl_tex, r, g, b);
+}

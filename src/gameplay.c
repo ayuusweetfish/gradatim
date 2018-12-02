@@ -6,6 +6,7 @@
 #include "unary_transition.h"
 #include "pause.h"
 #include "dialogue.h"
+#include "chapfin.h"
 
 #include <math.h>
 
@@ -79,8 +80,12 @@ static inline double get_audio_position(gameplay_scene *this)
 
 static inline void switch_stage_ctx(gameplay_scene *this)
 {
-    this->rec = this->chap->stages[++this->cur_stage_idx];
-    this->simulator = stage_create_sim(this->rec);
+    if (++this->cur_stage_idx == this->chap->n_stages) {
+        this->disp_state = DISP_CHAPFIN;
+    } else {
+        this->rec = this->chap->stages[this->cur_stage_idx];
+        this->simulator = stage_create_sim(this->rec);
+    }
 }
 
 static inline void update_camera(gameplay_scene *this, double rate)
@@ -131,6 +136,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                     &g_stage, 1, (utransition_callback)retry_reinit);
         }
         return;
+    } else if (this->disp_state == DISP_CHAPFIN && g_stage == (scene *)this) {
+        g_stage = (scene *)chapfin_scene_create(this);
     }
 
     switch (this->simulator->prot.tag) {
@@ -448,7 +455,8 @@ static void gameplay_scene_drop(gameplay_scene *this)
 {
     if (this->leadin_tex != NULL) SDL_DestroyTexture(this->leadin_tex);
     if (this->prev_sim != NULL) sim_drop(this->prev_sim);
-    if (this->simulator != NULL) sim_drop(this->simulator);
+    if (this->simulator != NULL && this->simulator != this->prev_sim)
+        sim_drop(this->simulator);
     orion_pause(&g_orion, TRACKID_STAGE_BGM);
 }
 

@@ -111,6 +111,7 @@ unveil *unveil_create()
 void unveil_drop(unveil *this)
 {
     SDL_DestroyTexture(this->tex);
+    free(this->val);
     free(this);
 }
 
