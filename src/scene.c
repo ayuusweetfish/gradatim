@@ -95,7 +95,9 @@ static void cb(void *ud)
     if ((scene *)this != g_stage) return;
 
     if (this->r == 255) {
-        g_stage = (scene *)overworld_create(g_stage);
+        g_stage = transition_slidedown_create(&g_stage,
+            (scene *)overworld_create(g_stage), 0.5);
+        ((transition_scene *)g_stage)->preserves_a = true;
         orion_pause(&g_orion, TRACKID_MAIN_BGM);
         return;
     }

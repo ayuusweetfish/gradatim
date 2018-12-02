@@ -3,6 +3,7 @@
 #include "loading.h"
 #include "overworld_menu.h"
 #include "gameplay.h"
+#include "transition.h"
 
 #include <stdlib.h>
 
@@ -116,8 +117,6 @@ static void ow_drop(overworld_scene *this)
     struct chap_rec *p;
     for bekter_each(this->chaps, i, p) chap_drop(p);
     bekter_drop(this->chaps);
-
-    free(this);
 }
 
 static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
@@ -125,8 +124,7 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
     if (ev->state != SDL_PRESSED) return;
     switch (ev->keysym.sym) {
         case SDLK_ESCAPE:
-            g_stage = this->bg;
-            ow_drop(this);
+            g_stage = transition_slideup_create(&g_stage, this->bg, 0.5);
             break;
         case SDLK_SPACE:
             g_stage = (scene *)overworld_menu_create(this);
@@ -306,7 +304,7 @@ overworld_scene *overworld_create(scene *bg)
     move_camera(ret);
     ret->cam_x = ret->cam_targx;
     ret->cam_y = ret->cam_targy;
-    ret->cam_scale = ret->cam_scale;
+    ret->cam_scale = ret->cam_targscale;
 
     ret->since_chap_switch = CHAP_SW_DUR * 2;
 
