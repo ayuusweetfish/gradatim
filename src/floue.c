@@ -27,12 +27,13 @@ floue *floue_create(SDL_Color c0)
     return this;
 }
 
-void floue_add(floue *this, SDL_Point p, SDL_Color c, int sz)
+void floue_add(floue *this, SDL_Point p, SDL_Color c, int sz, double opacity)
 {
     if (this->n >= FLOUE_CAP) return;
 
     this->x[this->n] = p.x;
     this->y[this->n] = p.y;
+    this->c[this->n] = c;
     this->sz[this->n] = sz;
     this->v[this->n] = random_in(V_MAX / 4, V_MAX);
     this->a[this->n] = random_abs(M_PI);
@@ -46,15 +47,14 @@ void floue_add(floue *this, SDL_Point p, SDL_Color c, int sz)
 
     /* Fill with a blurred circle */
     Uint32 *pix = malloc(sz * sz * sizeof(Uint32));
-    Uint32 base = (c.r << 24) | (c.g << 16) | (c.b << 8);
     int i, j;
     for (j = 0; j < sz; ++j)
         for (i = 0; i < sz; ++i) {
             double d = sqrt((double)(sqr(i - sz / 2) + sqr(j - sz / 2))) / (sz / 2);
-            double opacity = (d >= 1 ? 0 :
+            double a = (d >= 1 ? 0 :
                 d < 0.9 ? 1 : ease_quad_inout((1 - d) * 10)
             );
-            pix[j * sz + i] = base | round(opacity * 128);
+            pix[j * sz + i] = 0xffffff00 | round(a * opacity * 128);
         }
     SDL_UpdateTexture(t, NULL, pix, sz * sizeof(Uint32));
 
@@ -94,10 +94,13 @@ void floue_draw(floue *this)
     SDL_SetRenderDrawColor(g_renderer, this->c0.r, this->c0.g, this->c0.b, 255);
     SDL_RenderClear(g_renderer);
     int i;
-    for (i = 0; i < this->n; ++i)
+    for (i = 0; i < this->n; ++i) {
+        SDL_SetTextureColorMod(this->tex[i],
+            this->c[i].r, this->c[i].g, this->c[i].b);
         SDL_RenderCopy(g_renderer, this->tex[i], NULL, &(SDL_Rect){
             this->x[i] - this->sz[i] / 2,
             this->y[i] - this->sz[i] / 2,
             this->sz[i], this->sz[i]
         });
+    }
 }

@@ -66,11 +66,6 @@ void scene_clear_children(scene *this)
     bekter_drop(this->children);
 }
 
-static void colour_scene_tick(colour_scene *this, double dt)
-{
-    floue_tick(this->f, dt);
-}
-
 static void colour_scene_draw(colour_scene *this)
 {
     if ((scene *)this == g_stage) orion_resume(&g_orion, TRACKID_MAIN_BGM);
@@ -84,7 +79,6 @@ static void colour_scene_draw(colour_scene *this)
     SDL_RenderFillRect(g_renderer,
         &(SDL_Rect){WIN_W / 4, WIN_H / 4, WIN_W / 2, WIN_H / 2});
     scene_draw_children((scene *)this);
-    floue_draw(this->f);
 }
 
 static void colour_scene_key_handler(colour_scene *this, SDL_KeyboardEvent *ev)
@@ -131,18 +125,13 @@ colour_scene *colour_scene_create(int r, int g, int b)
 {
     colour_scene *ret = malloc(sizeof(colour_scene));
     ret->_base.children = bekter_create();
-    ret->_base.tick = (scene_tick_func)colour_scene_tick;
+    ret->_base.tick = NULL;
     ret->_base.draw = (scene_draw_func)colour_scene_draw;
     ret->_base.drop = NULL;
     ret->_base.key_handler = (scene_key_func)colour_scene_key_handler;
     ret->r = r;
     ret->g = g;
     ret->b = b;
-    ret->f = floue_create((SDL_Color){192, 255, 192});
-    floue_add(ret->f, (SDL_Point){WIN_W / 2, WIN_H / 2},
-        (SDL_Color){216, 255, 192}, 801);
-    floue_add(ret->f, (SDL_Point){WIN_W / 2, WIN_H / 2},
-        (SDL_Color){255, 255, 192}, 601);
     button *s = button_create(cb, ret, "1.png", "2.png", "3.png", 1.05, 0.98);
     element_place_anchored((element *)s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);

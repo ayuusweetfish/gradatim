@@ -40,14 +40,14 @@ static inline void update_camera(overworld_scene *this, double rate)
 
 static void ow_tick(overworld_scene *this, double dt)
 {
+    floue_tick(this->f, dt);
     double rate = (dt > 0.1 ? 0.1 : dt) * CAM_MOV_FAC;
     update_camera(this, rate);
 }
 
 static void ow_draw(overworld_scene *this)
 {
-    SDL_SetRenderDrawColor(g_renderer, 216, 255, 192, 255);
-    SDL_RenderClear(g_renderer);
+    floue_draw(this->f);
 
     int i;
     struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, typeof(ch));
@@ -245,6 +245,12 @@ overworld_scene *overworld_create(scene *bg)
     ret->_base.drop = (scene_drop_func)ow_drop;
     ret->_base.key_handler = (scene_key_func)ow_key;
     ret->bg = bg;
+    ret->f = floue_create((SDL_Color){216, 255, 192});
+    int i;
+    for (i = 0; i < 8; ++i)
+        floue_add(ret->f, (SDL_Point){rand() % WIN_W, rand() % WIN_H},
+            (SDL_Color){255, 255, 192}, rand() % (WIN_W / 4) + WIN_W / 4,
+            (double)(i + 5) / 16);
 
     ret->chaps = bekter_create();
     ret->stage_tex = bekter_create();
