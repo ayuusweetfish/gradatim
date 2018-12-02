@@ -57,6 +57,7 @@ void floue_add(floue *this, SDL_Point p, SDL_Color c, int sz, double opacity)
             pix[j * sz + i] = 0xffffff00 | round(a * opacity * 128);
         }
     SDL_UpdateTexture(t, NULL, pix, sz * sizeof(Uint32));
+    free(pix);
 
     this->tex[this->n++] = t;
 }

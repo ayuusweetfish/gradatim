@@ -104,6 +104,8 @@ static void ow_draw(overworld_scene *this)
 
 static void ow_drop(overworld_scene *this)
 {
+    floue_drop(this->f);
+
     int i, j;
 
     SDL_Texture **q;
