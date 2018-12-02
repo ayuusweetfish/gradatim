@@ -6,9 +6,10 @@
 #include <SDL.h>
 
 #define FLOUE_CAP 16
+#define FLOUE_LAYERS 8
 
 typedef struct _floue {
-    SDL_Texture *a, *b;
+    SDL_Texture *tex[FLOUE_LAYERS];
 
     SDL_Color c0;
     double v0;

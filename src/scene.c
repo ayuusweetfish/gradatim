@@ -140,7 +140,9 @@ colour_scene *colour_scene_create(int r, int g, int b)
     ret->b = b;
     ret->f = floue_create((SDL_Color){192, 255, 192}, 1);
     floue_add(ret->f, (SDL_Point){WIN_W / 2, WIN_H / 2},
-        (SDL_Color){0, 0, 128}, 1);
+        (SDL_Color){0, 0, 192}, 100);
+    floue_add(ret->f, (SDL_Point){WIN_W / 2, WIN_H / 2},
+        (SDL_Color){216, 0, 0}, 50);
     button *s = button_create(cb, ret, "1.png", "2.png", "3.png", 1.05, 0.98);
     element_place_anchored((element *)s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
