@@ -13,7 +13,7 @@ typedef struct _floue {
     SDL_Texture *tex[FLOUE_CAP];
     double x[FLOUE_CAP], y[FLOUE_CAP];
     int sz[FLOUE_CAP];
-    double vx[FLOUE_CAP], vy[FLOUE_CAP];
+    double v[FLOUE_CAP], a[FLOUE_CAP], aa[FLOUE_CAP];
 } floue;
 
 floue *floue_create(SDL_Color c0);

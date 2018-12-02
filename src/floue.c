@@ -5,9 +5,9 @@
 #include <stdlib.h>
 
 static const double SCALE = 4;
-static const double ACCEL = WIN_W / 20;
-static const double WANDER = 1;
-static const double V_MAX = WIN_W / 4;
+static const double V_MAX = WIN_W / 32;
+static const double AAA = 0.3;
+static const double AA_MAX = 0.5;
 
 static inline double random_abs(double max_abs)
 {
@@ -34,8 +34,9 @@ void floue_add(floue *this, SDL_Point p, SDL_Color c, int sz)
     this->x[this->n] = p.x;
     this->y[this->n] = p.y;
     this->sz[this->n] = sz;
-    this->vx[this->n] = random_abs(ACCEL / 4);
-    this->vy[this->n] = random_abs(ACCEL / 4);
+    this->v[this->n] = random_in(V_MAX / 4, V_MAX);
+    this->a[this->n] = random_abs(M_PI);
+    this->aa[this->n] = 0;
 
     /* Create texture */
     sz /= SCALE;
@@ -51,7 +52,7 @@ void floue_add(floue *this, SDL_Point p, SDL_Color c, int sz)
         for (i = 0; i < sz; ++i) {
             double d = sqrt((double)(sqr(i - sz / 2) + sqr(j - sz / 2))) / (sz / 2);
             double opacity = (d >= 1 ? 0 :
-                (d < 0.5 ? 1 - d * d * d * 4 : (1 - d) * (1 - d) * (1 - d) * 4)
+                d < 0.9 ? 1 : ease_quad_inout((1 - d) * 10)
             );
             pix[j * sz + i] = base | round(opacity * 128);
         }
@@ -73,21 +74,13 @@ void floue_tick(floue *this, double dt)
     int i;
     for (i = 0; i < this->n; ++i) {
         /* Update velocity */
-        double vx = this->vx[i], vy = this->vy[i];
-        double a = atan2(vy, vx) + random_abs(WANDER * dt);
-        double v = sqrt(sqr(vx) + sqr(vy));
-        double v_max = v + ACCEL * dt, v_min = v - ACCEL * dt;
-        if (v_max > V_MAX) v_max = V_MAX;
-        if (v_min < 0) v_min = 0;
-        v = random_in(v_min, v_max);
-        if (isnan(a)) a = random_abs(M_PI);
-        vx = v * cos(a);
-        vy = v * sin(a);
+        this->aa[i] += random_abs(AAA) * dt;
+        if (this->aa[i] < -AA_MAX) this->aa[i] = -AA_MAX;
+        else if (this->aa[i] > AA_MAX) this->aa[i] = AA_MAX;
+        this->a[i] += this->aa[i] * dt;
         /* Update position */
-        this->vx[i] = vx;
-        this->vy[i] = vy;
-        this->x[i] += vx * dt;
-        this->y[i] += vy * dt;
+        this->x[i] += this->v[i] * cos(this->a[i]) * dt;
+        this->y[i] += this->v[i] * sin(this->a[i]) * dt;
         int sz = this->sz[i];
         if (this->x[i] < -sz / 2) this->x[i] += WIN_W + sz;
         if (this->x[i] > WIN_W + sz / 2) this->x[i] -= WIN_W + sz;
