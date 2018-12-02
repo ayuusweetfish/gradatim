@@ -23,6 +23,10 @@ typedef struct _overworld_scene {
     /* Camera position (centre), in pixels */
     double cam_x, cam_y, cam_scale;
     double cam_targx, cam_targy, cam_targscale;
+
+    /* For switching between chapters */
+    int last_chap_idx;
+    double since_chap_switch;
 } overworld_scene;
 
 overworld_scene *overworld_create(scene *bg);

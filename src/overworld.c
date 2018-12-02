@@ -13,6 +13,7 @@ static const double CAM_MOV_FAC = 8;
 static const double NAV_W = WIN_W * 0.8;
 static const double NAV_H = WIN_H * 0.9;
 static const double MAX_SCALE = WIN_H / 100;
+static const double CHAP_SW_DUR = 0.3;
 
 static inline void move_camera(overworld_scene *this)
 {
@@ -43,6 +44,7 @@ static void ow_tick(overworld_scene *this, double dt)
     floue_tick(this->f, dt);
     double rate = (dt > 0.1 ? 0.1 : dt) * CAM_MOV_FAC;
     update_camera(this, rate);
+    this->since_chap_switch += dt;
 }
 
 static void ow_draw(overworld_scene *this)
@@ -52,9 +54,24 @@ static void ow_draw(overworld_scene *this)
     int i;
     struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, typeof(ch));
     SDL_Texture **tex = bekter_at(this->stage_tex, this->cur_chap_idx, typeof(tex));
+
+    int opacity = 255;
+    if (this->since_chap_switch <= CHAP_SW_DUR) {
+        double r = this->since_chap_switch / CHAP_SW_DUR;
+        opacity = 0;
+        if (r < 0.5) {
+            ch = bekter_at(this->chaps, this->last_chap_idx, typeof(ch));
+            tex = bekter_at(this->stage_tex, this->last_chap_idx, typeof(tex));
+            if (r < 1.0 / 3) opacity = round(255 * (1 - r * 3));
+        } else if (r >= 2.0 / 3) {
+            opacity = round(255 * (r * 3 - 2));
+        }
+    }
+
     for (i = 0; i < ch->n_stages; ++i) {
         int c = (i == this->cur_stage_idx) ? 255 : 128;
         SDL_SetTextureColorMod(tex[i], c, c, c);
+        SDL_SetTextureAlphaMod(tex[i], opacity);
         SDL_RenderCopy(g_renderer, tex[i], NULL, &(SDL_Rect){
             ((ch->stages[i]->world_c + ch->stages[i]->cam_c1) * PIX_PER_UNIT - this->cam_x) * this->cam_scale + WIN_W / 2,
             ((ch->stages[i]->world_r + ch->stages[i]->cam_r1) * PIX_PER_UNIT - this->cam_y) * this->cam_scale + WIN_H / 2,
@@ -110,18 +127,22 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
             break;
         case SDLK_UP:
             if (this->cur_chap_idx > 0) {
+                this->last_chap_idx = this->cur_chap_idx;
                 this->cur_chap_idx--;
                 int x = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages;
                 this->cur_stage_idx = min(this->cur_stage_idx, x - 1);
                 move_camera(this);
+                this->since_chap_switch = 0;
             }
             break;
         case SDLK_DOWN:
             if (this->cur_chap_idx < this->cam_targscale - 1) {
+                this->last_chap_idx = this->cur_chap_idx;
                 this->cur_chap_idx++;
                 int x = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages;
                 this->cur_stage_idx = min(this->cur_stage_idx, x - 1);
                 move_camera(this);
+                this->since_chap_switch = 0;
             }
             break;
     }
@@ -264,6 +285,8 @@ overworld_scene *overworld_create(scene *bg)
     ret->cam_x = ret->cam_targx;
     ret->cam_y = ret->cam_targy;
     ret->cam_scale = ret->cam_scale;
+
+    ret->since_chap_switch = CHAP_SW_DUR * 2;
 
     return ret;
 }
