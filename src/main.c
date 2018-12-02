@@ -3,6 +3,7 @@
 #include "scene.h"
 #include "transition.h"
 #include "resources.h"
+#include "profile_data.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -48,6 +49,8 @@ int main()
     orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "sketchch.ogg");
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, 0, -1);
     orion_overall_play(&g_orion);
+
+    profile_load();
 
     g_stage = (scene *)colour_scene_create(0, 192, 255);
 

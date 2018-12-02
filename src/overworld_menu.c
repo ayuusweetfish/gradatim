@@ -4,6 +4,7 @@
 #include "mod.h"
 #include "loading.h"
 #include "gameplay.h"
+#include "profile_data.h"
 
 static const double MOV_X = 30;
 static const double SCALE = 1.3;
@@ -225,14 +226,26 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * 0.275, 0, 0.5);
     bekter_pushback(ret->_base.children, sp);
 
+    profile_stage stg_rec = bekter_at(
+        bekter_at(profile.stages, bg->cur_chap_idx, bekter),
+        bg->cur_stage_idx, profile_stage);
+
+    if (stg_rec.time == -1)
+        strcpy(s, "--:--:--");
+    else
+        sprintf(s, "%02d:%02d:%02d", stg_rec.time / 3600, stg_rec.time / 60 % 60, stg_rec.time % 60);
     l = label_create("KiteOne-Regular.ttf", 32,
-        (SDL_Color){255, 255, 255}, WIN_W, "02:50:52");
+        (SDL_Color){255, 255, 255}, WIN_W, s);
     element_place_anchored((element *)l,
         WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.175, 0, 0.5);
     bekter_pushback(ret->_base.children, l);
 
+    if (stg_rec.retries == -1)
+        strcpy(s, "--");
+    else
+        sprintf(s, "%d", stg_rec.retries);
     l = label_create("KiteOne-Regular.ttf", 32,
-        (SDL_Color){255, 255, 255}, WIN_W, "1665");
+        (SDL_Color){255, 255, 255}, WIN_W, s);
     element_place_anchored((element *)l,
         WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.275, 0, 0.5);
     bekter_pushback(ret->_base.children, l);
