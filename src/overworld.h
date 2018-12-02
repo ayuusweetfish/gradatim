@@ -6,6 +6,7 @@
 #include "scene.h"
 #include "game_data.h"
 #include "floue.h"
+#include "unveil.h"
 
 #include <SDL.h>
 
@@ -13,6 +14,7 @@ typedef struct _overworld_scene {
     scene _base;
     scene *bg;
     floue *f;
+    unveil *u;
 
     bekter(struct chap_rec *) chaps;
     int n_chaps, cur_chap_idx;
