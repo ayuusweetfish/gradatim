@@ -100,14 +100,19 @@ static inline void update_camera(gameplay_scene *this, double rate)
     this->cam_y += rate * cam_dy;
 }
 
-static void retry_reinit(gameplay_scene *this)
+static inline void stop_prot(gameplay_scene *this)
 {
     this->hor_state = HOR_STATE_NONE;
-    this->facing = HOR_STATE_RIGHT;
     this->ver_state = VER_STATE_NONE;
     this->simulator->prot.tag = 0;
+}
+
+static void retry_reinit(gameplay_scene *this)
+{
+    stop_prot(this);
     this->simulator->prot.x = this->rec->spawn_c;
     this->simulator->prot.y = this->rec->spawn_r;
+    this->facing = HOR_STATE_RIGHT;
     this->disp_state = DISP_NORMAL;
     sim_reinit(this->simulator);
     this->simulator->cur_time = get_audio_position(this) - this->aud_sim_offset;
@@ -136,8 +141,10 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                     &g_stage, 1, (utransition_callback)retry_reinit);
         }
         return;
-    } else if (this->disp_state == DISP_CHAPFIN && g_stage == (scene *)this) {
-        g_stage = (scene *)chapfin_scene_create(this);
+    } else if (this->disp_state == DISP_CHAPFIN) {
+        if (g_stage == (scene *)this)
+            g_stage = (scene *)chapfin_scene_create(this);
+        stop_prot(this);
     }
 
     switch (this->simulator->prot.tag) {

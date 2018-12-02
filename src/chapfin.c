@@ -166,8 +166,5 @@ chapfin_scene *chapfin_scene_create(gameplay_scene *g)
     bekter_pushback(this->_base.children, l);
     this->l_extra = l;
 
-    g->hor_state = HOR_STATE_NONE;
-    g->ver_state = VER_STATE_NONE;
-
     return this;
 }
