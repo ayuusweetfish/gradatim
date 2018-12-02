@@ -92,8 +92,10 @@ void floue_tick(floue *this, double dt)
 
 void floue_draw(floue *this)
 {
-    SDL_SetRenderDrawColor(g_renderer, this->c0.r, this->c0.g, this->c0.b, 255);
-    SDL_RenderClear(g_renderer);
+    if (this->c0.a == 255) {
+        SDL_SetRenderDrawColor(g_renderer, this->c0.r, this->c0.g, this->c0.b, 255);
+        SDL_RenderClear(g_renderer);
+    }
     int i;
     for (i = 0; i < this->n; ++i) {
         SDL_SetTextureColorMod(this->tex[i],

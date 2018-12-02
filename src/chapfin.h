@@ -7,6 +7,7 @@
 #include "label.h"
 #include "gameplay.h"
 #include "unveil.h"
+#include "floue.h"
 
 typedef struct _chapfin_scene {
     scene _base;
@@ -17,6 +18,7 @@ typedef struct _chapfin_scene {
     double orig_cam_y;
 
     unveil *u;
+    floue *f;
     label *l_num, *l_title;
     label *l_extra;
 } chapfin_scene;

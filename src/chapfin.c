@@ -30,6 +30,7 @@ static const double LINE_WIDTH = 4;
 static void chapfin_tick(chapfin_scene *this, double dt)
 {
     scene_tick((scene *)this->g, dt);
+    floue_tick(this->f, dt);
     this->time += dt;
 }
 
@@ -67,6 +68,7 @@ static void chapfin_draw(chapfin_scene *this)
         if (s > 1) s = 1;
         SDL_SetRenderDrawColor(g_renderer, 255, 192, 192, 255);
         SDL_RenderClear(g_renderer);
+        floue_draw(this->f);
         unveil_draw(this->u, r, 1);
         int grey = round(s * 255);
         label_colour_mod(this->l_num, grey, grey, grey);
@@ -82,6 +84,7 @@ static void chapfin_draw(chapfin_scene *this)
         if (r > 1) r = 1;
         SDL_SetRenderDrawColor(g_renderer, 255, 192, 192, 255);
         SDL_RenderClear(g_renderer);
+        floue_draw(this->f);
         label_colour_mod(this->l_num, 255, 255, 255);
         label_colour_mod(this->l_title, 255, 255, 255);
         this->l_extra->_base.alpha = round(r * 255);
@@ -98,6 +101,7 @@ static void chapfin_drop(chapfin_scene *this)
 {
     scene_drop(this->g);
     unveil_drop(this->u);
+    floue_drop(this->f);
 }
 
 static scene *exit_routine(chapfin_scene *this)
@@ -131,6 +135,13 @@ chapfin_scene *chapfin_scene_create(gameplay_scene *g)
     this->time = 0;
     this->orig_cam_y = g->cam_y;
     this->u = unveil_create();
+    this->f = floue_create((SDL_Color){0});
+
+    int i;
+    for (i = 0; i < 6; ++i)
+        floue_add(this->f, (SDL_Point){rand() % WIN_W, rand() % WIN_H},
+            (SDL_Color){g->chap->r1, g->chap->g1, g->chap->b1, 255},
+            rand() % (WIN_W / 4) + WIN_W / 4, (double)(i + 1) / 12);
 
     char s[64];
     sprintf(s, "Chapter %d", g->chap->idx + 1);
