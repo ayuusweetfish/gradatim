@@ -136,7 +136,7 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
             }
             break;
         case SDLK_DOWN:
-            if (this->cur_chap_idx < this->cam_targscale - 1) {
+            if (this->cur_chap_idx < this->n_chaps - 1) {
                 this->last_chap_idx = this->cur_chap_idx;
                 this->cur_chap_idx++;
                 int x = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages;
@@ -204,6 +204,7 @@ static inline void load_chapter(overworld_scene *this, const char *path)
     struct chap_rec *ch = chap_read(path);
     if (ch == NULL) return;
     bekter_pushback(this->chaps, ch);
+    this->n_chaps++;
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
     SDL_Texture **tex_arr = malloc(sizeof(SDL_Texture *) * ch->n_stages);
@@ -273,6 +274,7 @@ overworld_scene *overworld_create(scene *bg)
             (SDL_Color){255, 255, 192}, rand() % (WIN_W / 4) + WIN_W / 4,
             (double)(i + 5) / 16);
 
+    ret->n_chaps = 0;
     ret->chaps = bekter_create();
     ret->stage_tex = bekter_create();
     load_chapter(ret, "chap.csv");
