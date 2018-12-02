@@ -45,6 +45,26 @@ static void ow_tick(overworld_scene *this, double dt)
     double rate = (dt > 0.1 ? 0.1 : dt) * CAM_MOV_FAC;
     update_camera(this, rate);
     this->since_chap_switch += dt;
+
+    double r1, g1, b1, r2, g2, b2;
+    struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *);
+    if (this->since_chap_switch <= CHAP_SW_DUR) {
+        struct chap_rec *dh = bekter_at(this->chaps, this->last_chap_idx, struct chap_rec *);
+        double r = this->since_chap_switch / CHAP_SW_DUR;
+        r1 = dh->r1 + r * (ch->r1 - dh->r1);
+        g1 = dh->g1 + r * (ch->g1 - dh->g1);
+        b1 = dh->b1 + r * (ch->b1 - dh->b1);
+        r2 = dh->r2 + r * (ch->r2 - dh->r2);
+        g2 = dh->g2 + r * (ch->g2 - dh->g2);
+        b2 = dh->b2 + r * (ch->b2 - dh->b2);
+    } else {
+        r1 = ch->r1; g1 = ch->g1; b1 = ch->b1;
+        r2 = ch->r2; g2 = ch->g2; b2 = ch->b2;
+    }
+    this->f->c0 = (SDL_Color){round(r1), round(g1), round(b1)};
+    int i;
+    for (i = 0; i < 8; ++i)
+        this->f->c[i] = (SDL_Color){round(r2), round(g2), round(b2)};
 }
 
 static void ow_draw(overworld_scene *this)
@@ -267,11 +287,11 @@ overworld_scene *overworld_create(scene *bg)
     ret->_base.drop = (scene_drop_func)ow_drop;
     ret->_base.key_handler = (scene_key_func)ow_key;
     ret->bg = bg;
-    ret->f = floue_create((SDL_Color){216, 255, 192});
+    ret->f = floue_create((SDL_Color){255, 255, 255});
     int i;
     for (i = 0; i < 8; ++i)
         floue_add(ret->f, (SDL_Point){rand() % WIN_W, rand() % WIN_H},
-            (SDL_Color){255, 255, 192}, rand() % (WIN_W / 4) + WIN_W / 4,
+            (SDL_Color){192, 192, 192}, rand() % (WIN_W / 4) + WIN_W / 4,
             (double)(i + 5) / 16);
 
     ret->n_chaps = 0;

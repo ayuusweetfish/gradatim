@@ -184,6 +184,10 @@ struct chap_rec *chap_read(const char *path)
     if (!this) { fclose(f); return NULL; }
     memset(this, 0, sizeof(*this));
 
+    fscanf(f, "%d,%d,%d,%d,%d,%d",
+        &this->r1, &this->g1, &this->b1,
+        &this->r2, &this->g2, &this->b2);
+
     int bpm, beat_mul, sig, dmask = 0, hmask = 0;
     char measure[64];
     int m, i;
