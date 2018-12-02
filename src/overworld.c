@@ -101,7 +101,7 @@ static void ow_draw(overworld_scene *this)
         });
     }
 
-    unveil_draw(this->u, this->since_chap_switch > 1 ? 1 : this->since_chap_switch, 1);
+    unveil_draw(this->u, this->since_chap_switch > 3 ? 1 : this->since_chap_switch / 3, 1);
 }
 
 static void ow_drop(overworld_scene *this)
