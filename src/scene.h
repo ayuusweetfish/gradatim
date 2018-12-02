@@ -4,6 +4,7 @@
 #define _SCENE_H
 
 #include "bekter.h"
+#include "floue.h"
 
 #include <SDL.h>
 
@@ -46,6 +47,7 @@ void scene_clear_children(scene *this);
 typedef struct _colour_scene {
     scene _base;
     unsigned char r, g, b;
+    floue *f;
 } colour_scene;
 
 colour_scene *colour_scene_create(int r, int g, int b);
