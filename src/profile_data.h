@@ -20,5 +20,6 @@ extern profile_data profile;
 
 void profile_load();
 void profile_save();
+profile_stage *profile_get_stage(int ch, int st);
 
 #endif

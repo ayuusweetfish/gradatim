@@ -226,9 +226,7 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * 0.275, 0, 0.5);
     bekter_pushback(ret->_base.children, sp);
 
-    profile_stage stg_rec = bekter_at(
-        bekter_at(profile.stages, bg->cur_chap_idx, bekter),
-        bg->cur_stage_idx, profile_stage);
+    profile_stage stg_rec = *profile_get_stage(bg->cur_chap_idx, bg->cur_stage_idx);
 
     if (stg_rec.time == -1)
         strcpy(s, "--:--:--");

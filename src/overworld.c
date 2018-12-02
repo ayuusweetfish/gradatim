@@ -4,6 +4,7 @@
 #include "overworld_menu.h"
 #include "gameplay.h"
 #include "transition.h"
+#include "profile_data.h"
 
 #include <stdlib.h>
 
@@ -40,6 +41,26 @@ static inline void update_camera(overworld_scene *this, double rate)
     this->cam_scale += rate * cam_ds;
 }
 
+static inline void update_cleared(overworld_scene *this)
+{
+    int i, j;
+    /* XXX: Use binary chop */
+
+    for (i = 0; i < this->n_chaps - 1; ++i)
+        if (profile_get_stage(i,
+            bekter_at(this->chaps, i, struct chap_rec *)->n_stages - 1)
+            ->time == -1)
+        {
+            break;
+        }
+    this->cleared_chaps = i;
+
+    struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *);
+    for (j = 0; j < ch->n_stages - 1; ++j)
+        if (profile_get_stage(this->cur_chap_idx, j)->time == -1) break;
+    this->cleared_stages = j;
+}
+
 static void ow_tick(overworld_scene *this, double dt)
 {
     floue_tick(this->f, dt);
@@ -68,13 +89,27 @@ static void ow_tick(overworld_scene *this, double dt)
         this->f->c[i] = (SDL_Color){round(r2), round(g2), round(b2), 255};
 }
 
+static inline void draw_stage(overworld_scene *this,
+    struct chap_rec *ch, SDL_Texture **tex, int opacity, int i)
+{
+    int c = (i > this->cleared_stages ? 48 : (i == this->cur_stage_idx) ? 255 : 144);
+    SDL_SetTextureColorMod(tex[i], c, c, c);
+    SDL_SetTextureAlphaMod(tex[i], opacity);
+    SDL_RenderCopy(g_renderer, tex[i], NULL, &(SDL_Rect){
+        ((ch->stages[i]->world_c + ch->stages[i]->cam_c1) * PIX_PER_UNIT - this->cam_x) * this->cam_scale + WIN_W / 2,
+        ((ch->stages[i]->world_r + ch->stages[i]->cam_r1) * PIX_PER_UNIT - this->cam_y) * this->cam_scale + WIN_H / 2,
+        (ch->stages[i]->cam_c2 - ch->stages[i]->cam_c1) * PIX_PER_UNIT * this->cam_scale,
+        (ch->stages[i]->cam_r2 - ch->stages[i]->cam_r1) * PIX_PER_UNIT * this->cam_scale
+    });
+}
+
 static void ow_draw(overworld_scene *this)
 {
     floue_draw(this->f);
 
     int i;
-    struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, typeof(ch));
-    SDL_Texture **tex = bekter_at(this->stage_tex, this->cur_chap_idx, typeof(tex));
+    struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *);
+    SDL_Texture **tex = bekter_at(this->stage_tex, this->cur_chap_idx, SDL_Texture **);
 
     int opacity = 255;
     if (this->since_chap_switch <= CHAP_SW_DUR) {
@@ -89,17 +124,9 @@ static void ow_draw(overworld_scene *this)
         }
     }
 
-    for (i = 0; i < ch->n_stages; ++i) {
-        int c = (i == this->cur_stage_idx) ? 255 : 128;
-        SDL_SetTextureColorMod(tex[i], c, c, c);
-        SDL_SetTextureAlphaMod(tex[i], opacity);
-        SDL_RenderCopy(g_renderer, tex[i], NULL, &(SDL_Rect){
-            ((ch->stages[i]->world_c + ch->stages[i]->cam_c1) * PIX_PER_UNIT - this->cam_x) * this->cam_scale + WIN_W / 2,
-            ((ch->stages[i]->world_r + ch->stages[i]->cam_r1) * PIX_PER_UNIT - this->cam_y) * this->cam_scale + WIN_H / 2,
-            (ch->stages[i]->cam_c2 - ch->stages[i]->cam_c1) * PIX_PER_UNIT * this->cam_scale,
-            (ch->stages[i]->cam_r2 - ch->stages[i]->cam_r1) * PIX_PER_UNIT * this->cam_scale
-        });
-    }
+    for (i = 0; i < ch->n_stages; ++i)
+        if (i != this->cur_stage_idx) draw_stage(this, ch, tex, opacity, i);
+    draw_stage(this, ch, tex, opacity, this->cur_stage_idx);
 }
 
 static void ow_drop(overworld_scene *this)
@@ -138,9 +165,7 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
             }
             break;
         case SDLK_RIGHT:
-            if (this->cur_stage_idx <
-                bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages - 1)
-            {
+            if (this->cur_stage_idx < this->cleared_stages) {
                 this->cur_stage_idx++;
                 move_camera(this);
             }
@@ -149,18 +174,18 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
             if (this->cur_chap_idx > 0) {
                 this->last_chap_idx = this->cur_chap_idx;
                 this->cur_chap_idx--;
-                int x = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages;
-                this->cur_stage_idx = min(this->cur_stage_idx, x - 1);
+                update_cleared(this);
+                this->cur_stage_idx = min(this->cur_stage_idx, this->cleared_stages);
                 move_camera(this);
                 this->since_chap_switch = 0;
             }
             break;
         case SDLK_DOWN:
-            if (this->cur_chap_idx < this->n_chaps - 1) {
+            if (this->cur_chap_idx < this->cleared_chaps) {
                 this->last_chap_idx = this->cur_chap_idx;
                 this->cur_chap_idx++;
-                int x = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *)->n_stages;
-                this->cur_stage_idx = min(this->cur_stage_idx, x - 1);
+                update_cleared(this);
+                this->cur_stage_idx = min(this->cur_stage_idx, this->cleared_stages);
                 move_camera(this);
                 this->since_chap_switch = 0;
             }
@@ -303,6 +328,7 @@ overworld_scene *overworld_create(scene *bg)
 
     ret->cur_chap_idx = 0;
     ret->cur_stage_idx = 0;
+    update_cleared(ret);
 
     move_camera(ret);
     ret->cam_x = ret->cam_targx;

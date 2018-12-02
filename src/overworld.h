@@ -16,9 +16,12 @@ typedef struct _overworld_scene {
 
     bekter(struct chap_rec *) chaps;
     int n_chaps, cur_chap_idx;
+    int cleared_chaps;  /* Index of the latest chapter reachable */
 
     bekter(SDL_Texture **) stage_tex;
     int cur_stage_idx;
+    /* Index of the latest stage reachable, in _current selected character_ */
+    int cleared_stages;
 
     /* Camera position (centre), in pixels */
     double cam_x, cam_y, cam_scale;

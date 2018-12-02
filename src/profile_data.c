@@ -38,3 +38,8 @@ void profile_load()
 void profile_save()
 {
 }
+
+profile_stage *profile_get_stage(int ch, int st)
+{
+    return bekter_at_ptr(bekter_at(profile.stages, ch, bekter), st, profile_stage);
+}
