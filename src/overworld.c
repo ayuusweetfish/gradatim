@@ -100,8 +100,6 @@ static void ow_draw(overworld_scene *this)
             (ch->stages[i]->cam_r2 - ch->stages[i]->cam_r1) * PIX_PER_UNIT * this->cam_scale
         });
     }
-
-    unveil_draw(this->u, this->since_chap_switch > 3 ? 1 : this->since_chap_switch / 3, 1);
 }
 
 static void ow_drop(overworld_scene *this)
@@ -295,7 +293,6 @@ overworld_scene *overworld_create(scene *bg)
         floue_add(ret->f, (SDL_Point){rand() % WIN_W, rand() % WIN_H},
             (SDL_Color){192, 192, 192}, rand() % (WIN_W / 4) + WIN_W / 4,
             (double)(i + 5) / 16);
-    ret->u = unveil_create();
 
     ret->n_chaps = 0;
     ret->chaps = bekter_create();
