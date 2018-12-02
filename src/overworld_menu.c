@@ -105,7 +105,8 @@ static inline scene *run_stage(overworld_menu *this)
     for (i = 0; i < N_MODS; ++i)
         mods |= (glob_menu_val[i]) << (i * 2);
     gameplay_scene *gp = gameplay_scene_create((scene *)this->bg,
-        bekter_at(this->bg->chaps, 0, struct chap_rec *), this->bg->cur_stage_idx, mods);
+        bekter_at(this->bg->chaps, this->bg->cur_chap_idx, struct chap_rec *),
+        this->bg->cur_stage_idx, mods);
     return (scene *)gp;
 }
 
