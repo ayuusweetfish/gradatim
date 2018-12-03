@@ -27,6 +27,8 @@ typedef struct _gameplay_scene {
 
     /* Modifier states as a bitmask */
     int mods;
+    /* Speed multiplier generated from mods mask */
+    double mul;
 
     /* Display states */
     enum display_state {

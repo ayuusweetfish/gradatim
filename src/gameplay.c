@@ -15,8 +15,11 @@ static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 static const double SPR_SCALE = 3;
 
-#define AUD_OFFSET  (-this->chap->offs + 0.04)
-#define BEAT        (this->chap->beat)
+static const double VIVACE_MUL = 1.2;
+static const double ANDANTE_MUL = 0.8;
+
+#define AUD_OFFSET  (-this->chap->offs / this->mul + 0.04)
+#define BEAT        (this->chap->beat / this->mul)
 #define HOP_SPD SIM_GRAVITY
 static const double HOP_PRED_DUR = 0.2;
 static const double HOP_GRACE_DUR = 0.15;
@@ -619,6 +622,9 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
 
     if (mods & MOD_STRETTO) mods |= MOD_SEMPLICE;
     ret->mods = mods;
+    if (mods & MOD_VIVACE) ret->mul = VIVACE_MUL;
+    else if (mods & MOD_ANDANTE) ret->mul = ANDANTE_MUL;
+    else ret->mul = 1;
 
     ret->prev_sim = NULL;
     ret->chap = chap;
@@ -634,6 +640,10 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     for (i = 0; i < chap->n_tracks; ++i) {
         if (chap->tracks[i].src_id == -1) {
             orion_load_ogg(&g_orion, TRACKID_STAGE_BGM + i, chap->tracks[i].str);
+            if (ret->mul != 1)
+                orion_apply_stretch(&g_orion,
+                    TRACKID_STAGE_BGM + i, TRACKID_STAGE_BGM + i,
+                    (ret->mul - 1) * 100);
         } else if (strcmp(chap->tracks[i].str, "lowpass") == 0) {
             orion_apply_lowpass(&g_orion,
                 TRACKID_STAGE_BGM + chap->tracks[i].src_id,
@@ -645,8 +655,8 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     for (i = 0; i < chap->n_tracks; ++i) {
         orion_play_loop(&g_orion, TRACKID_STAGE_BGM + i,
             0,
-            (int)(chap->offs * 44100),
-            (int)((chap->offs + chap->beat * chap->loop) * 44100));
+            (int)(chap->offs / ret->mul * 44100),
+            (int)((chap->offs + chap->beat * chap->loop) / ret->mul * 44100));
         orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0, 0);
         orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
     }
