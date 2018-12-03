@@ -24,6 +24,10 @@ typedef struct _gameplay_scene {
     bool paused;
     unsigned int dialogue_triggered;
 
+    /* For updating player's records */
+    int start_stage_idx;
+    double stage_start_time;
+
     /* Modifier states as a bitmask */
     int mods;
     /* Speed multiplier generated from mods mask */

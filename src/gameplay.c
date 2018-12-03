@@ -6,6 +6,7 @@
 #include "unary_transition.h"
 #include "pause.h"
 #include "dialogue.h"
+#include "profile_data.h"
 #include "chapfin.h"
 
 #include <math.h>
@@ -106,11 +107,25 @@ static inline bool can_dash(gameplay_scene *this)
 
 static inline void switch_stage_ctx(gameplay_scene *this)
 {
+    /* Update player's record */
+    if (this->prev_sim != NULL) {
+        profile_stage *ps = profile_get_stage(this->chap->idx, this->cur_stage_idx);
+        int cmbid = modcomb_id(this->mods);
+        int stage_time = (int)((this->simulator->cur_time - this->stage_start_time) * 48);
+        if (ps->time[cmbid] == -1 || ps->time[cmbid] > stage_time) {
+            ps->time[cmbid] = stage_time;
+            ps->cleared = true;
+            profile_save();
+        }
+    }
+
+    /* Go to the next stage or the chapter finish accordingly */
     if (++this->cur_stage_idx == this->chap->n_stages) {
         this->disp_state = DISP_CHAPFIN;
     } else {
         this->rec = this->chap->stages[this->cur_stage_idx];
         this->simulator = stage_create_sim(this->rec);
+        this->stage_start_time =
         this->simulator->cur_time = (this->prev_sim == NULL ?
             get_audio_position(this) / this->chap->beat_mul :
             this->prev_sim->cur_time);
@@ -679,6 +694,8 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     ret->chap = chap;
     ret->cur_stage_idx = idx - 1;
     switch_stage_ctx(ret);
+    ret->start_stage_idx = idx;
+    ret->stage_start_time = 0;
 
     ret->cam_x = clamp(ret->simulator->prot.x,
         WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;

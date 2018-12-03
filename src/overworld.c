@@ -41,9 +41,12 @@ static inline void update_camera(overworld_scene *this, double rate)
     this->cam_scale += rate * cam_ds;
 }
 
-static inline void update_cleared(overworld_scene *this)
+/* Returns whether new stages are available _in the current chapter_
+ * Note: return value is meaningful only after stage clear */
+static inline bool update_cleared(overworld_scene *this)
 {
     int i, j;
+    bool changed = false;
     /* XXX: Use binary chop */
 
     for (i = 0; i < this->n_chaps - 1; ++i)
@@ -58,7 +61,10 @@ static inline void update_cleared(overworld_scene *this)
     struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *);
     for (j = 0; j < ch->n_stages - 1; ++j)
         if (!profile_get_stage(this->cur_chap_idx, j)->cleared) break;
+
+    if (j != this->cleared_stages) changed = true;
     this->cleared_stages = j;
+    return changed;
 }
 
 static void ow_tick(overworld_scene *this, double dt)
@@ -106,6 +112,11 @@ static inline void draw_stage(overworld_scene *this,
 static void ow_draw(overworld_scene *this)
 {
     floue_draw(this->f);
+
+    if (update_cleared(this)) {
+        this->cur_stage_idx = this->cleared_stages;
+        move_camera(this);
+    }
 
     int i;
     struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *);
