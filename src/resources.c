@@ -165,7 +165,7 @@ void render_texture_alpha(texture t, SDL_Rect *dim, int alpha)
 
 static const char *FONT_PATH[N_FONTS] = {
     "KiteOne-Regular.ttf",
-    "KiteOne-Regular.ttf"
+    "TakoZero-Irregular.ttf"
 };
 static TTF_Font *f[N_FONTS][MAX_PTS] = {{ NULL }};
 

@@ -187,40 +187,46 @@ chapfin_scene *chapfin_scene_create(gameplay_scene *g)
             rand() % (WIN_W / 4) + WIN_W / 4, (double)(i + 1) / 12);
 
     char s[64];
-    sprintf(s, "Chapter %d", g->chap->idx + 1);
-    label *l = label_create(FONT_ITALIC, 40,
+    sprintf(s, "C h a p t e r  %d", g->chap->idx + 1);
+    label *l = label_create(FONT_UPRIGHT, 40,
         (SDL_Color){255, 255, 255}, WIN_W, s);
     element_place_anchored((element *)l, WIN_W / 2, WIN_H * 0.3, 0.5, 0.5);
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_num = l;
 
-    l = label_create(FONT_ITALIC, 72,
-        (SDL_Color){255, 255, 255}, WIN_W, g->chap->title);
+    int p = 0;
+    for (; g->chap->title[p] != '\0'; ++p) {
+        s[p * 2] = g->chap->title[p];
+        s[p * 2 + 1] = ' ';
+    }
+    s[p * 2 - 1] = '\0';
+    l = label_create(FONT_UPRIGHT, 72,
+        (SDL_Color){255, 255, 255}, WIN_W, s);
     element_place_anchored((element *)l, WIN_W / 2, WIN_H * 0.5, 0.5, 0.5);
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_title = l;
 
-    l = label_create(FONT_ITALIC, 28,
+    l = label_create(FONT_UPRIGHT, 28,
         (SDL_Color){255, 255, 255}, WIN_W, "Complete run");
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_summary = l;
 
-    l = label_create(FONT_ITALIC, 28,
-        (SDL_Color){255, 255, 255}, WIN_W, "015.  07.");
+    l = label_create(FONT_UPRIGHT, 28,
+        (SDL_Color){255, 255, 255}, WIN_W, "015. 07. ");
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_timer = l;
 
-    l = label_create(FONT_ITALIC, 21,
+    l = label_create(FONT_UPRIGHT, 21,
         (SDL_Color){255, 255, 255}, WIN_W, "47");
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_timer_d = l;
 
-    l = label_create(FONT_ITALIC, 28,
+    l = label_create(FONT_UPRIGHT, 28,
         (SDL_Color){255, 255, 255}, WIN_W, "4073");
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
