@@ -15,8 +15,8 @@ static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 static const double SPR_SCALE = 3;
 
-static const double AUD_OFFSET = +0.04;
-#define BEAT    (this->chap->beat)
+#define AUD_OFFSET  (-this->chap->tracks[0].arg + 0.04)
+#define BEAT        (this->chap->beat)
 #define HOP_SPD SIM_GRAVITY
 static const double HOP_PRED_DUR = 0.2;
 static const double HOP_GRACE_DUR = 0.15;
@@ -336,6 +336,7 @@ static inline void draw_overlay(gameplay_scene *this)
         return;
     }
     if (this->mods & MOD_SOTTO_VOCO) return;
+    if (beats < -1./16) return;
     int beats_i = (int)(beats + 1./16);
     double beats_d = beats - beats_i;
     beats_i %= this->chap->sig;
@@ -376,9 +377,42 @@ static inline void flashlight_texture(SDL_Texture *tex,
     SDL_UnlockTexture(tex);
 }
 
+static inline void pause_sound(gameplay_scene *this)
+{
+    int i;
+    for (i = 0; i < this->chap->n_tracks; ++i)
+        orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
+}
+
+static inline void update_sound(gameplay_scene *this)
+{
+    int i;
+    if ((scene *)this == g_stage) {
+        for (i = 0; i < this->chap->n_tracks; ++i)
+            orion_resume(&g_orion, TRACKID_STAGE_BGM + i);
+    }
+    if (this->mods & MOD_A_CAPELLA) {
+        for (i = 0; i < this->chap->n_tracks; ++i)
+            orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0, 0);
+    } else {
+        float val[MAX_CHAP_TRACKS] = { 0 }, sum = 0;
+        for (i = 0; i < this->rec->aud_ct; ++i) {
+            float d = sqrtf(
+                sqr(this->simulator->prot.y + this->rec->world_r - this->rec->aud[i].r) +
+                sqr(this->simulator->prot.x + this->rec->world_c - this->rec->aud[i].c)
+            );
+            d = 1 / d;
+            val[this->rec->aud[i].tid] += d;
+            sum += d;
+        }
+        for (i = 0; i < this->chap->n_tracks; ++i)
+            orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0.03, val[i] / sum);
+    }
+}
+
 static void gameplay_scene_draw(gameplay_scene *this)
 {
-    if ((scene *)this == g_stage) orion_resume(&g_orion, TRACKID_STAGE_BGM);
+    update_sound(this);
 
     SDL_SetRenderDrawColor(g_renderer, 216, 224, 255, 255);
     SDL_RenderClear(g_renderer);
@@ -464,7 +498,7 @@ static void gameplay_scene_drop(gameplay_scene *this)
     if (this->prev_sim != NULL) sim_drop(this->prev_sim);
     if (this->simulator != NULL && this->simulator != this->prev_sim)
         sim_drop(this->simulator);
-    orion_pause(&g_orion, TRACKID_STAGE_BGM);
+    pause_sound(this);
 }
 
 static void try_hop(gameplay_scene *this)
@@ -562,7 +596,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
             if (ev->state == SDL_PRESSED) {
                 g_stage = (scene *)pause_scene_create(
                     &g_stage, (retry_callback)retry_reinit, this->bg);
-                orion_pause(&g_orion, TRACKID_STAGE_BGM);
+                pause_sound(this);
             }
             break;
         default: break;
@@ -596,10 +630,23 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     ret->cam_y = clamp(ret->simulator->prot.y,
         WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
 
-    orion_load_ogg(&g_orion, TRACKID_STAGE_BGM, "nyan.ogg");
-    orion_play_loop(&g_orion, TRACKID_STAGE_BGM, 0, 0, -1);
-    if (ret->mods & MOD_A_CAPELLA)
-        orion_ramp(&g_orion, TRACKID_STAGE_BGM, 0, 0);
+    int i;
+    for (i = 0; i < chap->n_tracks; ++i) {
+        if (chap->tracks[i].src_id == -1) {
+            orion_load_ogg(&g_orion, TRACKID_STAGE_BGM + i, chap->tracks[i].str);
+        } else if (strcmp(chap->tracks[i].str, "lowpass") == 0) {
+            orion_apply_lowpass(&g_orion,
+                TRACKID_STAGE_BGM + chap->tracks[i].src_id,
+                TRACKID_STAGE_BGM + i,
+                chap->tracks[i].arg);
+        }
+    }
+    /* Play at the same time in order to avoid incorrect syncronization */
+    for (i = 0; i < chap->n_tracks; ++i) {
+        orion_play_loop(&g_orion, TRACKID_STAGE_BGM + i, 0, 0, -1);
+        orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0, 0);
+        orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
+    }
 
     return ret;
 }

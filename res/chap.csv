@@ -1,10 +1,10 @@
 216,255,192,255,255,192
 Echo
-256,2
-x.o.x.oo
+284,2
+x.o.o.o.
 2
--1,4-5.ogg,0.04
-0,lowpass,440
+-1,nyan.ogg,3.80
+0,lowpass,880
 2
 rua.csv
 rub.csv

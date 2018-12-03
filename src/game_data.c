@@ -95,6 +95,16 @@ struct stage_rec *stage_read(const char *path)
         bekter_pushback(this->plot, d);
     }
 
+    /* List of audio sources */
+    fscanf(f, "%d", &m);
+    fgetc(f);
+    this->aud_ct = m;
+    for (i = 0; i < m; ++i) {
+        int tid, r, c;
+        fscanf(f, "%d,%d,%d", &tid, &r, &c);
+        this->aud[i] = (struct _stage_audsrc){(char)tid, r, c};
+    }
+
     /* TODO: This should be replaced */
     this->prot_tex = retrieve_texture("uwu.png");
     this->prot_fail_tex[0] = retrieve_texture("fragile1.png");

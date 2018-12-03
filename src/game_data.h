@@ -15,6 +15,11 @@ typedef struct _stage_dialogue {
     bekter(dialogue_entry) content;
 } stage_dialogue;
 
+struct _stage_audsrc {
+    char tid;
+    int r, c;
+};
+
 struct stage_rec {
     int world_r, world_c;
     int n_rows, n_cols;
@@ -39,6 +44,11 @@ struct stage_rec {
     /* Dialogues */
     bekter(struct _stage_dialogue) plot;
     int plot_ct;
+
+    /* Audio sources */
+#define MAX_AUD_SOURCES 8
+    struct _stage_audsrc aud[MAX_AUD_SOURCES];
+    int aud_ct;
 };
 
 struct stage_rec *stage_read(const char *path);
