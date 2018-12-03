@@ -15,7 +15,7 @@ static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 static const double SPR_SCALE = 3;
 
-#define AUD_OFFSET  (-this->chap->tracks[0].arg + 0.04)
+#define AUD_OFFSET  (-this->chap->offs + 0.04)
 #define BEAT        (this->chap->beat)
 #define HOP_SPD SIM_GRAVITY
 static const double HOP_PRED_DUR = 0.2;
@@ -643,7 +643,10 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     }
     /* Play at the same time in order to avoid incorrect syncronization */
     for (i = 0; i < chap->n_tracks; ++i) {
-        orion_play_loop(&g_orion, TRACKID_STAGE_BGM + i, 0, 0, -1);
+        orion_play_loop(&g_orion, TRACKID_STAGE_BGM + i,
+            0,
+            (int)(chap->offs * 44100),
+            (int)((chap->offs + chap->beat * chap->loop) * 44100));
         orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0, 0);
         orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
     }

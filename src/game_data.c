@@ -229,6 +229,8 @@ struct chap_rec *chap_read(const char *path)
     this->dash_mask = dmask;
     this->hop_mask = hmask;
 
+    fscanf(f, "%lf,%d", &this->offs, &this->loop);
+
     fscanf(f, "%d", &m);
     if (m > MAX_CHAP_TRACKS) { free(this); fclose(f); return NULL; }
     this->n_tracks = m;

@@ -79,6 +79,10 @@ struct chap_rec {
     int beat_mul;
     /* Beats per measure */
     int sig;
+    /* Audio offset for all tracks */
+    double offs;
+    /* Number of beats per loop */
+    int loop;
     /* Bitmask denoting availability of dash at each beat */
     unsigned int dash_mask;
     /* Bitmask denoting availability of hop at each beat */
