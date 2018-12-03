@@ -77,7 +77,7 @@ static inline void owm_draw(overworld_menu *this)
     }
     double phase = fabs(BLINK_DUR - fmod(this->time, BLINK_DUR * 2)) / BLINK_DUR;
     phase = ease_quad_inout(phase);
-    int opacity = 128 + round(phase * 24);
+    int opacity = round(t * (128 + round(phase * 24)));
     SDL_SetRenderDrawColor(g_renderer, 255, 255, 128, opacity);
     SDL_RenderFillRect(g_renderer, &(SDL_Rect){
         round(WIN_W - MENU_W + delta_x), round(cur_y * WIN_H), WIN_W, WIN_H * ITEM_H
@@ -167,18 +167,14 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
             }
             break;
         case SDLK_UP:
-            if (this->menu_idx > 0) {
-                this->last_menu_idx = this->menu_idx;
-                this->menu_idx--;
-                this->menu_time = this->time;
-            }
+            this->last_menu_idx = this->menu_idx;
+            this->menu_idx = (this->menu_idx + N_MODS) % (N_MODS + 1);
+            this->menu_time = this->time;
             break;
         case SDLK_DOWN:
-            if (this->menu_idx < N_MODS) {
-                this->last_menu_idx = this->menu_idx;
-                this->menu_idx++;
-                this->menu_time = this->time;
-            }
+            this->last_menu_idx = this->menu_idx;
+            this->menu_idx = (this->menu_idx + 1) % (N_MODS + 1);
+            this->menu_time = this->time;
             break;
         case SDLK_LEFT:
             if (this->menu_idx != N_MODS) {
