@@ -181,14 +181,18 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
             }
             break;
         case SDLK_LEFT:
-            this->menu_val[this->menu_idx] =
-                (this->menu_val[this->menu_idx] - 1 + N_MODSTATES) % N_MODSTATES;
-            update_stats(this);
+            if (this->menu_idx != N_MODS) {
+                this->menu_val[this->menu_idx] =
+                    (this->menu_val[this->menu_idx] - 1 + N_MODSTATES) % N_MODSTATES;
+                update_stats(this);
+            }
             break;
         case SDLK_RIGHT:
-            this->menu_val[this->menu_idx] =
-                (this->menu_val[this->menu_idx] + 1) % N_MODSTATES;
-            update_stats(this);
+            if (this->menu_idx != N_MODS) {
+                this->menu_val[this->menu_idx] =
+                    (this->menu_val[this->menu_idx] + 1) % N_MODSTATES;
+                update_stats(this);
+            }
             break;
     }
     if (this->menu_idx == N_MODS) return;
