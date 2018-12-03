@@ -18,7 +18,7 @@ typedef struct _overworld_menu {
     double quit_time;
 
     profile_stage stg_rec;
-    label *l_timer;
+    label *l_timer, *l_timer_dec;
 
     int menu_idx, last_menu_idx;
     double menu_time;

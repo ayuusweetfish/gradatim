@@ -124,14 +124,24 @@ static inline void init_stage(overworld_menu *this, gameplay_scene *gp)
 
 static inline void update_stats(overworld_menu *this)
 {
-    char s[64];
+    char s[16], d[8];
     int t = this->stg_rec.time[modcomb_id(get_mask(this))];
-    if (t != -1)
-        sprintf(s, "%02d:%02d:%02d", t / 3600, t / 60 % 60, t % 60);
-    else strcpy(s, "--:--:--");
+    if (t != -1) {
+        t *= bekter_at(this->bg->chaps, this->bg->cur_chap_idx, struct chap_rec *)->beat_mul;
+        int sig = bekter_at(this->bg->chaps, this->bg->cur_chap_idx, struct chap_rec *)->sig;
+        sprintf(s, "%03d.  %02d.", t / (sig * 48), t % (sig * 48) / 48);
+        sprintf(d, "%02d", t % 48);
+    } else {
+        strcpy(s, "---.  --.");
+        strcpy(d, "--");
+    }
     label_set_text(this->l_timer, s);
     element_place_anchored((element *)this->l_timer,
         WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.175, 0, 0.5);
+    label_set_text(this->l_timer_dec, d);
+    element_place((element *)this->l_timer_dec,
+        this->l_timer->_base._base.dim.x + this->l_timer->_base._base.dim.w,
+        this->l_timer->_base._base.dim.y);
 }
 
 static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
@@ -252,11 +262,10 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     bekter_pushback(ret->_base.children, l);
     ret->l_timer = l;
 
-    l = label_create("KiteOne-Regular.ttf", 32,
+    l = label_create("KiteOne-Regular.ttf", 24,
         (SDL_Color){255, 255, 255}, WIN_W, "");
-    element_place_anchored((element *)l,
-        WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.275, 0, 0.5);
     bekter_pushback(ret->_base.children, l);
+    ret->l_timer_dec = l;
 
     int i;
     for (i = 0; i < N_MODS; ++i) {
