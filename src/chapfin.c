@@ -2,6 +2,7 @@
 
 #include "global.h"
 #include "loading.h"
+#include "profile_data.h"
 
 static const double D1 = 0.5;
 static const double F = 0.7;
@@ -40,7 +41,7 @@ static void chapfin_tick(chapfin_scene *this, double dt)
 
 static inline void update_summary_obj(sprite *s, double x, double y, double t)
 {
-    if (t < 0) return;
+    if (s == NULL || t < 0) return;
     double r = (t > T3 ? 1 : t / T3);
     r = 1 - (1 - r) * (1 - r) * (1 - r) * (1 - r);
     /*r = ease_elastic_out(r, 0.9);*/
@@ -63,11 +64,13 @@ static void chapfin_draw(chapfin_scene *this)
             ICON_BASE_X, 0.7, this->time - I3 * N_MODS);
         update_summary_obj((sprite *)this->clock,
             ICON_BASE_X - ICON_SZ, 0.77, this->time - I3 * (N_MODS + 1));
-        update_summary_obj((sprite *)this->l_timer,
-            ICON_BASE_X, 0.77, this->time - I3 * (N_MODS + 2));
-        update_summary_obj((sprite *)this->l_timer_d,
-            (double)(this->l_timer->_base._base.dim.x + this->l_timer->_base._base.dim.w) / WIN_W,
-            0.77, this->time - I3 * (N_MODS + 3));
+        if (this->l_timer != NULL) {
+            update_summary_obj((sprite *)this->l_timer,
+                ICON_BASE_X, 0.77, this->time - I3 * (N_MODS + 2));
+            update_summary_obj((sprite *)this->l_timer_d,
+                (double)(this->l_timer->_base._base.dim.x + this->l_timer->_base._base.dim.w) / WIN_W,
+                0.77, this->time - I3 * (N_MODS + 3));
+        }
         update_summary_obj((sprite *)this->mushroom,
             ICON_BASE_X - ICON_SZ, 0.84, this->time - I3 * (N_MODS + 4));
         update_summary_obj((sprite *)this->l_retries,
@@ -165,9 +168,56 @@ static void chapfin_key(chapfin_scene *this, SDL_KeyboardEvent *ev)
     }
 }
 
+static inline void set_time(chapfin_scene *this, int t)
+{
+    sprite *sp = sprite_create("clock.png");
+    sp->_base.dim.w = sp->_base.dim.h = WIN_W * ICON_REAL_SZ;
+    sp->alpha = 0;
+    bekter_pushback(this->_base.children, sp);
+    this->clock = sp;
+
+    label *l = label_create(FONT_UPRIGHT, 28,
+        (SDL_Color){255, 255, 255}, WIN_W, "");
+    l->_base.alpha = 0;
+    bekter_pushback(this->_base.children, l);
+    this->l_timer = l;
+
+    l = label_create(FONT_UPRIGHT, 21,
+        (SDL_Color){255, 255, 255}, WIN_W, "");
+    l->_base.alpha = 0;
+    bekter_pushback(this->_base.children, l);
+    this->l_timer_d = l;
+
+    char s[16], d[8];
+    t *= this->g->chap->beat_mul;
+    int sig = this->g->chap->sig;
+    sprintf(s, "%03d. %02d. ", t / (sig * 48), t % (sig * 48) / 48);
+    sprintf(d, "%02d", t % 48);
+    label_set_text(this->l_timer, s);
+    label_set_text(this->l_timer_d, d);
+}
+
+static inline void set_retries(chapfin_scene *this, int n)
+{
+    sprite *sp = sprite_create("retry_count.png");
+    sp->_base.dim.w = sp->_base.dim.h = WIN_W * ICON_REAL_SZ;
+    sp->alpha = 0;
+    bekter_pushback(this->_base.children, sp);
+    this->mushroom = sp;
+
+    char s[16];
+    sprintf(s, "%d", n);
+    label *l = label_create(FONT_UPRIGHT, 28,
+        (SDL_Color){255, 255, 255}, WIN_W, s);
+    l->_base.alpha = 0;
+    bekter_pushback(this->_base.children, l);
+    this->l_retries = l;
+}
+
 chapfin_scene *chapfin_scene_create(gameplay_scene *g)
 {
     chapfin_scene *this = malloc(sizeof(chapfin_scene));
+    memset(this, 0, sizeof(chapfin_scene));
     this->_base.children = bekter_create();
     this->_base.tick = (scene_tick_func)chapfin_tick;
     this->_base.draw = (scene_draw_func)chapfin_draw;
@@ -209,48 +259,44 @@ chapfin_scene *chapfin_scene_create(gameplay_scene *g)
     this->l_title = l;
 
     l = label_create(FONT_UPRIGHT, 28,
-        (SDL_Color){255, 255, 255}, WIN_W, "Complete run");
+        (SDL_Color){255, 255, 255}, WIN_W, "");
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_summary = l;
 
-    l = label_create(FONT_UPRIGHT, 28,
-        (SDL_Color){255, 255, 255}, WIN_W, "015. 07. ");
-    l->_base.alpha = 0;
-    bekter_pushback(this->_base.children, l);
-    this->l_timer = l;
-
-    l = label_create(FONT_UPRIGHT, 21,
-        (SDL_Color){255, 255, 255}, WIN_W, "47");
-    l->_base.alpha = 0;
-    bekter_pushback(this->_base.children, l);
-    this->l_timer_d = l;
-
-    l = label_create(FONT_UPRIGHT, 28,
-        (SDL_Color){255, 255, 255}, WIN_W, "4073");
-    l->_base.alpha = 0;
-    bekter_pushback(this->_base.children, l);
-    this->l_retries = l;
-
-    sprite *sp = sprite_create("clock.png");
-    sp->_base.dim.w = sp->_base.dim.h = WIN_W * ICON_REAL_SZ;
-    sp->alpha = 0;
-    bekter_pushback(this->_base.children, sp);
-    this->clock = sp;
-
-    sp = sprite_create("retry_count.png");
-    sp->_base.dim.w = sp->_base.dim.h = WIN_W * ICON_REAL_SZ;
-    sp->alpha = 0;
-    bekter_pushback(this->_base.children, sp);
-    this->mushroom = sp;
-
     for (i = 0; i < N_MODS; ++i) {
         int idx = (this->g->mods >> (i * 2)) & 3;
-        sp = sprite_create(MODS[i][idx > 2 ? 2 : idx].icon);
+        sprite *sp = sprite_create(MODS[i][idx > 2 ? 2 : idx].icon);
         sp->_base.dim.w = sp->_base.dim.h = WIN_W * ICON_REAL_SZ;
         sp->alpha = 0;
         bekter_pushback(this->_base.children, sp);
         this->mod_icon[i] = sp;
+    }
+
+    /* Calculate summary */
+    if (this->g->start_stage_idx == 0) {
+        /* (1) Complete runthrough */
+        label_set_text(this->l_summary, "Runthrough");
+        set_time(this, (int)(this->g->total_time * 48));
+        set_retries(this, this->g->retry_count);
+    } else {
+        /* (2) All cleared */
+        /* (3) x/x stages cleared */
+        int ct = 0, total_t = 0, t;
+        int cmbid = modcomb_id(this->g->mods);
+        for (i = 0; i < this->g->chap->n_stages; ++i) {
+            if ((t = profile_get_stage(this->g->chap->idx, i)->time[cmbid]) != -1) {
+                ++ct;
+                total_t += t;
+            }
+        }
+        if (ct == this->g->chap->n_stages) {
+            label_set_text(this->l_summary, "All cleared");
+            set_time(this, total_t);
+        } else {
+            sprintf(s, "%d/%d stages cleared", ct, this->g->chap->n_stages);
+            label_set_text(this->l_summary, s);
+        }
     }
 
     return this;

@@ -26,7 +26,8 @@ typedef struct _gameplay_scene {
 
     /* For updating player's records */
     int start_stage_idx;
-    double stage_start_time;
+    double stage_start_time, total_time;
+    int retry_count;
 
     /* Modifier states as a bitmask */
     int mods;

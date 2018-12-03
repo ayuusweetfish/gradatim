@@ -122,6 +122,7 @@ static inline void switch_stage_ctx(gameplay_scene *this)
     /* Go to the next stage or the chapter finish accordingly */
     if (++this->cur_stage_idx == this->chap->n_stages) {
         this->disp_state = DISP_CHAPFIN;
+        this->total_time = this->simulator->cur_time;
     } else {
         this->rec = this->chap->stages[this->cur_stage_idx];
         this->simulator = stage_create_sim(this->rec);
@@ -161,6 +162,7 @@ static void retry_reinit(gameplay_scene *this)
     sim_reinit(this->simulator);
     this->dialogue_triggered = 0;
     update_camera(this, 1);
+    this->retry_count++;
 }
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
