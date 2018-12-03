@@ -7,6 +7,7 @@
 #include "element.h"
 #include "label.h"
 #include "mod.h"
+#include "profile_data.h"
 
 typedef struct _overworld_menu {
     scene _base;
@@ -15,6 +16,9 @@ typedef struct _overworld_menu {
 
     double time;
     double quit_time;
+
+    profile_stage stg_rec;
+    label *l_timer;
 
     int menu_idx, last_menu_idx;
     double menu_time;

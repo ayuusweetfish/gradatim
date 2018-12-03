@@ -29,3 +29,11 @@ const struct mod_text MODS[N_MODS][N_MODSTATES] = {{
     {"stretto.png", 0x222266, "Stretto",
      "Hearing is believing."}
 }};
+
+int modcomb_id(int mask)
+{
+    return ((mask & MOD_STRETTO) ? 1 : 0) * 27 +
+        ((mask & 0x30) >> 4) * 9 +
+        ((mask & 0xc) >> 2) * 3 +
+        (mask & 0x3);
+}

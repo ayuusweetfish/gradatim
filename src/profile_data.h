@@ -4,10 +4,13 @@
 #define _PROFILE_DATA_H
 
 #include "bekter.h"
+#include "mod.h"
+
+#include <stdbool.h>
 
 typedef struct _profile_stage {
-    int time;
-    int retries;
+    int time[N_MODCOMBS];
+    bool cleared;
 } profile_stage;
 
 typedef struct _profile_data {

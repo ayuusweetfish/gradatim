@@ -47,9 +47,9 @@ static inline void update_cleared(overworld_scene *this)
     /* XXX: Use binary chop */
 
     for (i = 0; i < this->n_chaps - 1; ++i)
-        if (profile_get_stage(i,
+        if (!profile_get_stage(i,
             bekter_at(this->chaps, i, struct chap_rec *)->n_stages - 1)
-            ->time == -1)
+            ->cleared)
         {
             break;
         }
@@ -57,7 +57,7 @@ static inline void update_cleared(overworld_scene *this)
 
     struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *);
     for (j = 0; j < ch->n_stages - 1; ++j)
-        if (profile_get_stage(this->cur_chap_idx, j)->time == -1) break;
+        if (!profile_get_stage(this->cur_chap_idx, j)->cleared) break;
     this->cleared_stages = j;
 }
 

@@ -6,6 +6,16 @@
 profile_data profile;
 static bool loaded = false;
 
+static inline int read_int(char **t)
+{
+    char *s = *t;
+    int ret = 0, sgn = 1;
+    while (*s < '0' || *s > '9') if (*(s++) == '-') sgn = -sgn;
+    while (*s >= '0' && *s <= '9') ret = ret * 10 + *(s++) - '0';
+    *t = s;
+    return ret * sgn;
+}
+
 void profile_load()
 {
     if (loaded) return;
@@ -27,7 +37,14 @@ void profile_load()
         }
         if (chap == NULL) chap = bekter_create();
         profile_stage stg;
-        sscanf(s, "%d,%d", &stg.time, &stg.retries);
+        int i;
+        char *t = s;
+        bool cleared = false;
+        for (i = 0; i < N_MODCOMBS; ++i) {
+            if ((stg.time[i] = read_int(&t)) != -1)
+                cleared = true;
+        }
+        stg.cleared = cleared;
         bekter_pushback(chap, stg);
     }
 

@@ -5,6 +5,7 @@
 
 #define N_MODS      4
 #define N_MODSTATES 3
+#define N_MODCOMBS  54
 
 struct mod_text {
     const char *icon;
@@ -22,5 +23,7 @@ extern const struct mod_text MODS[N_MODS][N_MODSTATES];
 #define MOD_A_CAPELLA   0x20
 #define MOD_SEMPLICE    0x40
 #define MOD_STRETTO     0x80
+
+int modcomb_id(int mask);
 
 #endif

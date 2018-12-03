@@ -100,14 +100,19 @@ static inline void owm_drop(overworld_menu *this)
 {
 }
 
-static inline scene *run_stage(overworld_menu *this)
+static inline int get_mask(overworld_menu *this)
 {
     int mods = 0, i;
     for (i = 0; i < N_MODS; ++i)
-        mods |= (glob_menu_val[i]) << (i * 2);
+        mods |= (this->menu_val[i]) << (i * 2);
+    return mods;
+}
+
+static inline scene *run_stage(overworld_menu *this)
+{
     gameplay_scene *gp = gameplay_scene_create((scene *)this->bg,
         bekter_at(this->bg->chaps, this->bg->cur_chap_idx, struct chap_rec *),
-        this->bg->cur_stage_idx, mods);
+        this->bg->cur_stage_idx, get_mask(this));
     return (scene *)gp;
 }
 
@@ -115,6 +120,18 @@ static inline void init_stage(overworld_menu *this, gameplay_scene *gp)
 {
     gameplay_run_leadin(gp);
     scene_drop(this);
+}
+
+static inline void update_stats(overworld_menu *this)
+{
+    char s[64];
+    int t = this->stg_rec.time[modcomb_id(get_mask(this))];
+    if (t != -1)
+        sprintf(s, "%02d:%02d:%02d", t / 3600, t / 60 % 60, t % 60);
+    else strcpy(s, "--:--:--");
+    label_set_text(this->l_timer, s);
+    element_place_anchored((element *)this->l_timer,
+        WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.175, 0, 0.5);
 }
 
 static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
@@ -156,10 +173,12 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
         case SDLK_LEFT:
             this->menu_val[this->menu_idx] =
                 (this->menu_val[this->menu_idx] - 1 + N_MODSTATES) % N_MODSTATES;
+            update_stats(this);
             break;
         case SDLK_RIGHT:
             this->menu_val[this->menu_idx] =
                 (this->menu_val[this->menu_idx] + 1) % N_MODSTATES;
+            update_stats(this);
             break;
     }
     if (this->menu_idx == N_MODS) return;
@@ -226,24 +245,15 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * 0.275, 0, 0.5);
     bekter_pushback(ret->_base.children, sp);
 
-    profile_stage stg_rec = *profile_get_stage(bg->cur_chap_idx, bg->cur_stage_idx);
+    ret->stg_rec = *profile_get_stage(bg->cur_chap_idx, bg->cur_stage_idx);
 
-    if (stg_rec.time == -1)
-        strcpy(s, "--:--:--");
-    else
-        sprintf(s, "%02d:%02d:%02d", stg_rec.time / 3600, stg_rec.time / 60 % 60, stg_rec.time % 60);
     l = label_create("KiteOne-Regular.ttf", 32,
-        (SDL_Color){255, 255, 255}, WIN_W, s);
-    element_place_anchored((element *)l,
-        WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.175, 0, 0.5);
+        (SDL_Color){255, 255, 255}, WIN_W, "");
     bekter_pushback(ret->_base.children, l);
+    ret->l_timer = l;
 
-    if (stg_rec.retries == -1)
-        strcpy(s, "--");
-    else
-        sprintf(s, "%d", stg_rec.retries);
     l = label_create("KiteOne-Regular.ttf", 32,
-        (SDL_Color){255, 255, 255}, WIN_W, s);
+        (SDL_Color){255, 255, 255}, WIN_W, "");
     element_place_anchored((element *)l,
         WIN_W - MENU_W + WIN_W / 10, WIN_H * 0.275, 0, 0.5);
     bekter_pushback(ret->_base.children, l);
@@ -279,6 +289,8 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     element_place_anchored((element *)l,
         WIN_W - MENU_W / 2, WIN_H * START_Y, 0.5, 0.5);
     bekter_pushback(ret->_base.children, l);
+
+    update_stats(ret);
 
     bg->cam_targx += MOV_X;
     bg->cam_targscale *= SCALE;
