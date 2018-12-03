@@ -596,7 +596,7 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     ret->cam_y = clamp(ret->simulator->prot.y,
         WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
 
-    orion_load_ogg(&g_orion, TRACKID_STAGE_BGM, "4-5.ogg");
+    orion_load_ogg(&g_orion, TRACKID_STAGE_BGM, "nyan.ogg");
     orion_play_loop(&g_orion, TRACKID_STAGE_BGM, 0, 0, -1);
     if (ret->mods & MOD_A_CAPELLA)
         orion_ramp(&g_orion, TRACKID_STAGE_BGM, 0, 0);

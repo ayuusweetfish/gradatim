@@ -46,7 +46,7 @@ int main()
     load_images();
 
     g_orion = orion_create(44100, 2);
-    orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "sketchch.ogg");
+    orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "nyan.ogg");
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, 0, -1);
     orion_overall_play(&g_orion);
 
