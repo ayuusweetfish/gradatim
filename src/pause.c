@@ -3,6 +3,7 @@
 #include "global.h"
 #include "label.h"
 #include "loading.h"
+#include "gameplay.h"
 
 static const int N_MENU = 3;
 static const double ITEM_OFFSET_Y = 0.425;
@@ -18,6 +19,12 @@ static const char *MENU_TEXT[N_MENU] = {
 
 static inline void pause_tick(pause_scene *this, double dt)
 {
+    if (this->time == 0) {
+        /* XXX: Is this hack legitimate??? */
+        ((gameplay_scene *)this->a)->paused = false;
+        scene_tick(this->a, dt);
+        ((gameplay_scene *)this->a)->paused = true;
+    }
     this->time += dt;
 }
 

@@ -34,6 +34,7 @@ static const double HOP_TOLERATION = 1./3;
 static const double DASH_TOLERATION = 1./3;
 static const double DASH_MIN_DUR = 1 - DASH_DUR * DASH_TOLERATION;
 static const double DASH_DIAG_SCALE = 0.8;
+static const int AV_OFFSET_INTV = 60;
 
 static const double CAM_MOV_FAC = 8;
 static const double STAGE_TRANSITION_DUR = 2;
@@ -110,6 +111,9 @@ static inline void switch_stage_ctx(gameplay_scene *this)
     } else {
         this->rec = this->chap->stages[this->cur_stage_idx];
         this->simulator = stage_create_sim(this->rec);
+        this->simulator->cur_time = (this->prev_sim == NULL ?
+            get_audio_position(this) / this->chap->beat_mul :
+            this->prev_sim->cur_time);
     }
 }
 
@@ -140,23 +144,18 @@ static void retry_reinit(gameplay_scene *this)
     this->facing = HOR_STATE_RIGHT;
     this->disp_state = DISP_NORMAL;
     sim_reinit(this->simulator);
-    this->simulator->cur_time = get_audio_position(this) - this->aud_sim_offset;
     this->dialogue_triggered = 0;
     update_camera(this, 1);
 }
 
 static void gameplay_scene_tick(gameplay_scene *this, double dt)
 {
+    if (this->paused) return;
     if (this->disp_state == DISP_LEADIN) {
         if ((this->disp_time -= dt) <= 0) {
             this->disp_state = DISP_NORMAL;
             SDL_DestroyTexture(this->leadin_tex);
             this->leadin_tex = NULL;
-            this->aud_sim_offset /= this->aud_sim_offset_n_samples;
-            this->simulator->cur_time =
-                get_audio_position(this) - this->aud_sim_offset;
-        } else {
-            return;
         }
     } else if (this->disp_state == DISP_FAILURE) {
         if ((this->disp_time -= dt) <= 0) {
@@ -165,6 +164,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                 g_stage = (scene *)utransition_fade_create(
                     &g_stage, 1, (utransition_callback)retry_reinit);
         }
+        this->simulator->cur_time += dt / (BEAT * this->chap->beat_mul);
         return;
     } else if (this->disp_state == DISP_CHAPFIN) {
         if (g_stage == (scene *)this)
@@ -355,11 +355,7 @@ void gameplay_run_leadin(gameplay_scene *this)
 static inline void draw_overlay(gameplay_scene *this)
 {
     double beats = get_audio_position(this);
-    if (this->disp_state == DISP_LEADIN) {
-        this->aud_sim_offset = beats - this->simulator->cur_time;
-        this->aud_sim_offset_n_samples++;
-        return;
-    }
+    if (this->disp_state == DISP_LEADIN) return;
     if (this->mods & MOD_SOTTO_VOCO) return;
     if (beats < -1./16) return;
     int beats_i = (int)(beats + 1./16);
@@ -404,6 +400,7 @@ static inline void flashlight_texture(SDL_Texture *tex,
 
 static inline void pause_sound(gameplay_scene *this)
 {
+    this->paused = true;
     int i;
     for (i = 0; i < this->chap->n_tracks; ++i)
         orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
@@ -413,6 +410,7 @@ static inline void update_sound(gameplay_scene *this)
 {
     int i;
     if ((scene *)this == g_stage) {
+        this->paused = false;
         for (i = 0; i < this->chap->n_tracks; ++i)
             orion_resume(&g_orion, TRACKID_STAGE_BGM + i);
     }
@@ -650,16 +648,8 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     else if (mods & MOD_ANDANTE) ret->mul = ANDANTE_MUL;
     else ret->mul = 1;
 
-    ret->prev_sim = NULL;
-    ret->chap = chap;
-    ret->cur_stage_idx = idx - 1;
-    switch_stage_ctx(ret);
-
-    ret->cam_x = clamp(ret->simulator->prot.x,
-        WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
-    ret->cam_y = clamp(ret->simulator->prot.y,
-        WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
-
+    /* Sound should be loaded before the stage, as
+     * the play position will be used to initialize the simulator */
     int i;
     for (i = 0; i < chap->n_tracks; ++i) {
         if (chap->tracks[i].src_id == -1) {
@@ -684,6 +674,16 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
         orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0, 0);
         orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
     }
+
+    ret->prev_sim = NULL;
+    ret->chap = chap;
+    ret->cur_stage_idx = idx - 1;
+    switch_stage_ctx(ret);
+
+    ret->cam_x = clamp(ret->simulator->prot.x,
+        WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
+    ret->cam_y = clamp(ret->simulator->prot.y,
+        WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
 
     return ret;
 }

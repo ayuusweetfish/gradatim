@@ -147,6 +147,7 @@ void sim_tick(sim *this)
     sobj_new_round();
 
     this->cur_time += SIM_STEPLEN;
+    if (this->cur_time < 0) return;
 
     this->prot.vx += this->prot.ax * SIM_STEPLEN;
     this->prot.vy += (this->prot.ay + SIM_GRAVITY) * SIM_STEPLEN;

@@ -21,8 +21,7 @@ typedef struct _gameplay_scene {
     struct stage_rec *rec;
     sim *simulator, *prev_sim;
     double rem_time;
-    double aud_sim_offset;
-    int aud_sim_offset_n_samples;
+    bool paused;
     unsigned int dialogue_triggered;
 
     /* Modifier states as a bitmask */
