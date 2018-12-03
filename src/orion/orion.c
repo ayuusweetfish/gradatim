@@ -78,7 +78,7 @@ void orion_apply_lowpass(struct orion *o, int tid, int did, double cutoff)
     orion_smp *free_ptr = NULL;
 
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state > ORION_STOPPED) goto unlock_ret;
+    if (o->track[tid].state < ORION_STOPPED) goto unlock_ret;
     int srate = o->srate;
     int nch = o->track[tid].nch;
     int orig_len = o->track[tid].len * o->track[tid].nch;
@@ -104,7 +104,7 @@ void orion_apply_stretch(struct orion *o, int tid, int did, double delta_pc)
     orion_smp *free_ptr = NULL;
 
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state > ORION_STOPPED) goto unlock_ret;
+    if (o->track[tid].state < ORION_STOPPED) goto unlock_ret;
     int srate = o->srate;
     int nch = o->track[tid].nch;
     int orig_len = o->track[tid].len * o->track[tid].nch;
