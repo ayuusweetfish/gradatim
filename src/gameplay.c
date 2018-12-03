@@ -32,6 +32,8 @@ static const double DASH_DUR = 1;
 #define DASH_VER_ACCEL  (DASH_VER_V0 * DASH_DUR - SIM_GRAVITY)
 static const double DASH_MIN_DUR = 0.95;    /* TODO: Keep sync with overall toleration */
 static const double DASH_DIAG_SCALE = 0.8;
+static const double HOP_TOLERATION = 1./4;
+static const double DASH_TOLERATION = 1./3;
 
 static const double CAM_MOV_FAC = 8;
 static const double STAGE_TRANSITION_DUR = 2;
@@ -79,6 +81,26 @@ static inline double get_audio_position(gameplay_scene *this)
 {
     double sec = (double)orion_tell(&g_orion, TRACKID_STAGE_BGM) / 44100;
     return (sec + AUD_OFFSET) / BEAT;
+}
+
+static inline bool can_hop(gameplay_scene *this)
+{
+    if (this->mods & MOD_A_PIACERE) return true;
+    double b = get_audio_position(this);
+    int i = round(b);
+    return (fabs(b - i) <= HOP_TOLERATION) &&
+        (this->chap->hop_mask & (1 << (i % this->chap->sig)));
+}
+
+static inline bool can_dash(gameplay_scene *this)
+{
+    if (this->mods & MOD_A_PIACERE) return true;
+    double b = get_audio_position(this);
+    int i = round(b);
+    int mask = (this->mods & MOD_RUBATO) ?
+        this->chap->hop_mask : this->chap->dash_mask;
+    return (fabs(b - i) <= DASH_TOLERATION) &&
+        (mask & (1 << (i % this->chap->sig)));
 }
 
 static inline void switch_stage_ctx(gameplay_scene *this)
@@ -506,6 +528,7 @@ static void gameplay_scene_drop(gameplay_scene *this)
 
 static void try_hop(gameplay_scene *this)
 {
+    if (!can_hop(this)) return;
     if ((this->simulator->cur_time - this->simulator->last_land) <= HOP_GRACE_DUR) {
         /* Grace jump */
         this->simulator->prot.vy = -HOP_SPD;
@@ -531,6 +554,7 @@ static void try_hop(gameplay_scene *this)
 
 static void try_dash(gameplay_scene *this)
 {
+    if (!can_dash(this)) return;
     /* In case of direction updates, the time should not be reset */
     double dur = (this->mov_state & MOV_DASH_BASE) ? this->mov_time : DASH_DUR;
     if (dur < DASH_MIN_DUR) return;
