@@ -157,10 +157,11 @@ static void exit_postroutine(chapfin_scene *this, void *unused)
 static void chapfin_key(chapfin_scene *this, SDL_KeyboardEvent *ev)
 {
     if (ev->state != SDL_PRESSED) return;
-    if (this->time < D1 + F + D2 + T1 + D3 + T2) return;
     if (!this->summary_shown) {
-        this->summary_shown = true;
-        this->time = 0;
+        if (this->time >= D1 + F + D2 + T1 + D3 + T2) {
+            this->summary_shown = true;
+            this->time = 0;
+        }
     } else {
         g_stage = (scene *)loading_create(
             &g_stage, (loading_routine)exit_routine,
