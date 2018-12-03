@@ -6,6 +6,7 @@
 #include "bekter.h"
 
 #include <SDL.h>
+#include <SDL_ttf.h>
 
 #define RES_HASH_SZ 997
 
@@ -28,5 +29,10 @@ void render_texture_ex(texture t, SDL_Rect *dim,
     double a, SDL_Point *c, SDL_RendererFlip f);
 void render_texture_scaled(texture t, double x, double y, double scale);
 void render_texture_alpha(texture t, SDL_Rect *dim, int alpha);
+
+#define FONT_ITALIC     0
+#define FONT_UPRIGHT    1
+
+TTF_Font *load_font(int id, int pts);
 
 #endif

@@ -238,7 +238,7 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     strcpy(s, "Chapter X - ");
     s[8] = '1' + bg->cur_chap_idx;
     gen_roman_numeral(s + 12, bg->cur_stage_idx + 1);
-    label *l = label_create("KiteOne-Regular.ttf", 40,
+    label *l = label_create(FONT_ITALIC, 40,
         (SDL_Color){255, 255, 255}, WIN_W, s);
     element_place_anchored((element *)l, WIN_W - 12, 12, 1, 0);
     bekter_pushback(ret->_base.children, l);
@@ -257,12 +257,12 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
 
     ret->stg_rec = *profile_get_stage(bg->cur_chap_idx, bg->cur_stage_idx);
 
-    l = label_create("KiteOne-Regular.ttf", 32,
+    l = label_create(FONT_ITALIC, 32,
         (SDL_Color){255, 255, 255}, WIN_W, "");
     bekter_pushback(ret->_base.children, l);
     ret->l_timer = l;
 
-    l = label_create("KiteOne-Regular.ttf", 24,
+    l = label_create(FONT_ITALIC, 24,
         (SDL_Color){255, 255, 255}, WIN_W, "");
     bekter_pushback(ret->_base.children, l);
     ret->l_timer_dec = l;
@@ -278,14 +278,14 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
         bekter_pushback(ret->_base.children, sp);
         ret->mod_icon[i] = sp;
 
-        l = label_create("KiteOne-Regular.ttf", 28,
+        l = label_create(FONT_ITALIC, 28,
             (SDL_Color){255, 255, 255}, WIN_W, MODS[i][ret->menu_val[i]].title);
         element_place_anchored((element *)l,
             WIN_W - MENU_W + WIN_W / 10, WIN_H * (ITEM_OFFSET_Y + i * ITEM_H), 0, 0.8);
         bekter_pushback(ret->_base.children, l);
         ret->mod_title[i] = l;
 
-        l = label_create("KiteOne-Regular.ttf", 18,
+        l = label_create(FONT_ITALIC, 18,
             (SDL_Color){255, 255, 255}, WIN_W, MODS[i][ret->menu_val[i]].desc);
         element_place_anchored((element *)l,
             WIN_W - MENU_W + WIN_W / 10, WIN_H * (ITEM_OFFSET_Y + i * ITEM_H), 0, -0.2);
@@ -293,7 +293,7 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
         ret->mod_desc[i] = l;
     }
 
-    l = label_create("KiteOne-Regular.ttf", 40,
+    l = label_create(FONT_ITALIC, 40,
         (SDL_Color){255, 255, 255}, WIN_W, "Start");
     element_place_anchored((element *)l,
         WIN_W - MENU_W / 2, WIN_H * START_Y, 0.5, 0.5);

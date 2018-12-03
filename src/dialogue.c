@@ -174,13 +174,13 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
     bekter_pushback(ret->_base.children, s);
 
     /* Name label */
-    label *l = label_create("KiteOne-Regular.ttf", 32,
+    label *l = label_create(FONT_ITALIC, 32,
         (SDL_Color){255, 255, 255}, WIN_W / 4, "");
     ret->name_disp = l;
     bekter_pushback(ret->_base.children, l);
 
     /* Text label */
-    l = label_create("KiteOne-Regular.ttf", 32,
+    l = label_create(FONT_ITALIC, 32,
         (SDL_Color){255, 255, 255}, WIN_W * 50 / 72, "");
     ret->text_disp = l;
     bekter_pushback(ret->_base.children, l);

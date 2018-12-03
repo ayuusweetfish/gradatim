@@ -25,8 +25,3 @@ SDL_Texture *load_texture(const char *path, int *w, int *h)
     SDL_QueryTexture(tex, NULL, NULL, w, h);
     return tex;
 }
-
-TTF_Font *load_font(const char *path, int pts)
-{
-    return TTF_OpenFont(path, pts);
-}

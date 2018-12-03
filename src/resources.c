@@ -2,6 +2,7 @@
 #include "global.h"
 
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 
 bekter(SDL_Texture *) sdl_tex_list;
 bekter(_texture_kvpair) res_map[RES_HASH_SZ];
@@ -157,4 +158,23 @@ void render_texture_alpha(texture t, SDL_Rect *dim, int alpha)
     SDL_SetTextureAlphaMod(t.sdl_tex, alpha);
     render_texture(t, dim);
     SDL_SetTextureAlphaMod(t.sdl_tex, 255);
+}
+
+#define N_FONTS 2
+#define MAX_PTS 256
+
+static const char *FONT_PATH[N_FONTS] = {
+    "KiteOne-Regular.ttf",
+    "KiteOne-Regular.ttf"
+};
+static TTF_Font *f[N_FONTS][MAX_PTS] = {{ NULL }};
+
+TTF_Font *load_font(int id, int pts)
+{
+    if (id < 0 || id >= N_FONTS || pts <= 0 || pts > MAX_PTS)
+        return NULL;
+
+    if (f[id][pts - 1] == NULL)
+        f[id][pts - 1] = TTF_OpenFont(FONT_PATH[id], pts);
+    return f[id][pts - 1];
 }

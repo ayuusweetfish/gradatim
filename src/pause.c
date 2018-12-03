@@ -140,14 +140,14 @@ pause_scene *pause_scene_create(scene **a, retry_callback cb, scene *b)
     ret->menu_idx = ret->last_menu_idx = 0;
     ret->time = ret->menu_time = 0;
 
-    label *header = label_create("KiteOne-Regular.ttf", 60,
+    label *header = label_create(FONT_ITALIC, 60,
         (SDL_Color){255, 255, 255}, WIN_H, "PAUSED");
     bekter_pushback(ret->_base.children, header);
     element_place_anchored((element *)header, WIN_W / 2, WIN_H / 4, 0.5, 0.5);
 
     int i;
     for (i = 0; i < N_MENU; ++i) {
-        label *l = label_create("KiteOne-Regular.ttf", 48,
+        label *l = label_create(FONT_ITALIC, 48,
             (SDL_Color){255, 255, 255}, WIN_H, MENU_TEXT[i]);
         bekter_pushback(ret->_base.children, l);
         element_place_anchored((element *)l,

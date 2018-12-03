@@ -27,6 +27,5 @@ extern SDL_Renderer *g_renderer;
 extern scene *g_stage;
 
 SDL_Texture *load_texture(const char *path, int *w, int *h);
-TTF_Font *load_font(const char *path, int pts);
 
 #endif

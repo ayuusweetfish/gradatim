@@ -188,39 +188,39 @@ chapfin_scene *chapfin_scene_create(gameplay_scene *g)
 
     char s[64];
     sprintf(s, "Chapter %d", g->chap->idx + 1);
-    label *l = label_create("KiteOne-Regular.ttf", 40,
+    label *l = label_create(FONT_ITALIC, 40,
         (SDL_Color){255, 255, 255}, WIN_W, s);
     element_place_anchored((element *)l, WIN_W / 2, WIN_H * 0.3, 0.5, 0.5);
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_num = l;
 
-    l = label_create("KiteOne-Regular.ttf", 72,
+    l = label_create(FONT_ITALIC, 72,
         (SDL_Color){255, 255, 255}, WIN_W, g->chap->title);
     element_place_anchored((element *)l, WIN_W / 2, WIN_H * 0.5, 0.5, 0.5);
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_title = l;
 
-    l = label_create("KiteOne-Regular.ttf", 28,
+    l = label_create(FONT_ITALIC, 28,
         (SDL_Color){255, 255, 255}, WIN_W, "Complete run");
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_summary = l;
 
-    l = label_create("KiteOne-Regular.ttf", 28,
+    l = label_create(FONT_ITALIC, 28,
         (SDL_Color){255, 255, 255}, WIN_W, "015.  07.");
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_timer = l;
 
-    l = label_create("KiteOne-Regular.ttf", 21,
+    l = label_create(FONT_ITALIC, 21,
         (SDL_Color){255, 255, 255}, WIN_W, "47");
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
     this->l_timer_d = l;
 
-    l = label_create("KiteOne-Regular.ttf", 28,
+    l = label_create(FONT_ITALIC, 28,
         (SDL_Color){255, 255, 255}, WIN_W, "4073");
     l->_base.alpha = 0;
     bekter_pushback(this->_base.children, l);
