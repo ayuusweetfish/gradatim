@@ -30,10 +30,10 @@ static const double DASH_DUR = 1;
 #define DASH_HOR_ACCEL  (DASH_HOR_V0 * DASH_DUR)
 #define DASH_VER_V0     (5.5 * 1.414213562)
 #define DASH_VER_ACCEL  (DASH_VER_V0 * DASH_DUR - SIM_GRAVITY)
-static const double DASH_MIN_DUR = 0.95;    /* TODO: Keep sync with overall toleration */
-static const double DASH_DIAG_SCALE = 0.8;
-static const double HOP_TOLERATION = 1./4;
+static const double HOP_TOLERATION = 1./3;
 static const double DASH_TOLERATION = 1./3;
+static const double DASH_MIN_DUR = 1 - DASH_DUR * DASH_TOLERATION;
+static const double DASH_DIAG_SCALE = 0.8;
 
 static const double CAM_MOV_FAC = 8;
 static const double STAGE_TRANSITION_DUR = 2;
