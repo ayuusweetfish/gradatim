@@ -589,7 +589,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
 } while (0)
 
     if (this->disp_state != DISP_NORMAL) return;
-    if (get_audio_position(this) < 0) return;
+    if (ev->keysym.sym != SDLK_ESCAPE && get_audio_position(this) < 0) return;
     switch (ev->keysym.sym) {
         case SDLK_c:
             if (ev->state == SDL_PRESSED) try_hop(this);
