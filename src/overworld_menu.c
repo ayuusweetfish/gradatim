@@ -96,10 +96,6 @@ static inline void owm_draw(overworld_menu *this)
     }
 }
 
-static inline void owm_drop(overworld_menu *this)
-{
-}
-
 static inline int get_mask(overworld_menu *this)
 {
     int mods = 0, i;
@@ -226,7 +222,7 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     ret->_base.children = bekter_create();
     ret->_base.tick = (scene_tick_func)owm_tick;
     ret->_base.draw = (scene_draw_func)owm_draw;
-    ret->_base.drop = (scene_drop_func)owm_drop;
+    ret->_base.drop = NULL;
     ret->_base.key_handler = (scene_key_func)owm_key;
     ret->bg = bg;
     ret->time = 0;

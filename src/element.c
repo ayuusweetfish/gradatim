@@ -15,10 +15,6 @@ void element_place_anchored(element *e, float x, float y, float ax, float ay)
     e->dim.y = round(y - e->dim.h * ay);
 }
 
-static void sprite_tick(sprite *this, double dt)
-{
-}
-
 static void sprite_draw(sprite *this)
 {
     if (this->alpha == 255)
@@ -31,7 +27,7 @@ sprite *sprite_create_empty()
 {
     sprite *ret = malloc(sizeof(sprite));
     ret->_base.mouse_in = ret->_base.mouse_down = false;
-    ret->_base.tick = (element_tick_func)sprite_tick;
+    ret->_base.tick = NULL;
     ret->_base.draw = (element_draw_func)sprite_draw;
     ret->_base.drop = NULL;
     ret->tex = (texture){0};

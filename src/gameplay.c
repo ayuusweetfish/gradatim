@@ -676,7 +676,6 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
 {
     gameplay_scene *ret = malloc(sizeof(gameplay_scene));
     memset(ret, 0, sizeof(gameplay_scene));
-    ret->_base.children = bekter_create();
     ret->_base.tick = (scene_tick_func)gameplay_scene_tick;
     ret->_base.draw = (scene_draw_func)gameplay_scene_draw;
     ret->_base.drop = (scene_drop_func)gameplay_scene_drop;
