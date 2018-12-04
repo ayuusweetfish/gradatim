@@ -8,6 +8,7 @@
 #include "sim/sim.h"
 #include "game_data.h"
 #include "mod.h"
+#include "label.h"
 
 typedef struct _gameplay_scene {
     scene _base;
@@ -64,6 +65,9 @@ typedef struct _gameplay_scene {
         MOV_DASH_UP = 16
     } mov_state;
     double mov_time;    /* Time remaining until movement state resets */
+
+    /* Hints */
+    label *hints[MAX_HINTS];
 } gameplay_scene;
 
 gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx, int mods);

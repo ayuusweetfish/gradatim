@@ -105,6 +105,17 @@ struct stage_rec *stage_read(const char *path)
         this->aud[i] = (struct _stage_audsrc){(char)tid, r, c};
     }
 
+    /* List of hints */
+    fscanf(f, "%d", &m);
+    this->hint_ct = m;
+    for (i = 0; i < m; ++i) {
+        stage_hint h;
+        int strtabidx;
+        fscanf(f, "%d,%d,%d", &h.r, &h.c, &strtabidx);
+        h.str = bekter_at(this->strtab, strtabidx, char *);
+        this->hints[i] = h;
+    }
+
     /* TODO: This should be replaced */
     this->prot_tex = retrieve_texture("uwu.png");
     this->prot_fail_tex[0] = retrieve_texture("fragile1.png");

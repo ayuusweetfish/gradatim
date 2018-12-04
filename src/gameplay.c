@@ -44,6 +44,8 @@ static const double LEADIN_INIT = 1;
 static const double LEADIN_DUR = 0.4; /* Seconds */
 static const double FAILURE_SPF = 0.1;
 static const double STRETTO_RANGE = 2.5;
+static const int HINT_FONTSZ = 30;
+static const int HINT_PADDING = 8;
 
 /* Short for metronome - too long! */
 static const int MT_PADDING = 12;
@@ -130,6 +132,10 @@ static inline void switch_stage_ctx(gameplay_scene *this)
         this->simulator->cur_time = (this->prev_sim == NULL ?
             get_audio_position(this) / this->chap->beat_mul :
             this->prev_sim->cur_time);
+        /* Update hints */
+        int i;
+        for (i = 0; i < this->rec->hint_ct; ++i)
+            label_set_text(this->hints[i], this->rec->hints[i].str);
     }
 }
 
@@ -472,6 +478,25 @@ static void gameplay_scene_draw(gameplay_scene *this)
     double prot_w = this->simulator->prot.w * UNIT_PX;
     double prot_h = this->simulator->prot.h * UNIT_PX;
 
+    /* Display hints */
+    int i;
+    int cxi = round(this->cam_x * UNIT_PX),
+        cyi = round(this->cam_y * UNIT_PX);
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 128);
+    for (i = 0; i < this->rec->hint_ct; ++i) {
+        element_place_anchored((element *)this->hints[i],
+            round((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi,
+            round((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi,
+            0.5, 0.5);
+        SDL_RenderFillRect(g_renderer, &(SDL_Rect){
+            this->hints[i]->_base._base.dim.x - HINT_PADDING,
+            this->hints[i]->_base._base.dim.y - HINT_PADDING,
+            this->hints[i]->_base._base.dim.w + HINT_PADDING * 2,
+            this->hints[i]->_base._base.dim.h + HINT_PADDING * 2
+        });
+        element_draw((element *)this->hints[i]);
+    }
+
     texture prot_tex = this->rec->prot_tex;
     if (this->disp_state == DISP_FAILURE) {
         int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
@@ -539,6 +564,8 @@ static void gameplay_scene_drop(gameplay_scene *this)
     if (this->simulator != NULL && this->simulator != this->prev_sim)
         sim_drop(this->simulator);
     pause_sound(this);
+    int i;
+    for (i = 0; i < MAX_HINTS; ++i) element_drop(this->hints[i]);
 }
 
 static void try_hop(gameplay_scene *this)
@@ -691,6 +718,10 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
         orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0, 0);
         orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
     }
+
+    for (i = 0; i < MAX_HINTS; ++i)
+        ret->hints[i] = label_create(FONT_UPRIGHT, HINT_FONTSZ,
+            (SDL_Color){255, 255, 255}, WIN_H, "");
 
     ret->prev_sim = NULL;
     ret->chap = chap;

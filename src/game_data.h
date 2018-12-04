@@ -15,6 +15,11 @@ typedef struct _stage_dialogue {
     bekter(dialogue_entry) content;
 } stage_dialogue;
 
+typedef struct _stage_hint {
+    int r, c;
+    char *str;
+} stage_hint;
+
 struct _stage_audsrc {
     char tid;
     int r, c;
@@ -49,6 +54,11 @@ struct stage_rec {
 #define MAX_AUD_SOURCES 8
     struct _stage_audsrc aud[MAX_AUD_SOURCES];
     int aud_ct;
+
+    /* Text hints */
+#define MAX_HINTS   8
+    stage_hint hints[MAX_HINTS];
+    int hint_ct;
 };
 
 struct stage_rec *stage_read(const char *path);
