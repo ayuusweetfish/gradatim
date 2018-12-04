@@ -137,8 +137,10 @@ colour_scene *colour_scene_create(int r, int g, int b)
     button *s = button_create(cb, ret, "1.png", "2.png", "3.png", 1.05, 0.98);
     element_place_anchored((element *)s, WIN_W / 2, WIN_H / 2, 0.5, 0.5);
     bekter_pushback(ret->_base.children, s);
-    label *l = label_create(FONT_ITALIC, 48,
-        (SDL_Color){0, 0, 0}, 480, "The spectacle before us was indeed sublime.");
+    label *l = label_create(FONT_UPRIGHT, 48, (SDL_Color){0, 0, 0}, WIN_W, "");
+    if (r == 255)
+        label_set_keyed_text(l, "   `   +   `   +   `   = Dash", "CXZ");
+    else label_set_keyed_text(l, "   `  he spectacle   `  efore us was   `  ndeed sublime.", "TBI");
     element_place_anchored((element *)l, WIN_W / 2, WIN_H * 3 / 4, 0.5, 0.5);
     bekter_pushback(ret->_base.children, l);
     return ret;

@@ -19,6 +19,7 @@ typedef struct _label {
 label *label_create(int font_id, int pts,
     SDL_Color cl, int wid, const char *text);
 void label_set_text(label *this, const char *text);
+void label_set_keyed_text(label *this, const char *text, const char *keys);
 void label_colour_mod(label *this, Uint8 r, Uint8 g, Uint8 b);
 
 #endif
