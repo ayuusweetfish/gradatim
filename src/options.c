@@ -9,18 +9,20 @@
 
 /* Repeat yourself */
 static const int N_MENU = OPTIONS_N_MENU;
-static const double ITEM_OFFSET_Y = 1./3;
-static const double ITEM_SKIP = 0.125;
+static const double ITEM_OFFSET_Y = 0.29375;
+static const double ITEM_SKIP = 0.10625;
 static const double ITEM_H = 0.1;
 
 static const double MENU_TR_DUR = 0.15;
 static const double BLINK_DUR = 0.75;
 
 static const char *MENU_TEXT[N_MENU] = {
-    "Music volume", "SFX volume", "Speedrun clock", "Fullscreen"
+    "Music volume", "Sound effects",
+    "Speedrun clock", "Fullscreen", "Audio-video offset"
 };
-static const int MENU_MAX[N_MENU] = {20, 20, 1, 1};
-static const bool MENU_LOOPS[N_MENU] = {false, false, true, true};
+static const int MENU_MAX[N_MENU] = {20, 20, 1, 1, 200};
+static const int MENU_OFFS[N_MENU] = {0, 0, 0, 0, -100};
+static const bool MENU_LOOPS[N_MENU] = {false, false, true, true, false};
 
 static void options_tick(options_scene *this, double dt)
 {
@@ -62,7 +64,11 @@ static inline void update_label(options_scene *this, int idx)
     char s[8];
     if (MENU_MAX[idx] == 1)
         strcpy(s, this->menu_val[idx] ? "Yes" : "No");
-    else sprintf(s, "%d%%", this->menu_val[idx] * 100 / MENU_MAX[idx]);
+    else if (idx == 0 || idx == 1)
+        sprintf(s, "%d%%", this->menu_val[idx] * 100 / MENU_MAX[idx]);
+    else
+        sprintf(s, "%c%d ms", this->menu_val[idx] >= 0 ? '+' : '-',
+            abs(this->menu_val[idx]));
     label_set_text(this->l_menuval[idx], s);
     element_place_anchored((element *)this->l_menuval[idx],
         WIN_W * 5 / 6, (ITEM_OFFSET_Y + idx * ITEM_SKIP) * WIN_H, 1, 0.5);
@@ -86,21 +92,25 @@ static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
             this->menu_time = this->time;
             break;
         case SDLK_LEFT:
+            this->menu_val[this->menu_idx] -= MENU_OFFS[this->menu_idx];
             if (this->menu_val[this->menu_idx] == 0) {
                 this->menu_val[this->menu_idx] =
                     MENU_LOOPS[this->menu_idx] ? MENU_MAX[this->menu_idx] : 0;
             } else {
                 this->menu_val[this->menu_idx]--;
             }
+            this->menu_val[this->menu_idx] += MENU_OFFS[this->menu_idx];
             update_label(this, this->menu_idx);
             break;
         case SDLK_RIGHT:
+            this->menu_val[this->menu_idx] -= MENU_OFFS[this->menu_idx];
             if (this->menu_val[this->menu_idx] == MENU_MAX[this->menu_idx]) {
                 this->menu_val[this->menu_idx] =
                     MENU_LOOPS[this->menu_idx] ? 0 : MENU_MAX[this->menu_idx];
             } else {
                 this->menu_val[this->menu_idx]++;
             }
+            this->menu_val[this->menu_idx] += MENU_OFFS[this->menu_idx];
             update_label(this, this->menu_idx);
             break;
     }

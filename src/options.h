@@ -15,7 +15,7 @@ typedef struct _options_scene {
     double time, menu_time;
 
     floue *f;
-#define OPTIONS_N_MENU  4
+#define OPTIONS_N_MENU  5
     int menu_val[OPTIONS_N_MENU];
     label *l_menuval[OPTIONS_N_MENU];
 } options_scene;
