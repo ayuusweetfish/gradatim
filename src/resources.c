@@ -92,6 +92,8 @@ void load_images()
     load_image("giusto.png");
     load_image("rubato.png");
     load_image("a_piacere.png");
+    load_image("hop_4beat.png");
+    load_image("dash_4beat.png");
 }
 
 void release_images()

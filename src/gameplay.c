@@ -134,9 +134,11 @@ static inline void switch_stage_ctx(gameplay_scene *this)
             this->prev_sim->cur_time);
         /* Update hints */
         int i;
-        for (i = 0; i < this->rec->hint_ct; ++i)
+        for (i = 0; i < this->rec->hint_ct; ++i) {
             label_set_keyed_text(this->l_hints[i],
                 this->rec->hints[i].str, this->rec->hints[i].key);
+            sprite_reload(this->s_hints[i], this->rec->hints[i].img);
+        }
     }
 }
 
@@ -489,13 +491,26 @@ static void gameplay_scene_draw(gameplay_scene *this)
             round((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi,
             round((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi,
             0.5, 0.5);
-        SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-            this->l_hints[i]->_base._base.dim.x - HINT_PADDING,
-            this->l_hints[i]->_base._base.dim.y - HINT_PADDING,
-            this->l_hints[i]->_base._base.dim.w + HINT_PADDING * 2,
-            this->l_hints[i]->_base._base.dim.h + HINT_PADDING * 2
-        });
+        int x = this->l_hints[i]->_base._base.dim.x - HINT_PADDING,
+            y = this->l_hints[i]->_base._base.dim.y - HINT_PADDING,
+            w = this->l_hints[i]->_base._base.dim.w + HINT_PADDING * 2,
+            h = this->l_hints[i]->_base._base.dim.h + HINT_PADDING * 2;
+        if (this->rec->hints[i].img != NULL) {
+            element_place_anchored((element *)this->s_hints[i],
+                round((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi,
+                this->l_hints[i]->_base._base.dim.y + h - HINT_PADDING * 2,
+                0.5, 0);
+            int w1 = this->s_hints[i]->_base.dim.w + HINT_PADDING * 2;
+            if (w < w1) {
+                x -= (w1 - w) / 2;
+                w = w1;
+            }
+            h += this->s_hints[i]->_base.dim.h - HINT_PADDING;
+        }
+        SDL_RenderFillRect(g_renderer, &(SDL_Rect){x, y, w, h});
         element_draw((element *)this->l_hints[i]);
+        if (this->rec->hints[i].img != NULL)
+            element_draw((element *)this->s_hints[i]);
     }
 
     texture prot_tex = this->rec->prot_tex;
@@ -719,9 +734,11 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
         orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
     }
 
-    for (i = 0; i < MAX_HINTS; ++i)
+    for (i = 0; i < MAX_HINTS; ++i) {
         ret->l_hints[i] = label_create(FONT_UPRIGHT, HINT_FONTSZ,
             (SDL_Color){255, 255, 255}, WIN_H, "");
+        ret->s_hints[i] = sprite_create_empty();
+    }
 
     ret->prev_sim = NULL;
     ret->chap = chap;
