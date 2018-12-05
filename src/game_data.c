@@ -110,9 +110,12 @@ struct stage_rec *stage_read(const char *path)
     this->hint_ct = m;
     for (i = 0; i < m; ++i) {
         stage_hint h;
-        int strtabidx;
-        fscanf(f, "%d,%d,%d", &h.r, &h.c, &strtabidx);
-        h.str = bekter_at(this->strtab, strtabidx, char *);
+        int stridx, keyidx, imgidx;
+        fscanf(f, "%d,%d,%d,%d,%d",
+            &h.r, &h.c, &stridx, &keyidx, &imgidx);
+        h.str = bekter_at(this->strtab, stridx, char *);
+        h.key = bekter_at(this->strtab, keyidx, char *);
+        h.img = bekter_at(this->strtab, imgidx, char *);
         this->hints[i] = h;
     }
 

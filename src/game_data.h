@@ -17,7 +17,8 @@ typedef struct _stage_dialogue {
 
 typedef struct _stage_hint {
     int r, c;
-    char *str;
+    char *str, *key;
+    char *img;
 } stage_hint;
 
 struct _stage_audsrc {

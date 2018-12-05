@@ -135,7 +135,8 @@ static inline void switch_stage_ctx(gameplay_scene *this)
         /* Update hints */
         int i;
         for (i = 0; i < this->rec->hint_ct; ++i)
-            label_set_text(this->hints[i], this->rec->hints[i].str);
+            label_set_keyed_text(this->l_hints[i],
+                this->rec->hints[i].str, this->rec->hints[i].key);
     }
 }
 
@@ -484,17 +485,17 @@ static void gameplay_scene_draw(gameplay_scene *this)
         cyi = round(this->cam_y * UNIT_PX);
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 128);
     for (i = 0; i < this->rec->hint_ct; ++i) {
-        element_place_anchored((element *)this->hints[i],
+        element_place_anchored((element *)this->l_hints[i],
             round((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi,
             round((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi,
             0.5, 0.5);
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-            this->hints[i]->_base._base.dim.x - HINT_PADDING,
-            this->hints[i]->_base._base.dim.y - HINT_PADDING,
-            this->hints[i]->_base._base.dim.w + HINT_PADDING * 2,
-            this->hints[i]->_base._base.dim.h + HINT_PADDING * 2
+            this->l_hints[i]->_base._base.dim.x - HINT_PADDING,
+            this->l_hints[i]->_base._base.dim.y - HINT_PADDING,
+            this->l_hints[i]->_base._base.dim.w + HINT_PADDING * 2,
+            this->l_hints[i]->_base._base.dim.h + HINT_PADDING * 2
         });
-        element_draw((element *)this->hints[i]);
+        element_draw((element *)this->l_hints[i]);
     }
 
     texture prot_tex = this->rec->prot_tex;
@@ -565,7 +566,7 @@ static void gameplay_scene_drop(gameplay_scene *this)
         sim_drop(this->simulator);
     pause_sound(this);
     int i;
-    for (i = 0; i < MAX_HINTS; ++i) element_drop(this->hints[i]);
+    for (i = 0; i < MAX_HINTS; ++i) element_drop(this->l_hints[i]);
 }
 
 static void try_hop(gameplay_scene *this)
@@ -719,7 +720,7 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     }
 
     for (i = 0; i < MAX_HINTS; ++i)
-        ret->hints[i] = label_create(FONT_UPRIGHT, HINT_FONTSZ,
+        ret->l_hints[i] = label_create(FONT_UPRIGHT, HINT_FONTSZ,
             (SDL_Color){255, 255, 255}, WIN_H, "");
 
     ret->prev_sim = NULL;
