@@ -44,3 +44,10 @@ sprite *sprite_create(const char *path)
     ret->alpha = 255;
     return ret;
 }
+
+void sprite_reload(sprite *this, const char *path)
+{
+    this->tex = retrieve_texture(path);
+    this->_base.dim.w = this->tex.range.w;
+    this->_base.dim.h = this->tex.range.h;
+}

@@ -41,5 +41,6 @@ typedef struct _sprite {
 
 sprite *sprite_create_empty();
 sprite *sprite_create(const char *path);
+void sprite_reload(sprite *this, const char *path);
 
 #endif
