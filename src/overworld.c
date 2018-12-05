@@ -19,7 +19,7 @@ static const double CHAP_SW_DUR = 0.3;
 
 static inline void move_camera(overworld_scene *this)
 {
-    struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, typeof(ch));
+    struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *);
     struct stage_rec *st = ch->stages[this->cur_stage_idx];
     int x = (st->world_c + st->cam_c1) * PIX_PER_UNIT,
         y = (st->world_r + st->cam_r1) * PIX_PER_UNIT,
@@ -127,8 +127,8 @@ static void ow_draw(overworld_scene *this)
         double r = this->since_chap_switch / CHAP_SW_DUR;
         opacity = 0;
         if (r < 0.5) {
-            ch = bekter_at(this->chaps, this->last_chap_idx, typeof(ch));
-            tex = bekter_at(this->stage_tex, this->last_chap_idx, typeof(tex));
+            ch = bekter_at(this->chaps, this->last_chap_idx, struct chap_rec *);
+            tex = bekter_at(this->stage_tex, this->last_chap_idx, SDL_Texture **);
             if (r < 1.0 / 3) opacity = round(255 * (1 - r * 3));
         } else if (r >= 2.0 / 3) {
             opacity = round(255 * (r * 3 - 2));
