@@ -40,6 +40,60 @@ static void label_render_text(label *this)
     this->_base._base.dim.h = this->_base.tex.range.h;
 }
 
+static inline int get_arrow_dir(const char ch)
+{
+    return ch == '^' ? 0 : ch == 'v' ? 1 : ch == '<' ? 2 : ch == '>' ? 3 : -1;
+}
+
+static inline double clamp(double x, double l, double u)
+{
+    return (x < l ? l : (x > u ? u : x));
+}
+
+static inline double aa_rect(double x, double y,
+    double x1, double x2, double y1, double y2)
+{
+    double dx = fabs(x - (x1 + x2) / 2);
+    double dy = fabs(y - (y1 + y2) / 2);
+    dx = clamp((x2 - x1) / 2 - dx, 0, 1);
+    dy = clamp((y2 - y1) / 2 - dy, 0, 1);
+    return dx < dy ? dx : dy;
+}
+
+static inline double blend_line(double ret, double x, double y,
+    double w, double x0, double y0, double rot, double y1, double y2)
+{
+    /* Calculate point to segment distance */
+    /* Note: some modifications are introduced
+     * as the edges should not be rounded here */
+    /* Rotate the point around (x0, y0) by `rot` radians */
+    double _x = (x - x0) * cos(rot) - (y - y0) * sin(rot) + x0;
+    double _y = (x - x0) * sin(rot) + (y - y0) * cos(rot) + y0;
+    return 1 - (1 - ret) * (1 - aa_rect(_x, _y, x0 - w / 2, x0 + w / 2, y1, y2));
+}
+
+/* Generates an upwards arrow */
+static inline int uparrow_pixel(int sz, double w, int _x, int _y)
+{
+    double x = _x + 0.5, y = _y + 0.5;
+    double ret = 0;
+    ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, 0, sz * 0.191, sz * 0.809);
+    ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, -M_PI * 0.22, sz * 0.191, sz * 0.44);
+    ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, +M_PI * 0.22, sz * 0.191, sz * 0.44);
+    return round(ret * 255);
+}
+
+static inline int arrow_pixel_opacity(int dir, int sz, double w, int x, int y)
+{
+    switch (dir) {
+        case 0: return uparrow_pixel(sz, w, x, y);
+        case 1: return uparrow_pixel(sz, w, x, sz - 1 - y);
+        case 2: return uparrow_pixel(sz, w, y, x);
+        case 3: return uparrow_pixel(sz, w, y, sz - 1 - x);
+        default: return 0;
+    }
+}
+
 static void label_render_keyed_text(label *this, const char *keys)
 {
     /* Don't need to use caching for this type */
@@ -65,11 +119,27 @@ static void label_render_keyed_text(label *this, const char *keys)
 
         int h = sf->h - PADDING * 2;
         /* Render the key icon */
-        SDL_Surface *tsf = TTF_RenderGlyph_Blended(
-            load_font(FONT_UPRIGHT, KEY_PTS(h)), keys[n], (SDL_Color){0});
+        SDL_Surface *tsf = NULL;
+        int arrow_dir;
+        if ((arrow_dir = get_arrow_dir(keys[n])) != -1) {
+            int w = STROKE_W(h);
+            tsf = SDL_CreateRGBSurfaceWithFormat(
+                0, h, h, 32, SDL_PIXELFORMAT_ARGB8888);
+            int i, j;
+            for (i = 0; i < h; ++i)
+                for (j = 0; j < h; ++j)
+                    *((Uint32 *)(tsf->pixels + i * tsf->pitch) + j) =
+                        arrow_pixel_opacity(arrow_dir, h - w * 2, 2.5, j - w, i - w) << 24;
+        } else if (keys[n] == '~') {
+            tsf = TTF_RenderText_Blended(
+                load_font(FONT_UPRIGHT, KEY_PTS(h) * 0.6), "ESC", (SDL_Color){0});
+        } else {
+            tsf = TTF_RenderGlyph_Blended(
+                load_font(FONT_UPRIGHT, KEY_PTS(h)), keys[n], (SDL_Color){0});
+        }
         /* Draw a circle; `h` is the height and the radius */
-        int x0 = (h - tsf->w - 1) / 2 + OFFS_X(h),
-            y0 = (h - tsf->h - 1) / 2 + OFFS_Y(h),
+        int x0 = (h - tsf->w - 1) / 2 + (arrow_dir == -1 ? OFFS_X(h) : 0),
+            y0 = (h - tsf->h - 1) / 2 + (arrow_dir == -1 ? OFFS_Y(h) : 0),
             w = STROKE_W(h);
         int i, j;
         for (i = -PADDING; i < h + PADDING; ++i)
