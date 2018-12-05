@@ -107,6 +107,7 @@ static void label_render_keyed_text(label *this, const char *keys)
 
         ++n;
         *t = orig_t;
+        SDL_FreeSurface(tsf);
     }
     free(s);
 
