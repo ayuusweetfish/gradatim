@@ -68,6 +68,7 @@ typedef struct _gameplay_scene {
 
     /* Hints */
     label *l_hints[MAX_HINTS];
+#define MAX_SIG 16
     sprite *s_hints[MAX_HINTS][MAX_SIG];
     int w_hints[MAX_HINTS]; /* Width of a horizontal slice */
 } gameplay_scene;

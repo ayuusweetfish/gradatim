@@ -138,9 +138,10 @@ static inline void switch_stage_ctx(gameplay_scene *this)
             label_set_keyed_text(this->l_hints[i],
                 this->rec->hints[i].str, this->rec->hints[i].key);
             int w;
-            for (j = 0; j < this->chap->sig; ++j) {
+            int sig = this->chap->sig * this->rec->hints[i].mul;
+            for (j = 0; j < sig; ++j) {
                 sprite_reload(this->s_hints[i][j], this->rec->hints[i].img);
-                if (j == 0) w = this->s_hints[i][j]->_base.dim.w / this->chap->sig;
+                if (j == 0) w = this->s_hints[i][j]->_base.dim.w / sig;
                 /* The image should be horizontally sliced into `sig` pieces */
                 this->s_hints[i][j]->tex.range.x = w * j;
                 this->s_hints[i][j]->tex.range.w = w;
@@ -387,16 +388,16 @@ void gameplay_run_leadin(gameplay_scene *this)
     SDL_SetTextureBlendMode(this->leadin_tex, SDL_BLENDMODE_BLEND);
 }
 
-static inline bool get_pos_in_bar(gameplay_scene *this, double ant,
+static inline bool get_pos_in_bar(gameplay_scene *this, double ant, int mul,
     int *beats_i, double *beats_d)
 {
-    double beats = get_audio_position(this);
+    double beats = get_audio_position(this) * mul;
     if (this->disp_state == DISP_LEADIN) return false;
     if (this->mods & MOD_SOTTO_VOCO) return false;
     if (beats < -ant) return false;
     *beats_i = (int)(beats + ant);
     *beats_d = beats - *beats_i;
-    *beats_i %= this->chap->sig;
+    *beats_i %= (this->chap->sig * mul);
     *beats_d /= this->chap->beat_mul;
     return true;
 }
@@ -405,7 +406,7 @@ static inline void draw_overlay(gameplay_scene *this)
 {
     int beats_i;
     double beats_d;
-    if (!get_pos_in_bar(this, 1./16, &beats_i, &beats_d)) return;
+    if (!get_pos_in_bar(this, 1./16, 1, &beats_i, &beats_d)) return;
     bool is_downbeat = this->chap->dash_mask & (1 << beats_i),
         is_upbeat = this->chap->hop_mask & (1 << beats_i);
     if (!is_upbeat) return;
@@ -513,15 +514,17 @@ static void gameplay_scene_draw(gameplay_scene *this)
             y = this->l_hints[i]->_base._base.dim.y - HINT_PADDING,
             w = this->l_hints[i]->_base._base.dim.w + HINT_PADDING * 2,
             h = this->l_hints[i]->_base._base.dim.h + HINT_PADDING * 2;
+        int sig;
         if (this->rec->hints[i].img != NULL) {
             /* Expand horizontally if necessary */
-            int w1 = this->w_hints[i] * this->chap->sig + HINT_PADDING * 2;
+            sig = this->chap->sig * this->rec->hints[i].mul;
+            int w1 = this->w_hints[i] * sig + HINT_PADDING * 2;
             if (w < w1) {
                 x -= (w1 - w) / 2;
                 w = w1;
             }
             /* Display all sprites */
-            for (j = 0; j < this->chap->sig; ++j) {
+            for (j = 0; j < sig; ++j) {
                 element_place((element *)this->s_hints[i][j],
                     x + HINT_PADDING + this->w_hints[i] * j,
                     this->l_hints[i]->_base._base.dim.y + h - HINT_PADDING * 2);
@@ -535,12 +538,17 @@ static void gameplay_scene_draw(gameplay_scene *this)
         if (this->rec->hints[i].img != NULL) {
             int beats_i;
             double beats_d;
-            bool started = get_pos_in_bar(this, 0, &beats_i, &beats_d);
-            for (j = 0; j < this->chap->sig; ++j) {
+            bool started = get_pos_in_bar(this, 0,
+                this->rec->hints[i].mul, &beats_i, &beats_d);
+            for (j = 0; j < sig; ++j) {
                 double prog = (started && beats_i == j ? 1 - beats_d : 0);
-                this->s_hints[i][j]->alpha = round(96 + 159 * prog);
-                SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex,
-                    255, 255, round((1 - prog) * 255));
+                if (this->rec->hints[i].mask & (1 << beats_i)) {
+                    this->s_hints[i][j]->alpha = round(96 + 159 * prog);
+                    SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex,
+                        255, 255, round((1 - prog) * 255));
+                } else {
+                    this->s_hints[i][j]->alpha = round(96 * (1 - prog));
+                }
                 element_draw((element *)this->s_hints[i][j]);
             }
         }
@@ -613,8 +621,12 @@ static void gameplay_scene_drop(gameplay_scene *this)
     if (this->simulator != NULL && this->simulator != this->prev_sim)
         sim_drop(this->simulator);
     pause_sound(this);
-    int i;
-    for (i = 0; i < MAX_HINTS; ++i) element_drop(this->l_hints[i]);
+    int i, j;
+    for (i = 0; i < MAX_HINTS; ++i) {
+        element_drop(this->l_hints[i]);
+        for (j = 0; j < MAX_SIG; ++j)
+            element_drop(this->s_hints[i][j]);
+    }
 }
 
 static void try_hop(gameplay_scene *this)
@@ -771,7 +783,7 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     for (i = 0; i < MAX_HINTS; ++i) {
         ret->l_hints[i] = label_create(FONT_UPRIGHT, HINT_FONTSZ,
             (SDL_Color){255, 255, 255}, WIN_H, "");
-        for (j = 0; j < chap->sig; ++j)
+        for (j = 0; j < MAX_SIG; ++j)
             ret->s_hints[i][j] = sprite_create_empty();
     }
 

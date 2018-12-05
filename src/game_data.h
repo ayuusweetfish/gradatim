@@ -19,6 +19,9 @@ typedef struct _stage_hint {
     int r, c;
     char *str, *key;
     char *img;
+    /* `mul` is the multiplier for beats */
+    /* `mask` denotes on which beats the image is blinked */
+    int mul, mask;
 } stage_hint;
 
 struct _stage_audsrc {
@@ -89,7 +92,6 @@ struct chap_rec {
      * This is only useful under irregular time signatures (e.g. 14/8) */
     int beat_mul;
     /* Beats per measure */
-#define MAX_SIG 16
     int sig;
     /* Audio offset for all tracks */
     double offs;
