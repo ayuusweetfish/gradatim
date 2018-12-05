@@ -1,6 +1,7 @@
 #include "scene.h"
 #include "global.h"
 #include "overworld.h"
+#include "options.h"
 #include "dialogue.h"
 #include "transition.h"
 #include "element.h"
@@ -97,6 +98,12 @@ static void cb(void *ud)
     if (this->r == 255) {
         g_stage = transition_slidedown_create(&g_stage,
             (scene *)overworld_create(g_stage), 0.5);
+        ((transition_scene *)g_stage)->preserves_a = true;
+        orion_pause(&g_orion, TRACKID_MAIN_BGM);
+        return;
+    } else if (this->b == 255) {
+        g_stage = transition_slidedown_create(&g_stage,
+            (scene *)options_create(g_stage), 0.5);
         ((transition_scene *)g_stage)->preserves_a = true;
         orion_pause(&g_orion, TRACKID_MAIN_BGM);
         return;
