@@ -68,7 +68,8 @@ typedef struct _gameplay_scene {
 
     /* Hints */
     label *l_hints[MAX_HINTS];
-    sprite *s_hints[MAX_HINTS];
+    sprite *s_hints[MAX_HINTS][MAX_SIG];
+    int w_hints[MAX_HINTS]; /* Width of a horizontal slice */
 } gameplay_scene;
 
 gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx, int mods);

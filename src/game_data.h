@@ -89,6 +89,7 @@ struct chap_rec {
      * This is only useful under irregular time signatures (e.g. 14/8) */
     int beat_mul;
     /* Beats per measure */
+#define MAX_SIG 16
     int sig;
     /* Audio offset for all tracks */
     double offs;

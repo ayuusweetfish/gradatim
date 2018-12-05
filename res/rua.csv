@@ -69,12 +69,12 @@
 45,78,60,45,78,4,3,0
 45,77,60,45,77,4,3,0
 6
-   `   = Jump
-   `   = Dash
+ ..`.  = Jump
+ ..`.  = Dash
 C
 X
-h1.png
-h2.png
+hop_4beat.png
+dash_4beat.png
 0
 1
 0,0,0
