@@ -74,6 +74,15 @@ static inline void update_label(options_scene *this, int idx)
         WIN_W * 5 / 6, (ITEM_OFFSET_Y + idx * ITEM_SKIP) * WIN_H, 1, 0.5);
 }
 
+static inline void init_menu_val(options_scene *this)
+{
+    this->menu_val[0] = profile.bgm_vol;
+    this->menu_val[1] = profile.sfx_vol;
+    this->menu_val[2] = (int)profile.show_clock;
+    this->menu_val[3] = (int)profile.fullscreen;
+    this->menu_val[4] = profile.av_offset;
+}
+
 static inline void update_profile(options_scene *this)
 {
     profile.bgm_vol = this->menu_val[0];
@@ -81,6 +90,7 @@ static inline void update_profile(options_scene *this)
     profile.show_clock = this->menu_val[2];
     profile.fullscreen = this->menu_val[3];
     profile.av_offset = this->menu_val[4];
+    profile_save();
 }
 
 static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
@@ -153,8 +163,9 @@ options_scene *options_create(scene *bg)
     bekter_pushback(this->_base.children, header);
     element_place_anchored((element *)header, WIN_W - 24, WIN_H / 7, 1, 0.5);
 
+    init_menu_val(this);
+
     for (i = 0; i < N_MENU; ++i) {
-        this->menu_val[i] = 0;
         label *l = label_create(FONT_UPRIGHT, 40,
             (SDL_Color){0, 0, 0}, WIN_W, MENU_TEXT[i]);
         bekter_pushback(this->_base.children, l);
