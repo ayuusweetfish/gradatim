@@ -9,6 +9,7 @@ static const int PADDING = 2;
 #define KEY_PTS(_h) ((_h) * 2 / 3)
 #define OFFS_X(_h)  ((_h) / 25)
 #define OFFS_Y(_h)  ((_h) / 20)
+#define ARROW_W(_h) ((double)(_h) / 18)
 
 static unsigned long calc_hash(const char *s)
 {
@@ -51,14 +52,22 @@ static inline double clamp(double x, double l, double u)
     return (x < l ? l : (x > u ? u : x));
 }
 
-static inline double aa_rect(double x, double y,
+static inline double aa_pill(double x, double y,
     double x1, double x2, double y1, double y2)
 {
+    /* Rectangle */
     double dx = fabs(x - (x1 + x2) / 2);
     double dy = fabs(y - (y1 + y2) / 2);
     dx = clamp((x2 - x1) / 2 - dx, 0, 1);
     dy = clamp((y2 - y1) / 2 - dy, 0, 1);
-    return dx < dy ? dx : dy;
+    dx = dx < dy ? dx : dy;
+    /* Endpoint circles */
+    double x0 = (x1 + x2) / 2;
+    double dr = clamp((x2 - x1) / 2 - sqrt(sqr(x - x0) + sqr(y - y1)), 0, 1);
+    dx = dx > dr ? dx : dr;
+    dr = clamp((x2 - x1) / 2 - sqrt(sqr(x - x0) + sqr(y - y2)), 0, 1);
+    dx = dx > dr ? dx : dr;
+    return dx;
 }
 
 static inline double blend_line(double ret, double x, double y,
@@ -70,7 +79,7 @@ static inline double blend_line(double ret, double x, double y,
     /* Rotate the point around (x0, y0) by `rot` radians */
     double _x = (x - x0) * cos(rot) - (y - y0) * sin(rot) + x0;
     double _y = (x - x0) * sin(rot) + (y - y0) * cos(rot) + y0;
-    return 1 - (1 - ret) * (1 - aa_rect(_x, _y, x0 - w / 2, x0 + w / 2, y0, y0 + len));
+    return 1 - (1 - ret) * (1 - aa_pill(_x, _y, x0 - w / 2, x0 + w / 2, y0, y0 + len));
 }
 
 /* Generates an upwards arrow */
@@ -143,7 +152,7 @@ static void label_render_keyed_text(label *this, const char *keys)
             for (i = 0; i < h; ++i)
                 for (j = 0; j < h; ++j)
                     *((Uint32 *)(tsf->pixels + i * tsf->pitch) + j) =
-                        arrow_pixel_opacity(arrow_dir, h - w * 2, 2.5, j - w, i - w) << 24;
+                        arrow_pixel_opacity(arrow_dir, h - w * 2, ARROW_W(h), j - w, i - w) << 24;
         } else if (keys[n] == '~') {
             tsf = TTF_RenderText_Blended(
                 load_font(FONT_UPRIGHT, KEY_PTS(h) * 0.6), "ESC", (SDL_Color){0});
