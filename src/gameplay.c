@@ -32,8 +32,8 @@ static const double DASH_DUR = 1;
 #define DASH_HOR_ACCEL  (DASH_HOR_V0 * DASH_DUR)
 #define DASH_VER_V0     (5.5 * 1.414213562)
 #define DASH_VER_ACCEL  (DASH_VER_V0 * DASH_DUR - SIM_GRAVITY)
-static const double HOP_TOLERANCE = 1./3;
-static const double DASH_TOLERANCE = 1./3;
+static const double HOP_TOLERANCE = 1./6;
+static const double DASH_TOLERANCE = 1./5;
 static const double DASH_MIN_DUR = 1 - DASH_DUR * DASH_TOLERANCE;
 static const double DASH_DIAG_SCALE = 0.8;
 static const int AV_OFFSET_INTV = 60;
@@ -88,7 +88,7 @@ static inline bool can_hop(gameplay_scene *this)
     if (this->mods & MOD_A_PIACERE) return true;
     double b = get_audio_position(this);
     int i = iround(b);
-    return (fabs(b - i) <= HOP_TOLERANCE) &&
+    return (fabs(b - i) <= HOP_TOLERANCE * this->chap->beat_mul) &&
         (this->chap->hop_mask & (1 << (i % this->chap->sig)));
 }
 
@@ -99,7 +99,7 @@ static inline bool can_dash(gameplay_scene *this)
     int i = iround(b);
     int mask = (this->mods & MOD_RUBATO) ?
         this->chap->hop_mask : this->chap->dash_mask;
-    return (fabs(b - i) <= DASH_TOLERANCE) &&
+    return (fabs(b - i) <= DASH_TOLERANCE * this->chap->beat_mul) &&
         (mask & (1 << (i % this->chap->sig)));
 }
 
