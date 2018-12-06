@@ -16,6 +16,7 @@ static const double NAV_W = WIN_W * 0.8;
 static const double NAV_H = WIN_H * 0.9;
 static const double MAX_SCALE = WIN_H / 100;
 static const double CHAP_SW_DUR = 0.3;
+static const double KEYHINT_DUR = 0.2;
 
 static inline void move_camera(overworld_scene *this)
 {
@@ -73,6 +74,12 @@ static void ow_tick(overworld_scene *this, double dt)
     double rate = (dt > 0.1 ? 0.1 : dt) * CAM_MOV_FAC;
     update_camera(this, rate);
     this->since_chap_switch += dt;
+
+    if (this->is_in ^ (g_stage == (scene *)this)) {
+        this->is_in ^= 1;
+        this->since_enter = 0;
+    }
+    this->since_enter += dt;
 
     double r1, g1, b1, r2, g2, b2;
     struct chap_rec *ch = bekter_at(this->chaps, this->cur_chap_idx, struct chap_rec *);
@@ -138,6 +145,15 @@ static void ow_draw(overworld_scene *this)
     for (i = 0; i < ch->n_stages; ++i)
         if (i != this->cur_stage_idx) draw_stage(this, ch, tex, opacity, i);
     draw_stage(this, ch, tex, opacity, this->cur_stage_idx);
+
+    double r = this->since_enter / KEYHINT_DUR;
+    opacity = this->is_in ?
+        (r < 1 ? iround(216 * r) : 216) :
+        (r < 1 ? iround(216 * (1 - r)) : 0);
+    for (i = 0; i < 3; ++i) {
+        this->key_hints[i]->_base.alpha = opacity;
+        element_draw((element *)this->key_hints[i]);
+    }
 }
 
 static void ow_drop(overworld_scene *this)
@@ -157,6 +173,8 @@ static void ow_drop(overworld_scene *this)
     struct chap_rec *p;
     for bekter_each(this->chaps, i, p) chap_drop(p);
     bekter_drop(this->chaps);
+
+    for (i = 0; i < 3; ++i) element_drop(this->key_hints[i]);
 }
 
 static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
@@ -167,6 +185,7 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
             g_stage = transition_slideup_create(&g_stage, this->bg, 0.5);
             break;
         case SDLK_SPACE:
+        case SDLK_RETURN:
             g_stage = (scene *)overworld_menu_create(this);
             break;
         case SDLK_LEFT:
@@ -347,6 +366,27 @@ overworld_scene *overworld_create(scene *bg)
     ret->cam_scale = ret->cam_targscale;
 
     ret->since_chap_switch = CHAP_SW_DUR * 2;
+
+    label *l = label_create(FONT_UPRIGHT, 24,
+        (SDL_Color){0, 0, 0}, WIN_W, "");
+    label_set_keyed_text(l, " ..`.  ..`.  Select chapter", "^v");
+    element_place_anchored((element *)l,
+        WIN_W * 0.05, WIN_H * 0.8, 0, 0.5);
+    ret->key_hints[0] = l;
+
+    l = label_create(FONT_UPRIGHT, 24,
+        (SDL_Color){0, 0, 0}, WIN_W, "");
+    label_set_keyed_text(l, " ..`.  ..`.  Select stage", "<>");
+    element_place_anchored((element *)l,
+        WIN_W * 0.05, WIN_H * 0.85, 0, 0.5);
+    ret->key_hints[1] = l;
+
+    l = label_create(FONT_UPRIGHT, 24,
+        (SDL_Color){0, 0, 0}, WIN_W, "");
+    label_set_keyed_text(l, " ..`.  Confirm", "\\");
+    element_place_anchored((element *)l,
+        WIN_W * 0.05, WIN_H * 0.9, 0, 0.5);
+    ret->key_hints[2] = l;
 
     return ret;
 }

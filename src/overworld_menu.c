@@ -13,6 +13,7 @@ static const double MOV_X = 30;
 static const double SCALE = 1.3;
 
 static const double FADEIN_DUR = 0.3;
+static const double KEYHINT_DUR = 0.2;
 static const double MENU_W = WIN_W * 0.382;
 
 static const double MENU_TR_DUR = 0.15;
@@ -28,6 +29,13 @@ static inline void owm_tick(overworld_menu *this, double dt)
 {
     scene_tick(&this->bg->_base, dt);
     this->time += dt;
+
+    if (this->is_in ^ (g_stage == (scene *)this && this->quit_time < 0)) {
+        this->is_in ^= 1;
+        this->since_enter = 0;
+    }
+    this->since_enter += dt;
+
     if (this->quit_time >= 0 && this->time >= this->quit_time + FADEIN_DUR) {
         g_stage = (scene *)this->bg;
         scene_drop(this);
@@ -97,6 +105,21 @@ static inline void owm_draw(overworld_menu *this)
     for bekter_each(this->_base.children, i, el) {
         el->_base.dim.x -= delta_x;
     }
+
+    double r = this->since_enter / KEYHINT_DUR;
+    opacity = this->is_in ?
+        ((r -= 1) < 0 ? 0 : (r < 1) ? iround(216 * r) : 216) :
+        (r < 1 ? iround(216 * (1 - r)) : 0);
+    for (i = 0; i < 3; ++i) {
+        this->key_hints[i]->_base.alpha = opacity;
+        element_draw((element *)this->key_hints[i]);
+    }
+}
+
+static inline void owm_drop(overworld_menu *this)
+{
+    int i;
+    for (i = 0; i < 3; ++i) element_drop(this->key_hints[i]);
 }
 
 static inline int get_mask(overworld_menu *this)
@@ -152,8 +175,11 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
                 this->quit_time = this->time;
                 this->bg->cam_targx -= MOV_X;
                 this->bg->cam_targscale /= SCALE;
+                this->is_in = false;
+                this->since_enter = 0;
             }
             break;
+        case SDLK_SPACE:
         case SDLK_RETURN:
             if (this->menu_idx == N_MODS) {
                 g_stage = (scene *)loading_create(&g_stage,
@@ -225,7 +251,7 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     ret->_base.children = bekter_create();
     ret->_base.tick = (scene_tick_func)owm_tick;
     ret->_base.draw = (scene_draw_func)owm_draw;
-    ret->_base.drop = NULL;
+    ret->_base.drop = (scene_drop_func)owm_drop;
     ret->_base.key_handler = (scene_key_func)owm_key;
     ret->bg = bg;
     ret->time = 0;
@@ -302,6 +328,27 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
 
     bg->cam_targx += MOV_X;
     bg->cam_targscale *= SCALE;
+
+    l = label_create(FONT_UPRIGHT, 24,
+        (SDL_Color){0, 0, 0}, WIN_W, "");
+    label_set_keyed_text(l, " ..`.  ..`.  Select modifier", "^v");
+    element_place_anchored((element *)l,
+        WIN_W * 0.05, WIN_H * 0.8, 0, 0.5);
+    ret->key_hints[0] = l;
+
+    l = label_create(FONT_UPRIGHT, 24,
+        (SDL_Color){0, 0, 0}, WIN_W, "");
+    label_set_keyed_text(l, " ..`.  ..`.  Change", "<>");
+    element_place_anchored((element *)l,
+        WIN_W * 0.05, WIN_H * 0.85, 0, 0.5);
+    ret->key_hints[1] = l;
+
+    l = label_create(FONT_UPRIGHT, 24,
+        (SDL_Color){0, 0, 0}, WIN_W, "");
+    label_set_keyed_text(l, " ..`.  Change/Start", "\\");
+    element_place_anchored((element *)l,
+        WIN_W * 0.05, WIN_H * 0.9, 0, 0.5);
+    ret->key_hints[2] = l;
 
     return ret;
 }

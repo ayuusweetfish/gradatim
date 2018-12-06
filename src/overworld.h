@@ -6,6 +6,7 @@
 #include "scene.h"
 #include "game_data.h"
 #include "floue.h"
+#include "label.h"
 
 #include <SDL.h>
 
@@ -30,6 +31,10 @@ typedef struct _overworld_scene {
     /* For switching between chapters */
     int last_chap_idx;
     double since_chap_switch;
+
+    label *key_hints[3];
+    bool is_in;
+    double since_enter;
 } overworld_scene;
 
 overworld_scene *overworld_create(scene *bg);

@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 static const int N_MENU = 3;
-static const double ITEM_OFFSET_Y = 0.425;
+static const double ITEM_OFFSET_Y = 0.4;
 static const double ITEM_SKIP = 0.125;
 static const double ITEM_H = 0.1;
 
@@ -156,6 +156,14 @@ pause_scene *pause_scene_create(scene **a, retry_callback cb, scene *b)
         element_place_anchored((element *)l,
             WIN_W / 2, (ITEM_OFFSET_Y + i * ITEM_SKIP) * WIN_H, 0.5, 0.5);
     }
+
+    label *footer = label_create(FONT_UPRIGHT, 32,
+        (SDL_Color){255, 255, 255}, WIN_H, "");
+    bekter_pushback(ret->_base.children, footer);
+    label_set_keyed_text(footer,
+        " ..`.  ..`.  Move      ..`.  Confirm", "^v\\");
+    footer->_base.alpha = 144;
+    element_place_anchored((element *)footer, WIN_W / 2, WIN_H * 0.785, 0.5, 0.5);
 
     return ret;
 }

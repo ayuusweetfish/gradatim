@@ -27,6 +27,10 @@ typedef struct _overworld_menu {
     label *mod_desc[N_MODS];
 
     int menu_val[N_MODS];
+
+    label *key_hints[3];
+    bool is_in;
+    double since_enter;
 } overworld_menu;
 
 overworld_menu *overworld_menu_create(overworld_scene *bg);
