@@ -32,9 +32,12 @@ int main()
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
+    profile_load();
+
     g_window = SDL_CreateWindow("",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        WIN_W, WIN_H, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+        WIN_W, WIN_H, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+            (profile.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0));
     if (g_window == NULL) return 1;
 
     g_renderer = SDL_CreateRenderer(
@@ -49,8 +52,6 @@ int main()
     orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "nyan.ogg");
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, 0, -1);
     orion_overall_play(&g_orion);
-
-    profile_load();
 
     g_stage = (scene *)colour_scene_create(0, 192, 255);
 

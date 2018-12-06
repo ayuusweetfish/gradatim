@@ -91,6 +91,8 @@ static inline void update_profile(options_scene *this)
     profile.fullscreen = this->menu_val[3];
     profile.av_offset = this->menu_val[4];
     profile_save();
+    SDL_SetWindowFullscreen(g_window,
+        profile.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 
 static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
