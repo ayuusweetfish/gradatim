@@ -19,9 +19,9 @@ static void button_tick(button *this, double dt)
         if (now <= this->agl_time + ANIM_DUR) {
             double p = 1 - (double)(this->agl_time + ANIM_DUR - now) / ANIM_DUR;
             this->cur_sz.x =
-                round(this->agl_sz.x + p * (this->sz[s].x - this->agl_sz.x));
+                iround(this->agl_sz.x + p * (this->sz[s].x - this->agl_sz.x));
             this->cur_sz.y =
-                round(this->agl_sz.y + p * (this->sz[s].y - this->agl_sz.y));
+                iround(this->agl_sz.y + p * (this->sz[s].y - this->agl_sz.y));
         } else {
             this->agl_s = -1;
         }
@@ -41,7 +41,7 @@ static void button_draw(button *this)
         /* XXX: DRY? */
         unsigned now = SDL_GetTicks();
         double p = 1 - (double)(this->agl_time + ANIM_DUR - now) / ANIM_DUR;
-        alpha = round(p * 255);
+        alpha = iround(p * 255);
     } else {
         alpha = 255;
     }
@@ -72,10 +72,10 @@ button *button_create(button_callback cb, void *ud,
     ret->_base.dim.h = h;
     ret->tex[1] = (img_focus == NULL) ?
         ret->tex[0] : retrieve_texture(img_focus);
-    ret->sz[1] = (SDL_Point){round(w * scale_focus), round(h * scale_focus)};
+    ret->sz[1] = (SDL_Point){iround(w * scale_focus), iround(h * scale_focus)};
     ret->tex[2] = (img_down == NULL) ?
         ret->tex[1] : retrieve_texture(img_down);
-    ret->sz[2] = (SDL_Point){round(w * scale_down), round(h * scale_down)};
+    ret->sz[2] = (SDL_Point){iround(w * scale_down), iround(h * scale_down)};
     ret->last_s = 0;
     ret->cur_sz = ret->sz[0];
     ret->agl_s = -1;

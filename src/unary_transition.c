@@ -12,7 +12,7 @@ static void ut_fade_draw(utransition *this)
 {
     double p = this->_base.elapsed / this->_base.duration;
     if (p <= 1./3) {
-        SDL_SetTextureAlphaMod(this->_base.a_tex, round(255 * (1 - p * 3)));
+        SDL_SetTextureAlphaMod(this->_base.a_tex, iround(255 * (1 - p * 3)));
         SDL_RenderCopy(g_renderer, this->_base.a_tex, NULL, NULL);
     } else {
         if (this->cb != NULL) {
@@ -20,7 +20,7 @@ static void ut_fade_draw(utransition *this)
             this->cb = NULL;
         }
         if (p >= 2./3) {
-            SDL_SetTextureAlphaMod(this->_base.a_tex, round(255 * (p * 3 - 2)));
+            SDL_SetTextureAlphaMod(this->_base.a_tex, iround(255 * (p * 3 - 2)));
             SDL_RenderCopy(g_renderer, this->_base.a_tex, NULL, NULL);
         }
     }

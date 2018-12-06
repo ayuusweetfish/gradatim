@@ -54,7 +54,7 @@ void floue_add(floue *this, SDL_Point p, SDL_Color c, int sz, double opacity)
             double a = (d >= 1 ? 0 :
                 d < 0.9 ? 1 : ease_quad_inout((1 - d) * 10)
             );
-            pix[j * sz + i] = 0xffffff00 | round(a * opacity * 128);
+            pix[j * sz + i] = 0xffffff00 | iround(a * opacity * 128);
         }
     SDL_UpdateTexture(t, NULL, pix, sz * sizeof(Uint32));
     free(pix);

@@ -86,7 +86,7 @@ static void dialogue_draw(dialogue_scene *this)
     bool character_same = !past_the_end &&
         bekter_at(this->script, this->script_idx, dialogue_entry).name == NULL;
 
-    /* Text's background */
+    /* Text's backgiround */
     if (this->entry_lasted < 0 ||
         (past_the_end && this->entry_lasted >= AVAT_FADE_DUR &&
         this->entry_lasted < AVAT_FADE_DUR + CTNR_FADE_DUR))
@@ -96,8 +96,8 @@ static void dialogue_draw(dialogue_scene *this)
             p = 1 + this->entry_lasted / CTNR_FADE_DUR;
         else p = 1 - (this->entry_lasted - AVAT_FADE_DUR) / CTNR_FADE_DUR;
         p = 1 - (1 - p) * (1 - p) * (1 - p);
-        int opacity = round(192 * p);
-        int height = WIN_H * 3 / 12 + round(WIN_H / 12 * p);
+        int opacity = iround(192 * p);
+        int height = WIN_H * 3 / 12 + iround(WIN_H / 12 * p);
         SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, opacity);
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){
             0, WIN_H - height, WIN_W, height
@@ -112,9 +112,9 @@ static void dialogue_draw(dialogue_scene *this)
     /* Avatar & name */
     int opacity;
     if (this->entry_lasted < AVAT_FADE_DUR)
-        opacity = round(255 * (1 - this->entry_lasted / AVAT_FADE_DUR));
+        opacity = iround(255 * (1 - this->entry_lasted / AVAT_FADE_DUR));
     else if (!past_the_end && this->entry_lasted < 2 * AVAT_FADE_DUR)
-        opacity = round(255 * (this->entry_lasted / AVAT_FADE_DUR - 1));
+        opacity = iround(255 * (this->entry_lasted / AVAT_FADE_DUR - 1));
     else opacity = past_the_end ? 0 : 255;
     this->avatar_disp->alpha = character_same ? 255 : opacity;
     this->name_disp->_base.alpha = character_same ? 255 : opacity;

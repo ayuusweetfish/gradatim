@@ -11,8 +11,8 @@ void element_place(element *e, int x, int y)
 
 void element_place_anchored(element *e, float x, float y, float ax, float ay)
 {
-    e->dim.x = round(x - e->dim.w * ax);
-    e->dim.y = round(y - e->dim.h * ay);
+    e->dim.x = iround(x - e->dim.w * ax);
+    e->dim.y = iround(y - e->dim.h * ay);
 }
 
 static void sprite_draw(sprite *this)

@@ -75,8 +75,8 @@ static inline double blend_line(double ret, double x, double y,
 {
     /* Calculate point to segment distance */
     /* Note: some modifications are introduced
-     * as the edges should not be rounded here */
-    /* Rotate the point around (x0, y0) by `rot` radians */
+     * as the edges should not be irounded here */
+    /* Rotate the point airound (x0, y0) by `rot` radians */
     double _x = (x - x0) * cos(rot) - (y - y0) * sin(rot) + x0;
     double _y = (x - x0) * sin(rot) + (y - y0) * cos(rot) + y0;
     return 1 - (1 - ret) * (1 - aa_pill(_x, _y, x0 - w / 2, x0 + w / 2, y0, y0 + len));
@@ -90,7 +90,7 @@ static inline int uparrow_pixel(int sz, double w, int _x, int _y)
     ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, 0, sz * 0.618);
     ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, -M_PI * 0.22, sz * 0.25);
     ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, +M_PI * 0.22, sz * 0.25);
-    return round(ret * 255);
+    return iround(ret * 255);
 }
 
 /* Generates an icon for the enter key */
@@ -102,7 +102,7 @@ static inline int return_pixel(int sz, double w, int _x, int _y)
     ret = blend_line(ret, x, y, w, sz * 0.72, sz * 0.632, -M_PI / 2, sz * 0.5);
     ret = blend_line(ret, x, y, w, sz * 0.22, sz * 0.632, M_PI * 0.69, sz * 0.1545);
     ret = blend_line(ret, x, y, w, sz * 0.22, sz * 0.632, M_PI * 0.31, sz * 0.1545);
-    return round(ret * 255);
+    return iround(ret * 255);
 }
 
 static inline int arrow_pixel_opacity(int dir, int sz, double w, int x, int y)
@@ -184,14 +184,14 @@ static void label_render_keyed_text(label *this, const char *keys)
                     }
                 } else if (d <= h * 0.5 - w) {
                     /* White-black gradient */
-                    int grey = round((h * 0.5 - w - d) * 255);
+                    int grey = iround((h * 0.5 - w - d) * 255);
                     pix = 0xff000000 | (grey << 16) | (grey << 8) | grey;
                 } else if (d <= h * 0.5 - 1) {
                     /* Black */
                     pix = 0xff000000;
                 } else if (d <= h * 0.5) {
                     /* Black-transparent gradient */
-                    int alpha = round((h * 0.5 - d) * 255);
+                    int alpha = iround((h * 0.5 - d) * 255);
                     pix = (alpha << 24) | 0x0;
                 }
                 *((Uint32 *)(sf->pixels + sf->pitch * (i + PADDING)) +

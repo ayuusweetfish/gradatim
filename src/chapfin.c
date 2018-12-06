@@ -45,8 +45,8 @@ static inline void update_summary_obj(sprite *s, double x, double y, double t)
     double r = (t > T3 ? 1 : t / T3);
     r = 1 - (1 - r) * (1 - r) * (1 - r) * (1 - r);
     /*r = ease_elastic_out(r, 0.9);*/
-    element_place((element *)s, round(WIN_W * x), round(WIN_H * (y + 0.1 * (1 - r))));
-    s->alpha = round(r * 255);
+    element_place((element *)s, iround(WIN_W * x), iround(WIN_H * (y + 0.1 * (1 - r))));
+    s->alpha = iround(r * 255);
 }
 
 static void chapfin_draw(chapfin_scene *this)
@@ -97,9 +97,9 @@ static void chapfin_draw(chapfin_scene *this)
         /* s is guaranteed to fall in [0, 1) */
         unveil_draw(this->u, 0, 1);
         label_colour_mod(this->l_num, 0, 0, 0);
-        this->l_num->_base.alpha = round(r * 255);
+        this->l_num->_base.alpha = iround(r * 255);
         double x = 0.5 - ease_quad_inout(s) * (0.5 - LINE_X);
-        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, round(r * 255));
+        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, iround(r * 255));
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){
             WIN_W * x, WIN_H * LINE_Y,
             WIN_W * (1 - x * 2), LINE_WIDTH
@@ -113,10 +113,10 @@ static void chapfin_draw(chapfin_scene *this)
         SDL_RenderClear(g_renderer);
         floue_draw(this->f);
         unveil_draw(this->u, r, 1);
-        int grey = round(s * 255);
+        int grey = iround(s * 255);
         label_colour_mod(this->l_num, grey, grey, grey);
         label_colour_mod(this->l_title, grey, grey, grey);
-        this->l_title->_base.alpha = round(s * 255);
+        this->l_title->_base.alpha = iround(s * 255);
         SDL_SetRenderDrawColor(g_renderer, grey, grey, grey, 255);
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){
             WIN_W * LINE_X, WIN_H * LINE_Y,

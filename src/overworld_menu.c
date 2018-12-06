@@ -46,21 +46,21 @@ static inline void owm_draw(overworld_menu *this)
     } else {
         t = 1;
     }
-    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, round(t * 192));
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, iround(t * 192));
 
-    /* Draw background */
-    int delta_x = round(MENU_W / 2 * (1 - t));
+    /* Draw backgiround */
+    int delta_x = iround(MENU_W / 2 * (1 - t));
     SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-        round(WIN_W - MENU_W + delta_x), 0, WIN_W, WIN_H
+        iround(WIN_W - MENU_W + delta_x), 0, WIN_W, WIN_H
     });
 
     /* Draw mod colour */
     int i;
     for (i = 0; i < N_MODS; ++i) {
         int c = MODS[i][this->menu_val[i]].colour;
-        SDL_SetRenderDrawColor(g_renderer, c >> 16, (c >> 8) & 0xff, c & 0xff, round(t * t * 192));
+        SDL_SetRenderDrawColor(g_renderer, c >> 16, (c >> 8) & 0xff, c & 0xff, iround(t * t * 192));
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-            round(WIN_W - MENU_W + delta_x), WIN_H * (ITEM_OFFSET_Y - ITEM_H / 2 + i * ITEM_H),
+            iround(WIN_W - MENU_W + delta_x), WIN_H * (ITEM_OFFSET_Y - ITEM_H / 2 + i * ITEM_H),
             WIN_W, WIN_H * ITEM_H
         });
     }
@@ -77,15 +77,15 @@ static inline void owm_draw(overworld_menu *this)
     }
     double phase = fabs(BLINK_DUR - fmod(this->time, BLINK_DUR * 2)) / BLINK_DUR;
     phase = ease_quad_inout(phase);
-    int opacity = round(t * (128 + round(phase * 24)));
+    int opacity = iround(t * (128 + iround(phase * 24)));
     SDL_SetRenderDrawColor(g_renderer, 255, 255, 128, opacity);
     SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-        round(WIN_W - MENU_W + delta_x), round(cur_y * WIN_H), WIN_W, WIN_H * ITEM_H
+        iround(WIN_W - MENU_W + delta_x), iround(cur_y * WIN_H), WIN_W, WIN_H * ITEM_H
     });
 
     /* Draw children */
     sprite *el;
-    opacity = round(t * 255);
+    opacity = iround(t * 255);
     for bekter_each(this->_base.children, i, el) {
         el->alpha = opacity;
         el->_base.dim.x += delta_x;

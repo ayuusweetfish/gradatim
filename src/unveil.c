@@ -128,7 +128,7 @@ void unveil_draw(unveil *this, double time, double opacity)
         for (j = 0; j < W; ++j) {
             float o = (this->val[i * W + j] - time) / NEIGHBOUR;
             o = (o < 0 ? 0 : (o > 1 ? 1 : o)) * opacity;
-            *(Uint32 *)(pix + i * pitch + j * 4) = 0xffffff00 | round(o * 255);
+            *(Uint32 *)(pix + i * pitch + j * 4) = 0xffffff00 | iround(o * 255);
         }
 
     SDL_UnlockTexture(this->tex);

@@ -91,7 +91,7 @@ static inline bool can_hop(gameplay_scene *this)
 {
     if (this->mods & MOD_A_PIACERE) return true;
     double b = get_audio_position(this);
-    int i = round(b);
+    int i = iround(b);
     return (fabs(b - i) <= HOP_TOLERATION) &&
         (this->chap->hop_mask & (1 << (i % this->chap->sig)));
 }
@@ -100,7 +100,7 @@ static inline bool can_dash(gameplay_scene *this)
 {
     if (this->mods & MOD_A_PIACERE) return true;
     double b = get_audio_position(this);
-    int i = round(b);
+    int i = iround(b);
     int mask = (this->mods & MOD_RUBATO) ?
         this->chap->hop_mask : this->chap->dash_mask;
     return (fabs(b - i) <= DASH_TOLERATION) &&
@@ -354,8 +354,8 @@ static inline void render_objects(gameplay_scene *this,
         cmin = clamp(floorf(cx), 0, sim->gcols),
         cmax = clamp(ceilf(cx + WIN_W_UNITS), 0, sim->gcols);
     int r, c;
-    int cxi = round(cx * UNIT_PX),
-        cyi = round(cy * UNIT_PX);
+    int cxi = iround(cx * UNIT_PX),
+        cyi = iround(cy * UNIT_PX);
     for (r = rmin; r < rmax; ++r)
         for (c = cmin; c < cmax; ++c) {
             sobj *o = &sim_grid(sim, r, c);
@@ -370,8 +370,8 @@ static inline void render_objects(gameplay_scene *this,
     for (r = 0; r < sim->anim_sz; ++r) {
         sobj *o = sim->anim[r];
         render_texture_scaled(get_texture(this, o),
-            round((o->x + o->tx) * UNIT_PX) - cxi,
-            round((o->y + o->ty) * UNIT_PX) - cyi,
+            iround((o->x + o->tx) * UNIT_PX) - cxi,
+            iround((o->y + o->ty) * UNIT_PX) - cyi,
             SPR_SCALE
         );
     }
@@ -410,7 +410,7 @@ static inline void draw_overlay(gameplay_scene *this)
     bool is_downbeat = this->chap->dash_mask & (1 << beats_i),
         is_upbeat = this->chap->hop_mask & (1 << beats_i);
     if (!is_upbeat) return;
-    int opacity = round((
+    int opacity = iround((
         beats_d < 0 ? (1 + beats_d * 16) :
         beats_d < 0.5 ? (1 - beats_d * 2) : 0) * 255);
     SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
@@ -434,7 +434,7 @@ static inline void flashlight_texture(SDL_Texture *tex,
             if (r <= rsqr) {
                 *((int *)(pixdata + j * pitch) + i) = 0;
             } else if (r <= rosqr) {
-                int a = round(255 * (r - rsqr) / (rosqr - rsqr));
+                int a = iround(255 * (r - rsqr) / (rosqr - rsqr));
                 *((int *)(pixdata + j * pitch) + i) = a;
             } else {
                 *((int *)(pixdata + j * pitch) + i) = 255;
@@ -502,13 +502,13 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
     /* Display hints */
     int i, j;
-    int cxi = round(this->cam_x * UNIT_PX),
-        cyi = round(this->cam_y * UNIT_PX);
+    int cxi = iround(this->cam_x * UNIT_PX),
+        cyi = iround(this->cam_y * UNIT_PX);
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 128);
     for (i = 0; i < this->rec->hint_ct; ++i) {
         element_place_anchored((element *)this->l_hints[i],
-            round((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi,
-            round((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi,
+            iround((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi,
+            iround((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi,
             0.5, 0.5);
         int x = this->l_hints[i]->_base._base.dim.x - HINT_PADDING,
             y = this->l_hints[i]->_base._base.dim.y - HINT_PADDING,
@@ -543,11 +543,11 @@ static void gameplay_scene_draw(gameplay_scene *this)
             for (j = 0; j < sig; ++j) {
                 double prog = (started && beats_i == j ? 1 - beats_d : 0);
                 if (this->rec->hints[i].mask & (1 << beats_i)) {
-                    this->s_hints[i][j]->alpha = round(96 + 159 * prog);
+                    this->s_hints[i][j]->alpha = iround(96 + 159 * prog);
                     SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex,
-                        255, 255, round((1 - prog) * 255));
+                        255, 255, iround((1 - prog) * 255));
                 } else {
-                    this->s_hints[i][j]->alpha = round(96 * (1 - prog));
+                    this->s_hints[i][j]->alpha = iround(96 * (1 - prog));
                 }
                 element_draw((element *)this->s_hints[i][j]);
             }
@@ -568,7 +568,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
     }
 
     render_texture_ex(prot_tex, &(SDL_Rect){
-        prot_disp_x, prot_disp_y, round(prot_w), round(prot_h),
+        prot_disp_x, prot_disp_y, iround(prot_w), iround(prot_h),
     }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
 
     if (this->disp_state != DISP_FAILURE)
@@ -606,7 +606,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
                 sqr(UNIT_PX * STRETTO_RANGE), sqr(UNIT_PX * (STRETTO_RANGE + 0.5)));
         }
         SDL_RenderCopy(g_renderer, this->leadin_tex, &(SDL_Rect) {
-            round(WIN_W - prot_disp_x), round(WIN_H - prot_disp_y),
+            iround(WIN_W - prot_disp_x), iround(WIN_H - prot_disp_y),
             WIN_W, WIN_H
         }, NULL);
     }

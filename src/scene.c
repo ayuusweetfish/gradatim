@@ -22,8 +22,8 @@ static SDL_Point mouse_event_coordinate(SDL_Event *ev, int x, int y)
     int real_w, real_h;
     SDL_GetWindowSize(window, &real_w, &real_h);
     SDL_Point p;
-    p.x = round((double)x / real_w * WIN_W);
-    p.y = round((double)y / real_h * WIN_H);
+    p.x = iround((double)x / real_w * WIN_W);
+    p.y = iround((double)y / real_h * WIN_H);
     return p;
 }
 

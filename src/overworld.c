@@ -89,10 +89,10 @@ static void ow_tick(overworld_scene *this, double dt)
         r1 = ch->r1; g1 = ch->g1; b1 = ch->b1;
         r2 = ch->r2; g2 = ch->g2; b2 = ch->b2;
     }
-    this->f->c0 = (SDL_Color){round(r1), round(g1), round(b1), 255};
+    this->f->c0 = (SDL_Color){iround(r1), iround(g1), iround(b1), 255};
     int i;
     for (i = 0; i < 8; ++i)
-        this->f->c[i] = (SDL_Color){round(r2), round(g2), round(b2), 255};
+        this->f->c[i] = (SDL_Color){iround(r2), iround(g2), iround(b2), 255};
 }
 
 static inline void draw_stage(overworld_scene *this,
@@ -129,9 +129,9 @@ static void ow_draw(overworld_scene *this)
         if (r < 0.5) {
             ch = bekter_at(this->chaps, this->last_chap_idx, struct chap_rec *);
             tex = bekter_at(this->stage_tex, this->last_chap_idx, SDL_Texture **);
-            if (r < 1.0 / 3) opacity = round(255 * (1 - r * 3));
+            if (r < 1.0 / 3) opacity = iround(255 * (1 - r * 3));
         } else if (r >= 2.0 / 3) {
-            opacity = round(255 * (r * 3 - 2));
+            opacity = iround(255 * (r * 3 - 2));
         }
     }
 
@@ -229,10 +229,10 @@ static inline Uint32 weighted_average(Uint32 *buf, int r0, int c0)
             }
     }
     if (raw_a == 0) return 0;
-    return (round((double)rs / ct) << 24) |
-        (round((double)gs / ct) << 16) |
-        (round((double)bs / ct) << 8) |
-        (round((double)raw_a / (SAMPLER_TEX_SZ * SAMPLER_TEX_SZ / 4)));
+    return (iround((double)rs / ct) << 24) |
+        (iround((double)gs / ct) << 16) |
+        (iround((double)bs / ct) << 8) |
+        (iround((double)raw_a / (SAMPLER_TEX_SZ * SAMPLER_TEX_SZ / 4)));
 }
 
 static inline void retrieve_colour(Uint32 *buf, const texture tex, Uint32 out[4])

@@ -15,7 +15,7 @@
 #define TRACKID_MAIN_BGM    0
 #define TRACKID_STAGE_BGM   8
 
-#define round(__x)  ((int)((__x) + 0.5))
+#define iround(__x)  ((int)((__x) + 0.5))
 #define sqr(__x) ((__x) * (__x))
 #define ease_quad_inout(__p) \
     ((__p) < 0.5 ? 2 * sqr(__p) : 1 - 2 * sqr(1 - (__p)))

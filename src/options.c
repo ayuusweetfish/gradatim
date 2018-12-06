@@ -45,10 +45,10 @@ static void options_draw(options_scene *this)
     }
     double phase = fabs(BLINK_DUR - fmod(this->time, BLINK_DUR * 2)) / BLINK_DUR;
     phase = ease_quad_inout(phase);
-    int opacity = 128 + round(phase * 24);
+    int opacity = 128 + iround(phase * 24);
     SDL_SetRenderDrawColor(g_renderer, 255, 255, 128, opacity);
     SDL_RenderFillRect(g_renderer, &(SDL_Rect){
-        0, round((cur_y - ITEM_H / 2) * WIN_H), WIN_W, WIN_H * ITEM_H
+        0, iround((cur_y - ITEM_H / 2) * WIN_H), WIN_W, WIN_H * ITEM_H
     });
 
     scene_draw_children((scene *)this);

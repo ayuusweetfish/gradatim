@@ -151,7 +151,7 @@ void render_texture_scaled(texture t, double x, double y, double scale)
 {
     if (t.sdl_tex == NULL) return;
     SDL_RenderCopy(g_renderer, t.sdl_tex, &t.range, &(SDL_Rect){
-        x, y, round(t.range.w * scale), round(t.range.h * scale)
+        x, y, iround(t.range.w * scale), iround(t.range.h * scale)
     });
 }
 
