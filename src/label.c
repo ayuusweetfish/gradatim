@@ -42,7 +42,8 @@ static void label_render_text(label *this)
 
 static inline int get_arrow_dir(const char ch)
 {
-    return ch == '^' ? 0 : ch == 'v' ? 1 : ch == '<' ? 2 : ch == '>' ? 3 : -1;
+    return ch == '^' ? 0 : ch == 'v' ? 1 :
+        ch == '<' ? 2 : ch == '>' ? 3 : ch == '\\' ? 4 : -1;
 }
 
 static inline double clamp(double x, double l, double u)
@@ -61,7 +62,7 @@ static inline double aa_rect(double x, double y,
 }
 
 static inline double blend_line(double ret, double x, double y,
-    double w, double x0, double y0, double rot, double y1, double y2)
+    double w, double x0, double y0, double rot, double len)
 {
     /* Calculate point to segment distance */
     /* Note: some modifications are introduced
@@ -69,7 +70,7 @@ static inline double blend_line(double ret, double x, double y,
     /* Rotate the point around (x0, y0) by `rot` radians */
     double _x = (x - x0) * cos(rot) - (y - y0) * sin(rot) + x0;
     double _y = (x - x0) * sin(rot) + (y - y0) * cos(rot) + y0;
-    return 1 - (1 - ret) * (1 - aa_rect(_x, _y, x0 - w / 2, x0 + w / 2, y1, y2));
+    return 1 - (1 - ret) * (1 - aa_rect(_x, _y, x0 - w / 2, x0 + w / 2, y0, y0 + len));
 }
 
 /* Generates an upwards arrow */
@@ -77,9 +78,21 @@ static inline int uparrow_pixel(int sz, double w, int _x, int _y)
 {
     double x = _x + 0.5, y = _y + 0.5;
     double ret = 0;
-    ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, 0, sz * 0.191, sz * 0.809);
-    ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, -M_PI * 0.22, sz * 0.191, sz * 0.44);
-    ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, +M_PI * 0.22, sz * 0.191, sz * 0.44);
+    ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, 0, sz * 0.618);
+    ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, -M_PI * 0.22, sz * 0.25);
+    ret = blend_line(ret, x, y, w, sz * 0.5, sz * 0.191, +M_PI * 0.22, sz * 0.25);
+    return round(ret * 255);
+}
+
+/* Generates an icon for the enter key */
+static inline int return_pixel(int sz, double w, int _x, int _y)
+{
+    double x = _x + 0.5, y = _y + 0.5;
+    double ret = 0;
+    ret = blend_line(ret, x, y, w, sz * 0.72, sz * 0.25, 0, sz * 0.382);
+    ret = blend_line(ret, x, y, w, sz * 0.72, sz * 0.632, -M_PI / 2, sz * 0.5);
+    ret = blend_line(ret, x, y, w, sz * 0.22, sz * 0.632, M_PI * 0.69, sz * 0.1545);
+    ret = blend_line(ret, x, y, w, sz * 0.22, sz * 0.632, M_PI * 0.31, sz * 0.1545);
     return round(ret * 255);
 }
 
@@ -90,6 +103,7 @@ static inline int arrow_pixel_opacity(int dir, int sz, double w, int x, int y)
         case 1: return uparrow_pixel(sz, w, x, sz - 1 - y);
         case 2: return uparrow_pixel(sz, w, y, x);
         case 3: return uparrow_pixel(sz, w, y, sz - 1 - x);
+        case 4: return return_pixel(sz, w, x, y);
         default: return 0;
     }
 }

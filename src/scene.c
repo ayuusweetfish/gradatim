@@ -147,7 +147,7 @@ colour_scene *colour_scene_create(int r, int g, int b)
     label *l = label_create(FONT_UPRIGHT, 48, (SDL_Color){0, 0, 0}, WIN_W, "");
     if (r == 255)
         label_set_keyed_text(l, "   `   +   `   +   `   = Dash", "CXZ");
-    else label_set_keyed_text(l, "   `  he spectacle   `  efore us was   `  ndeed sublime.", "TBI");
+    else label_set_keyed_text(l, "   `  he spectacle   `  efore us was   `  ndeed sublime.", "TB\\");
     element_place_anchored((element *)l, WIN_W / 2, WIN_H * 3 / 4, 0.5, 0.5);
     bekter_pushback(ret->_base.children, l);
     return ret;
