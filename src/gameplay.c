@@ -80,7 +80,7 @@ static const SDL_Rect MT_UPBEAT[2] = {
 static inline double get_audio_position(gameplay_scene *this)
 {
     double sec = (double)orion_tell(&g_orion, TRACKID_STAGE_BGM) / 44100;
-    return (sec + AUD_OFFSET) / BEAT;
+    return (sec + AUD_OFFSET + profile.av_offset * 0.001) / BEAT;
 }
 
 static inline bool can_hop(gameplay_scene *this)
