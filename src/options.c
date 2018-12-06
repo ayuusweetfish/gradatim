@@ -74,6 +74,15 @@ static inline void update_label(options_scene *this, int idx)
         WIN_W * 5 / 6, (ITEM_OFFSET_Y + idx * ITEM_SKIP) * WIN_H, 1, 0.5);
 }
 
+static inline void update_profile(options_scene *this)
+{
+    profile.bgm_vol = this->menu_val[0];
+    profile.sfx_vol = this->menu_val[1];
+    profile.show_clock = this->menu_val[2];
+    profile.fullscreen = this->menu_val[3];
+    profile.av_offset = this->menu_val[4];
+}
+
 static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
 {
     if (ev->state != SDL_PRESSED) return;
@@ -101,6 +110,7 @@ static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
             }
             this->menu_val[this->menu_idx] += MENU_OFFS[this->menu_idx];
             update_label(this, this->menu_idx);
+            update_profile(this);
             break;
         case SDLK_RIGHT:
             this->menu_val[this->menu_idx] -= MENU_OFFS[this->menu_idx];
@@ -112,6 +122,7 @@ static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
             }
             this->menu_val[this->menu_idx] += MENU_OFFS[this->menu_idx];
             update_label(this, this->menu_idx);
+            update_profile(this);
             break;
     }
 }

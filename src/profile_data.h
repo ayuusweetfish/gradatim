@@ -16,6 +16,9 @@ typedef struct _profile_stage {
 typedef struct _profile_data {
     int bgm_vol;
     int sfx_vol;
+    bool show_clock;
+    bool fullscreen;
+    int av_offset;
     bekter(bekter(profile_stage)) stages;
 } profile_data;
 

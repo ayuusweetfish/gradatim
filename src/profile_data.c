@@ -23,7 +23,9 @@ void profile_load()
     FILE *f = fopen("player.dat", "r");
     if (!f) return;
 
-    fscanf(f, "%d,%d\n", &profile.bgm_vol, &profile.sfx_vol);
+    int show_clock, fullscreen;
+    fscanf(f, "%d,%d,%d,%d,%d\n", &profile.bgm_vol, &profile.sfx_vol,
+        &show_clock, &fullscreen, &profile.av_offset);
 
     profile.stages = bekter_create();
     bekter(profile_stage) chap = NULL;
