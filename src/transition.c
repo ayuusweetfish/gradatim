@@ -2,6 +2,7 @@
 #include "global.h"
 
 #include <math.h>
+#include <stdlib.h>
 
 void transition_set_preservative(transition_scene *this)
 {

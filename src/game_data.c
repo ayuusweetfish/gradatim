@@ -1,7 +1,10 @@
 #include "game_data.h"
 #include "dialogue.h"
+
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 struct stage_rec *stage_read(const char *path)
 {

@@ -5,6 +5,9 @@
 #include "loading.h"
 #include "gameplay.h"
 
+#include <math.h>
+#include <stdlib.h>
+
 static const int N_MENU = 3;
 static const double ITEM_OFFSET_Y = 0.425;
 static const double ITEM_SKIP = 0.125;

@@ -4,8 +4,10 @@
 #include "transition.h"
 #include "label.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 /* Repeat yourself */
 static const int N_MENU = OPTIONS_N_MENU;

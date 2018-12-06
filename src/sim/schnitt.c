@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <math.h>
+
 #ifdef SCHNITT_TEST
     #include <assert.h>
-    #include <math.h>
     #include <stdio.h>
 #else
     #define assert(__x)

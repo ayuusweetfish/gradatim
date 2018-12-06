@@ -10,6 +10,7 @@
 #include "chapfin.h"
 
 #include <math.h>
+#include <stdlib.h>
 
 static const double UNIT_PX = 48;
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;

@@ -1,6 +1,8 @@
 #include "button.h"
 #include "global.h"
 
+#include <stdlib.h>
+
 static const int ANIM_DUR = 0.2 * 1000;
 
 static void button_tick(button *this, double dt)

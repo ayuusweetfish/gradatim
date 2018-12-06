@@ -3,6 +3,8 @@
 #include "resources.h"
 
 #include <assert.h>
+#include <math.h>
+#include <string.h>
 
 static const int PADDING = 2;
 #define STROKE_W(_h) ((_h) / 20)

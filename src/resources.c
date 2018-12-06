@@ -4,6 +4,8 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include <string.h>
+
 bekter(SDL_Texture *) sdl_tex_list;
 bekter(_texture_kvpair) res_map[RES_HASH_SZ];
 

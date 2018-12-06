@@ -6,6 +6,9 @@
 #include "gameplay.h"
 #include "profile_data.h"
 
+#include <math.h>
+#include <string.h>
+
 static const double MOV_X = 30;
 static const double SCALE = 1.3;
 

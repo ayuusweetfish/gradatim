@@ -8,6 +8,8 @@
 #include "button.h"
 #include "label.h"
 
+#include <stdlib.h>
+
 void scene_draw_children(scene *this)
 {
     int i;

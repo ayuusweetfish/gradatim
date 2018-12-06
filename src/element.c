@@ -3,6 +3,8 @@
 
 #include <SDL_image.h>
 
+#include <stdlib.h>
+
 void element_place(element *e, int x, int y)
 {
     e->dim.x = x;

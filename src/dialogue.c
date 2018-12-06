@@ -1,6 +1,8 @@
 #include "dialogue.h"
 #include "global.h"
 
+#include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 
 static const double CTNR_FADE_DUR = 0.2;
