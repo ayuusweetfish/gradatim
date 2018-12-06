@@ -77,11 +77,6 @@ static const SDL_Rect MT_UPBEAT[2] = {
     }
 };
 
-static inline double clamp(double x, double l, double u)
-{
-    return (x < l ? l : (x > u ? u : x));
-}
-
 static inline double get_audio_position(gameplay_scene *this)
 {
     double sec = (double)orion_tell(&g_orion, TRACKID_STAGE_BGM) / 44100;

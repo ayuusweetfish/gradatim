@@ -49,11 +49,6 @@ static inline int get_arrow_dir(const char ch)
         ch == '<' ? 2 : ch == '>' ? 3 : ch == '\\' ? 4 : -1;
 }
 
-static inline double clamp(double x, double l, double u)
-{
-    return (x < l ? l : (x > u ? u : x));
-}
-
 static inline double aa_pill(double x, double y,
     double x1, double x2, double y1, double y2)
 {

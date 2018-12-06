@@ -12,14 +12,6 @@ void bekter_drop(bekter b);
 
 void bekter_ensure_space(bekter *b, size_t bytes);
 
-#if defined(_MSC_VER)
-    #define TYPEOF(x) decltype(x)
-#elif defined(__GNUC__)
-    #define TYPEOF(x) typeof(x)
-#else
-    #define TYPEOF(x) void
-#endif
-
 #define bekter(...) bekter
 
 #define bekter_size(__b)        (((size_t *)(__b))[-1])
@@ -30,14 +22,14 @@ void bekter_ensure_space(bekter *b, size_t bytes);
 
 #define bekter_pushback(__b, __v) do { \
     bekter_ensure_space(&(__b), sizeof(__v)); \
-    *(TYPEOF(__v) *)((__b) + bekter_size(__b)) = (__v); \
+    *(typeof(__v) *)((__b) + bekter_size(__b)) = (__v); \
     bekter_size(__b) += sizeof(__v); \
 } while (0)
 
 #define bekter_popback(__b, __v) do { \
     if (bekter_size(__b) < sizeof(__v)) break; \
     bekter_size(__b) -= sizeof(__v); \
-    (__v) = *(TYPEOF(__v) *)((__b) + bekter_size(__b)); \
+    (__v) = *(typeof(__v) *)((__b) + bekter_size(__b)); \
 } while (0)
 
 #define bekter_remove_at(__b, __i, __type) do { \
@@ -49,11 +41,11 @@ void bekter_ensure_space(bekter *b, size_t bytes);
 #define bekter_clear(__b) (bekter_size(__b) = 0)
 
 #define bekter_each(__b, __i, __v) \
-    ((__i) = 0; (__v) = *(TYPEOF(__v) *)((__b) + (__i)), \
+    ((__i) = 0; (__v) = *(typeof(__v) *)((__b) + (__i)), \
         (__i) < bekter_size(__b); (__i) += sizeof(__v))
 
 #define bekter_each_ptr(__b, __i, __v) \
-    ((__i) = 0; (__v) = (TYPEOF(__v))((__b) + (__i)), \
+    ((__i) = 0; (__v) = (typeof(__v))((__b) + (__i)), \
         (__i) < bekter_size(__b); (__i) += sizeof(*(__v)))
 
 #endif

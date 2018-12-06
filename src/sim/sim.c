@@ -1,5 +1,6 @@
 #include "sim.h"
 #include "schnitt.h"
+#include "../global.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -7,11 +8,6 @@
 const double SIM_GRAVITY = 4 * 1.414213562;
 const double SIM_STEPLEN = 0.00025;
 static const double MAX_VY = 8 * SIM_GRAVITY;
-
-static inline double clamp(double x, double l, double u)
-{
-    return (x < l ? l : (x > u ? u : x));
-}
 
 sim *sim_create(int grows, int gcols)
 {

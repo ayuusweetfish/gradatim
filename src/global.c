@@ -4,6 +4,11 @@
 
 #include <math.h>
 
+double clamp(double x, double l, double u)
+{
+    return (x < l ? l : (x > u ? u : x));
+}
+
 double ease_elastic_out(double x, double p)
 {
     return exp(-10 * x) * sin((x * 2 - p / 2) * M_PI / p) + 1;
