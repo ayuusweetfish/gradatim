@@ -110,7 +110,7 @@ static inline void owm_draw(overworld_menu *this)
     opacity = this->is_in ?
         ((r -= 1) < 0 ? 0 : (r < 1) ? iround(216 * r) : 216) :
         (r < 1 ? iround(216 * (1 - r)) : 0);
-    for (i = 0; i < 3; ++i) {
+    for (i = 0; i < 4; ++i) {
         this->key_hints[i]->_base.alpha = opacity;
         element_draw((element *)this->key_hints[i]);
     }
@@ -119,7 +119,7 @@ static inline void owm_draw(overworld_menu *this)
 static inline void owm_drop(overworld_menu *this)
 {
     int i;
-    for (i = 0; i < 3; ++i) element_drop(this->key_hints[i]);
+    for (i = 0; i < 4; ++i) element_drop(this->key_hints[i]);
 }
 
 static inline int get_mask(overworld_menu *this)
@@ -333,22 +333,29 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
         (SDL_Color){0, 0, 0}, WIN_W, "");
     label_set_keyed_text(l, " ..`.  ..`.  Select modifier", "^v");
     element_place_anchored((element *)l,
-        WIN_W * 0.05, WIN_H * 0.8, 0, 0.5);
+        WIN_W * 0.05, WIN_H * 0.775, 0, 0.5);
     ret->key_hints[0] = l;
 
     l = label_create(FONT_UPRIGHT, 24,
         (SDL_Color){0, 0, 0}, WIN_W, "");
     label_set_keyed_text(l, " ..`.  ..`.  Change", "<>");
     element_place_anchored((element *)l,
-        WIN_W * 0.05, WIN_H * 0.85, 0, 0.5);
+        WIN_W * 0.05, WIN_H * 0.825, 0, 0.5);
     ret->key_hints[1] = l;
 
     l = label_create(FONT_UPRIGHT, 24,
         (SDL_Color){0, 0, 0}, WIN_W, "");
     label_set_keyed_text(l, " ..`.  Change/Start", "\\");
     element_place_anchored((element *)l,
-        WIN_W * 0.05, WIN_H * 0.9, 0, 0.5);
+        WIN_W * 0.05, WIN_H * 0.875, 0, 0.5);
     ret->key_hints[2] = l;
+
+    l = label_create(FONT_UPRIGHT, 24,
+        (SDL_Color){0, 0, 0}, WIN_W, "");
+    label_set_keyed_text(l, " ..`.  Back", "~");
+    element_place_anchored((element *)l,
+        WIN_W * 0.05, WIN_H * 0.925, 0, 0.5);
+    ret->key_hints[3] = l;
 
     return ret;
 }

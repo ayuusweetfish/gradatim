@@ -28,7 +28,7 @@ typedef struct _overworld_menu {
 
     int menu_val[N_MODS];
 
-    label *key_hints[3];
+    label *key_hints[4];
     bool is_in;
     double since_enter;
 } overworld_menu;

@@ -32,7 +32,7 @@ typedef struct _overworld_scene {
     int last_chap_idx;
     double since_chap_switch;
 
-    label *key_hints[3];
+    label *key_hints[4];
     bool is_in;
     double since_enter;
 } overworld_scene;
