@@ -3,6 +3,9 @@ project(Gradatim)
 
 add_subdirectory(orion)
 
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -fsanitize=address")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -fsanitize=address")
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})

@@ -41,7 +41,8 @@ void bekter_ensure_space(bekter *b, size_t bytes);
 #define bekter_clear(__b) (bekter_size(__b) = 0)
 
 #define bekter_each(__b, __i, __v) \
-    ((__i) = 0; (__v) = *(typeof(__v) *)((__b) + (__i)), \
+    ((__i) = 0; \
+        (((__i) < bekter_size(__b)) ? ((__v) = *(typeof(__v) *)((__b) + (__i))) : (__v)), \
         (__i) < bekter_size(__b); (__i) += sizeof(__v))
 
 #define bekter_each_ptr(__b, __i, __v) \

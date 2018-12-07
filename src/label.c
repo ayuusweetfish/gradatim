@@ -172,6 +172,7 @@ static void label_render_keyed_text(label *this, const char *keys)
         int i, j;
         for (i = -PADDING; i < h + PADDING; ++i)
             for (j = -PADDING; j < h; ++j) {
+                if (j + x + PADDING - h / 2 < 0) continue;
                 /* `j` does not exceed `h`, so that
                  * the succeeding characters won't be erased */
                 Uint32 pix = 0x0;   /* Transparent */
