@@ -38,6 +38,7 @@ static const double HOP_TOLERANCE = 1./6;
 static const double DASH_TOLERANCE = 1./5;
 static const double DASH_MIN_DUR = 1 - DASH_DUR * DASH_TOLERANCE;
 static const double DASH_DIAG_SCALE = 0.8;
+static const double REFILL_PERSISTENCE = 2; /* In beats */
 static const int AV_OFFSET_INTV = 60;
 
 static const double CAM_MOV_FAC = 8;
@@ -97,9 +98,13 @@ static inline bool can_hop(gameplay_scene *this)
         (this->chap->hop_mask & (1 << (i % this->chap->sig)));
 }
 
-static inline bool can_dash(gameplay_scene *this)
+static inline bool can_dash(gameplay_scene *this, bool is_dirchg)
 {
     if (this->mods & MOD_A_PIACERE) return true;
+    if (!is_dirchg && this->refill_time >= 0 && can_hop(this)) {
+        this->refill_time = -1;
+        return true;
+    }
     double b = get_audio_position(this);
     int i = iround(b);
     int mask = (this->mods & MOD_RUBATO) ?
@@ -238,7 +243,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             }
             break;
         case PROT_TAG_REFILL:
-            puts("Refill");
+            this->refill_time = REFILL_PERSISTENCE;
             this->simulator->prot.tag = 0;
             break;
     }
@@ -306,6 +311,9 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         rt -= SIM_STEPLEN;
     }
     this->rem_time = rt;
+
+    if (this->refill_time >= 0)
+        this->refill_time -= dt / (BEAT * this->chap->beat_mul);
 
     /* Horizontal speed should be cancelled out immediately
      * However, not if such will result in a 'bounce' */
@@ -725,12 +733,12 @@ static void try_hop(gameplay_scene *this)
     }
 }
 
-static void try_dash(gameplay_scene *this)
+static void try_dash(gameplay_scene *this, bool is_dirchg)
 {
-    if (!can_dash(this)) return;
+    if (!can_dash(this, is_dirchg)) return;
     /* In case of direction updates, the time should not be reset */
     double dur = (this->mov_state & MOV_DASH_BASE) ? this->mov_time : DASH_DUR;
-    if (dur < DASH_MIN_DUR) return;
+    if (is_dirchg && dur < DASH_MIN_DUR) return;
     int dir_has = 0, dir_denotes = 0;
     if (this->ver_state == VER_STATE_UP) {
         dir_has |= 2;
@@ -768,29 +776,29 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
             if (ev->state == SDL_PRESSED) try_hop(this);
             break;
         case SDLK_x:
-            if (ev->state == SDL_PRESSED) try_dash(this);
+            if (ev->state == SDL_PRESSED) try_dash(this, false);
             break;
         case SDLK_UP:
             toggle(this->ver_state, ev->state, VER_STATE_UP, VER_STATE_NONE);
             if (ev->state == SDL_PRESSED && (this->mov_state & MOV_DASH_BASE))
-                try_dash(this);
+                try_dash(this, true);
             break;
         case SDLK_DOWN:
             toggle(this->ver_state, ev->state, VER_STATE_DOWN, VER_STATE_NONE);
             if (ev->state == SDL_PRESSED && (this->mov_state & MOV_DASH_BASE))
-                try_dash(this);
+                try_dash(this, true);
             break;
         case SDLK_LEFT:
             if (ev->state == SDL_PRESSED) this->facing = HOR_STATE_LEFT;
             toggle(this->hor_state, ev->state, HOR_STATE_LEFT, HOR_STATE_NONE);
             if (ev->state == SDL_PRESSED && (this->mov_state & MOV_DASH_BASE))
-                try_dash(this);
+                try_dash(this, true);
             break;
         case SDLK_RIGHT:
             if (ev->state == SDL_PRESSED) this->facing = HOR_STATE_RIGHT;
             toggle(this->hor_state, ev->state, HOR_STATE_RIGHT, HOR_STATE_NONE);
             if (ev->state == SDL_PRESSED && (this->mov_state & MOV_DASH_BASE))
-                try_dash(this);
+                try_dash(this, true);
             break;
         case SDLK_ESCAPE:
             if (ev->state == SDL_PRESSED) {
@@ -878,6 +886,7 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     switch_stage_ctx(ret);
     ret->start_stage_idx = idx;
     ret->stage_start_time = 0;
+    ret->refill_time = -1;
 
     ret->cam_x = clamp(ret->simulator->prot.x,
         WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;

@@ -65,6 +65,7 @@ typedef struct _gameplay_scene {
         MOV_DASH_UP = 16
     } mov_state;
     double mov_time;    /* Time remaining until movement state resets */
+    double refill_time; /* Time until refill disappears; -1 if none persists */
 
     /* Hints */
     label *l_hints[MAX_HINTS];
