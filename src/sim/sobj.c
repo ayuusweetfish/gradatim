@@ -148,7 +148,7 @@ static inline void spring_init(sobj *o)
 
 static inline void spring_update_post(sobj *o, double T, sobj *prot)
 {
-    if (is_landing(o, prot)) {
+    if (o->is_on) {
         o->tag = OBJID_SPRING_PRESS;
         o->t = T;
         o->y = (int)o->y + 13./16;
