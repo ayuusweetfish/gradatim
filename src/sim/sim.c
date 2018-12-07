@@ -2,12 +2,14 @@
 #include "schnitt.h"
 #include "../global.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 const double SIM_GRAVITY = 4 * 1.414213562;
 const double SIM_STEPLEN = 0.00025;
 static const double MAX_VY = 8 * SIM_GRAVITY;
+static const double MOV_DIST_MAX = 0.2;
 
 sim *sim_create(int grows, int gcols)
 {
@@ -161,7 +163,7 @@ void sim_tick(sim *this)
     /* Respond by movement */
     double x0 = this->prot.x, y0 = this->prot.y;
     bool in = check_intsc(this, false, true);
-    double dx[16], dy[16];
+    double dx[8], dy[8];
     sobj *land_on = NULL;
     schnitt_flush(dx, dy);
     if (in) {
@@ -169,6 +171,8 @@ void sim_tick(sim *this)
         double min = 10;
         for (i = 0; i < 8; ++i) {
             if (i == 4 && dir != -1) break;
+            if (fabs(dx[i]) > MOV_DIST_MAX || fabs(dy[i]) > MOV_DIST_MAX)
+                continue;
             in = check_intsc_mov(this, x0 + dx[i], y0 + dy[i]);
             if (!in && dx[i] * dx[i] + dy[i] * dy[i] < min) {
                 min = dx[i] * dx[i] + dy[i] * dy[i];
@@ -176,10 +180,33 @@ void sim_tick(sim *this)
             }
         }
         if (dir == -1) {
-            /* Most probably, the protagonist is stuck somewhere */
-            this->prot.is_on = true;
-            this->prot.tag = PROT_TAG_FAILURE;
-            this->prot.t = this->cur_time;
+            /* Last struggles */
+            for (i = 0; i < 4; ++i) {
+                int xsgn = (i % 2 == 0 ? +1 : -1),
+                    ysgn = (i / 2 == 0 ? +1 : -1);
+                double lo = 0, hi = MOV_DIST_MAX, mid;
+                if (!check_intsc_mov(this, x0 + hi * xsgn, y0 + hi * ysgn)) {
+                    for (i = 0; i < 20; ++i) {
+                        mid = (lo + hi) / 2;
+                        if (!check_intsc_mov(this, x0 + mid * xsgn, y0 + mid * ysgn))
+                            hi = mid;
+                        else lo = mid;
+                    }
+                    this->prot.x = x0 + mid * xsgn;
+                    this->prot.y = y0 + mid * ysgn;
+                    this->prot.vx = this->prot.ax = 0;
+                    this->prot.vy = this->prot.ay = 0;
+                    dir = 8;
+                }
+            }
+            if (dir == -1) {
+                /* Most probably, the protagonist is stuck somewhere */
+                this->prot.x = x0;
+                this->prot.y = y0;
+                this->prot.is_on = true;
+                this->prot.tag = PROT_TAG_FAILURE;
+                this->prot.t = this->cur_time;
+            }
         } else {
             this->prot.x = x0 + dx[dir];
             this->prot.y = y0 + dy[dir];
