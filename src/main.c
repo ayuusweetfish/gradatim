@@ -51,6 +51,7 @@ int main()
     g_orion = orion_create(44100, 2);
     orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "nyan.ogg");
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, 0, -1);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0, profile.bgm_vol * VOL_VALUE);
     orion_apply_lowpass(&g_orion, TRACKID_MAIN_BGM, TRACKID_MAIN_BGM_LP, 3520);
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM_LP, 0, 0, -1);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0, 0);

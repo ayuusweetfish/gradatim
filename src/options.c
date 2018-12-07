@@ -18,11 +18,14 @@ static const double ITEM_H = 0.1;
 static const double MENU_TR_DUR = 0.15;
 static const double BLINK_DUR = 0.75;
 
+static const double BGM_VOL = 0.5;
+static const double BGM_LP_VOL = 0.2;
+
 static const char *MENU_TEXT[N_MENU] = {
     "Music volume", "Sound effects",
     "Speedrun clock", "Fullscreen", "Audio-video offset"
 };
-static const int MENU_MAX[N_MENU] = {20, 20, 1, 1, 200};
+static const int MENU_MAX[N_MENU] = {VOL_RESOLUTION, VOL_RESOLUTION, 1, 1, 200};
 static const int MENU_OFFS[N_MENU] = {0, 0, 0, 0, -100};
 static const bool MENU_LOOPS[N_MENU] = {false, false, true, true, false};
 
@@ -59,7 +62,7 @@ static void options_draw(options_scene *this)
 static void options_drop(options_scene *this)
 {
     floue_drop(this->f);
-    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, 1);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, profile.bgm_vol * VOL_VALUE);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, 0);
 }
 
@@ -95,6 +98,8 @@ static inline void update_profile(options_scene *this)
     profile.fullscreen = this->menu_val[3];
     profile.av_offset = this->menu_val[4];
     profile_save();
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, BGM_LP_VOL * profile.bgm_vol * VOL_VALUE);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, BGM_VOL * profile.bgm_vol * VOL_VALUE);
     SDL_SetWindowFullscreen(g_window,
         profile.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
@@ -190,8 +195,8 @@ options_scene *options_create(scene *bg)
         " ..`.  ..`.  Select      ..`.  ..`.  Adjust      ..`.  Back", "^v<>~");
     element_place_anchored((element *)footer, WIN_W / 2, WIN_H * 6 / 7, 0.5, 0.5);
 
-    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, 0.2);
-    orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, 0.5);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, BGM_LP_VOL * profile.bgm_vol * VOL_VALUE);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, BGM_VOL * profile.bgm_vol * VOL_VALUE);
 
     return this;
 }

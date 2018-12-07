@@ -13,6 +13,8 @@ typedef struct _profile_stage {
     bool cleared;
 } profile_stage;
 
+#define VOL_RESOLUTION 20
+#define VOL_VALUE (1.0 / VOL_RESOLUTION)
 typedef struct _profile_data {
     int bgm_vol;
     int sfx_vol;

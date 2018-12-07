@@ -470,7 +470,8 @@ static inline void update_sound(gameplay_scene *this)
             sum += d;
         }
         for (i = 0; i < this->chap->n_tracks; ++i)
-            orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0.03, val[i] / sum);
+            orion_ramp(&g_orion, TRACKID_STAGE_BGM + i,
+                0.03, val[i] / sum * profile.bgm_vol * VOL_VALUE);
     }
 }
 
