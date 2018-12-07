@@ -12,6 +12,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define lerp(__x, __a, __b) ((__a) + (__x) * ((__b) - (__a)))
+
 static const double UNIT_PX = 48;
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
@@ -47,6 +49,9 @@ static const double FAILURE_SPF = 0.1;
 static const double STRETTO_RANGE = 2.5;
 static const int HINT_FONTSZ = 30;
 static const int HINT_PADDING = 8;
+static const int CLOCK_CHAP_FONTSZ = 36;
+static const int CLOCK_STG_FONTSZ = 28;
+static const double CLOCK_BLINK_DUR = 2;
 
 /* Short for metronome - too long! */
 static const int MT_PADDING = 12;
@@ -475,6 +480,7 @@ static inline void update_sound(gameplay_scene *this)
     }
 }
 
+/* XXX: This is too long, hopefully it can be split into smaller methods */
 static void gameplay_scene_draw(gameplay_scene *this)
 {
     update_sound(this);
@@ -609,6 +615,67 @@ static void gameplay_scene_draw(gameplay_scene *this)
     }
 
     draw_overlay(this);
+
+    /* The clock should not be disturbed by the metronome */
+    if (profile.show_clock) {
+        int sig = this->chap->sig;
+        double r = this->simulator->cur_time - this->stage_start_time;
+        int chap_time = (int)(this->simulator->cur_time * 48);
+        int stage_time = (int)(r * 48);
+        if (stage_time < -0.1) return;
+        char s[16], d[8];
+
+        chap_time *= this->chap->beat_mul;
+        stage_time *= this->chap->beat_mul;
+        r = (r < CLOCK_BLINK_DUR) ? r / CLOCK_BLINK_DUR : 1;
+
+        /* Overall clock */
+        sprintf(s, "%03d. %02d. ", chap_time / (sig * 48), chap_time % (sig * 48) / 48);
+        sprintf(d, "%02d", chap_time % 48);
+        label_set_text(this->clock_chap, s);
+        label_set_text(this->clock_chap_dec, d);
+        element_place_anchored((element *)this->clock_chap, 16, 64, 0, 0.5);
+        element_place((element *)this->clock_chap_dec,
+            this->clock_chap->_base._base.dim.x + this->clock_chap->_base._base.dim.w,
+            this->clock_chap->_base._base.dim.y);
+        if (r < 1 && this->cur_stage_idx == this->start_stage_idx) {
+            int dx = (1 - ease_elastic_out(r + 0.1, 3)) * (WIN_W / 4);
+            this->clock_chap->_base._base.dim.x -= dx;
+            this->clock_chap_dec->_base._base.dim.x -= dx;
+        }
+        element_draw((element *)this->clock_chap);
+        element_draw((element *)this->clock_chap_dec);
+
+        /* Stage clock */
+        sprintf(s, "%03d. %02d. ", stage_time / (sig * 48), stage_time % (sig * 48) / 48);
+        sprintf(d, "%02d", stage_time % 48);
+        label_set_text(this->clock_stg, s);
+        label_set_text(this->clock_stg_dec, d);
+        element_place_anchored((element *)this->clock_stg, 16, 108, 0, 0.5);
+        element_place((element *)this->clock_stg_dec,
+            this->clock_stg->_base._base.dim.x + this->clock_stg->_base._base.dim.w,
+            this->clock_stg->_base._base.dim.y);
+        if (r < 1) {
+            if (this->cur_stage_idx == this->start_stage_idx) {
+                int dx = (1 - ease_elastic_out(r, 3)) * (WIN_W / 4);
+                this->clock_stg->_base._base.dim.x -= dx;
+                this->clock_stg_dec->_base._base.dim.x -= dx;
+                SDL_SetTextureColorMod(this->clock_stg->_base.tex.sdl_tex, 160, 160, 160);
+                SDL_SetTextureColorMod(this->clock_stg_dec->_base.tex.sdl_tex, 160, 160, 160);
+            } else {
+                int lr = lerp(r, 255, 160),
+                    lg = lerp(r, 192, 160),
+                    lb = lerp(r, 64, 160);
+                SDL_SetTextureColorMod(this->clock_stg->_base.tex.sdl_tex, lr, lg, lb);
+                SDL_SetTextureColorMod(this->clock_stg_dec->_base.tex.sdl_tex, lr, lg, lb);
+            }
+        } else {
+            SDL_SetTextureColorMod(this->clock_stg->_base.tex.sdl_tex, 160, 160, 160);
+            SDL_SetTextureColorMod(this->clock_stg_dec->_base.tex.sdl_tex, 160, 160, 160);
+        }
+        element_draw((element *)this->clock_stg);
+        element_draw((element *)this->clock_stg_dec);
+    }
 }
 
 static void gameplay_scene_drop(gameplay_scene *this)
@@ -623,6 +690,12 @@ static void gameplay_scene_drop(gameplay_scene *this)
         element_drop(this->l_hints[i]);
         for (j = 0; j < MAX_SIG; ++j)
             element_drop(this->s_hints[i][j]);
+    }
+    if (profile.show_clock) {
+        element_drop(this->clock_chap);
+        element_drop(this->clock_chap_dec);
+        element_drop(this->clock_stg);
+        element_drop(this->clock_stg_dec);
     }
 }
 
@@ -779,9 +852,24 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     int j;
     for (i = 0; i < MAX_HINTS; ++i) {
         ret->l_hints[i] = label_create(FONT_UPRIGHT, HINT_FONTSZ,
-            (SDL_Color){255, 255, 255}, WIN_H, "");
+            (SDL_Color){255, 255, 255}, WIN_W, "");
         for (j = 0; j < MAX_SIG; ++j)
             ret->s_hints[i][j] = sprite_create_empty();
+    }
+
+    if (profile.show_clock) {
+        label *l = label_create(FONT_UPRIGHT, CLOCK_CHAP_FONTSZ,
+            (SDL_Color){255, 255, 255}, WIN_W, "");
+        ret->clock_chap = l;
+        l = label_create(FONT_UPRIGHT, CLOCK_CHAP_FONTSZ * 3 / 4,
+            (SDL_Color){255, 255, 255}, WIN_W, "");
+        ret->clock_chap_dec = l;
+        l = label_create(FONT_UPRIGHT, CLOCK_STG_FONTSZ,
+            (SDL_Color){255, 255, 255}, WIN_W, "");
+        ret->clock_stg = l;
+        l = label_create(FONT_UPRIGHT, CLOCK_STG_FONTSZ * 3 / 4,
+            (SDL_Color){255, 255, 255}, WIN_W, "");
+        ret->clock_stg_dec = l;
     }
 
     ret->prev_sim = NULL;

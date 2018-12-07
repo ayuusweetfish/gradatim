@@ -71,6 +71,10 @@ typedef struct _gameplay_scene {
 #define MAX_SIG 16
     sprite *s_hints[MAX_HINTS][MAX_SIG];
     int w_hints[MAX_HINTS]; /* Width of a horizontal slice */
+
+    /* Speedrun clock */
+    label *clock_stg, *clock_stg_dec;
+    label *clock_chap, *clock_chap_dec;
 } gameplay_scene;
 
 gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx, int mods);
