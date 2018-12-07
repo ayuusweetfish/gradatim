@@ -49,8 +49,8 @@ static const double FAILURE_SPF = 0.1;
 static const double STRETTO_RANGE = 2.5;
 static const int HINT_FONTSZ = 30;
 static const int HINT_PADDING = 8;
-static const int CLOCK_CHAP_FONTSZ = 36;
-static const int CLOCK_STG_FONTSZ = 28;
+static const int CLOCK_CHAP_FONTSZ = 44;
+static const int CLOCK_STG_FONTSZ = 32;
 static const double CLOCK_BLINK_DUR = 2;
 
 /* Short for metronome - too long! */
@@ -634,7 +634,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
         sprintf(d, "%02d", chap_time % 48);
         label_set_text(this->clock_chap, s);
         label_set_text(this->clock_chap_dec, d);
-        element_place_anchored((element *)this->clock_chap, 16, 64, 0, 0.5);
+        element_place_anchored((element *)this->clock_chap, 24, 48, 0, 0.5);
         element_place((element *)this->clock_chap_dec,
             this->clock_chap->_base._base.dim.x + this->clock_chap->_base._base.dim.w,
             this->clock_chap->_base._base.dim.y);
@@ -651,7 +651,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
         sprintf(d, "%02d", stage_time % 48);
         label_set_text(this->clock_stg, s);
         label_set_text(this->clock_stg_dec, d);
-        element_place_anchored((element *)this->clock_stg, 16, 108, 0, 0.5);
+        element_place_anchored((element *)this->clock_stg, 24, 96, 0, 0.5);
         element_place((element *)this->clock_stg_dec,
             this->clock_stg->_base._base.dim.x + this->clock_stg->_base._base.dim.w,
             this->clock_stg->_base._base.dim.y);
@@ -664,8 +664,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
                 SDL_SetTextureColorMod(this->clock_stg_dec->_base.tex.sdl_tex, 160, 160, 160);
             } else {
                 int lr = lerp(r, 255, 160),
-                    lg = lerp(r, 192, 160),
-                    lb = lerp(r, 64, 160);
+                    lg = lerp(r, 216, 160),
+                    lb = lerp(r, 128, 160);
                 SDL_SetTextureColorMod(this->clock_stg->_base.tex.sdl_tex, lr, lg, lb);
                 SDL_SetTextureColorMod(this->clock_stg_dec->_base.tex.sdl_tex, lr, lg, lb);
             }
@@ -858,17 +858,17 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     }
 
     if (profile.show_clock) {
-        label *l = label_create(FONT_UPRIGHT, CLOCK_CHAP_FONTSZ,
-            (SDL_Color){255, 255, 255}, WIN_W, "");
+        label *l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_CHAP_FONTSZ,
+            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
         ret->clock_chap = l;
-        l = label_create(FONT_UPRIGHT, CLOCK_CHAP_FONTSZ * 3 / 4,
-            (SDL_Color){255, 255, 255}, WIN_W, "");
+        l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_CHAP_FONTSZ * 3 / 4,
+            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
         ret->clock_chap_dec = l;
-        l = label_create(FONT_UPRIGHT, CLOCK_STG_FONTSZ,
-            (SDL_Color){255, 255, 255}, WIN_W, "");
+        l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_STG_FONTSZ,
+            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
         ret->clock_stg = l;
-        l = label_create(FONT_UPRIGHT, CLOCK_STG_FONTSZ * 3 / 4,
-            (SDL_Color){255, 255, 255}, WIN_W, "");
+        l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_STG_FONTSZ * 3 / 4,
+            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
         ret->clock_stg_dec = l;
     }
 

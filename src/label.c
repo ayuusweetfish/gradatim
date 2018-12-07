@@ -40,8 +40,9 @@ static void label_render_text(label *this)
         SDL_Surface *osf = TTF_RenderText_Blended_Wrapped(
             this->font_outline, this->text, this->cl_outline, this->wid
         );
-        SDL_BlitSurface(osf, NULL, sf, NULL);
-        SDL_FreeSurface(osf);
+        SDL_BlitSurface(sf, NULL, osf, NULL);
+        SDL_FreeSurface(sf);
+        sf = osf;
     }
     this->_base.tex =
         temp_texture(SDL_CreateTextureFromSurface(g_renderer, sf));
