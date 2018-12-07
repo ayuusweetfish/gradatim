@@ -36,11 +36,18 @@ static void label_render_text(label *this)
         this->font, this->text, this->cl, this->wid
     );
 
+    if (this->font_outline != NULL) {
+        SDL_Surface *osf = TTF_RenderText_Blended_Wrapped(
+            this->font_outline, this->text, this->cl_outline, this->wid
+        );
+        SDL_BlitSurface(osf, NULL, sf, NULL);
+        SDL_FreeSurface(osf);
+    }
     this->_base.tex =
         temp_texture(SDL_CreateTextureFromSurface(g_renderer, sf));
-    SDL_FreeSurface(sf);
     this->_base._base.dim.w = this->_base.tex.range.w;
     this->_base._base.dim.h = this->_base.tex.range.h;
+    SDL_FreeSurface(sf);
 }
 
 static inline int get_arrow_dir(const char ch)
@@ -215,17 +222,36 @@ static void label_drop(label *this)
     SDL_DestroyTexture(this->_base.tex.sdl_tex);
 }
 
-label *label_create(int font_id, int pts,
-    SDL_Color cl, int wid, const char *text)
+static inline label *label_create_basic(int font_id, int pts,
+    SDL_Color cl, int wid)
 {
     label *ret = (label *)sprite_create_empty();
     ret = realloc(ret, sizeof(label));
     ret->_base._base.drop = (element_drop_func)label_drop;
     ret->font = load_font(font_id, pts);
     ret->cl = cl;
-    ret->text = text;
     ret->wid = wid;
     ret->last_hash = 0;
+    return ret;
+}
+
+label *label_create(int font_id, int pts,
+    SDL_Color cl, int wid, const char *text)
+{
+    label *ret = label_create_basic(font_id, pts, cl, wid);
+    ret->font_outline = NULL;
+    ret->text = text;
+    label_render_text(ret);
+    return ret;
+}
+
+label *label_create_outlined(int font_id, int font_outline_id, int pts,
+    SDL_Color cl, SDL_Color cl_outline, int wid, const char *text)
+{
+    label *ret = label_create_basic(font_id, pts, cl, wid);
+    ret->font_outline = load_font(font_outline_id, pts);
+    ret->cl_outline = cl_outline;
+    ret->text = text;
     label_render_text(ret);
     return ret;
 }

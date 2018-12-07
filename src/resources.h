@@ -32,6 +32,8 @@ void render_texture_alpha(texture t, SDL_Rect *dim, int alpha);
 
 #define FONT_ITALIC     0
 #define FONT_UPRIGHT    1
+#define FONT_OUTLINE_START      2
+#define FONT_UPRIGHT_OUTLINE    2
 
 TTF_Font *load_font(int id, int pts);
 

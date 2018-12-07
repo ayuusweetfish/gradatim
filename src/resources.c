@@ -164,11 +164,15 @@ void render_texture_alpha(texture t, SDL_Rect *dim, int alpha)
     SDL_SetTextureAlphaMod(t.sdl_tex, 255);
 }
 
-#define N_FONTS 2
+#define N_FONTS 3
 #define MAX_PTS 256
 
+/* Build a separate font cache for outlined typefaces,
+ * in order to minimize cache flushes done by SDL_ttf.
+ * See https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf.html#SEC24 */
 static const char *FONT_PATH[N_FONTS] = {
     "KiteOne-Regular.ttf",
+    "TakoZero-Irregular.ttf",
     "TakoZero-Irregular.ttf"
 };
 static TTF_Font *f[N_FONTS][MAX_PTS] = {{ NULL }};
@@ -178,7 +182,10 @@ TTF_Font *load_font(int id, int pts)
     if (id < 0 || id >= N_FONTS || pts <= 0 || pts > MAX_PTS)
         return NULL;
 
-    if (f[id][pts - 1] == NULL)
+    if (f[id][pts - 1] == NULL) {
         f[id][pts - 1] = TTF_OpenFont(FONT_PATH[id], pts);
+        if (id >= FONT_OUTLINE_START)
+            TTF_SetFontOutline(f[id][pts - 1], 1);
+    }
     return f[id][pts - 1];
 }
