@@ -71,7 +71,6 @@ void scene_clear_children(scene *this)
 
 static void colour_scene_draw(colour_scene *this)
 {
-    if ((scene *)this == g_stage) orion_resume(&g_orion, TRACKID_MAIN_BGM);
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
     SDL_RenderClear(g_renderer);
     SDL_SetRenderDrawColor(g_renderer, this->r, this->g, this->b, 128);
@@ -101,13 +100,11 @@ static void cb(void *ud)
         g_stage = transition_slidedown_create(&g_stage,
             (scene *)overworld_create(g_stage), 0.5);
         ((transition_scene *)g_stage)->preserves_a = true;
-        orion_pause(&g_orion, TRACKID_MAIN_BGM);
         return;
     } else if (this->b == 255) {
         g_stage = transition_slidedown_create(&g_stage,
             (scene *)options_create(g_stage), 0.5);
         ((transition_scene *)g_stage)->preserves_a = true;
-        orion_pause(&g_orion, TRACKID_MAIN_BGM);
         return;
     }
 

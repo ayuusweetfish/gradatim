@@ -59,6 +59,8 @@ static void options_draw(options_scene *this)
 static void options_drop(options_scene *this)
 {
     floue_drop(this->f);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, 1);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, 0);
 }
 
 static inline void update_label(options_scene *this, int idx)
@@ -187,6 +189,9 @@ options_scene *options_create(scene *bg)
     label_set_keyed_text(footer,
         " ..`.  ..`.  Select      ..`.  ..`.  Adjust      ..`.  Back", "^v<>~");
     element_place_anchored((element *)footer, WIN_W / 2, WIN_H * 6 / 7, 0.5, 0.5);
+
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, 0.2);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, 0.5);
 
     return this;
 }

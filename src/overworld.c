@@ -118,6 +118,8 @@ static inline void draw_stage(overworld_scene *this,
 
 static void ow_draw(overworld_scene *this)
 {
+    if ((scene *)this == g_stage)
+        orion_try_ramp(&g_orion, TRACKID_MAIN_BGM, 0.5, 1);
     floue_draw(this->f);
 
     if (update_cleared(this)) {

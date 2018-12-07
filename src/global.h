@@ -13,6 +13,7 @@
 #define WIN_H   720
 
 #define TRACKID_MAIN_BGM    0
+#define TRACKID_MAIN_BGM_LP 1
 #define TRACKID_STAGE_BGM   8
 
 #define iround(__x)  ((int)((__x) + 0.5))

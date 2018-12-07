@@ -217,6 +217,17 @@ unlock_ret:
     SDL_AtomicUnlock(&o->lock);
 }
 
+void orion_try_ramp(struct orion *o, int tid, float secs, float dst)
+{
+    SDL_AtomicLock(&o->lock);
+    if (o->track[tid].state <= ORION_STOPPED || o->track[tid].ramp_slope != 0) {
+        SDL_AtomicUnlock(&o->lock);
+    } else {
+        SDL_AtomicUnlock(&o->lock);
+        orion_ramp(o, tid, secs, dst);
+    }
+}
+
 static void _orion_track_step(struct orion_track *t, orion_smp *buf, int nch, int nsmp)
 {
     if (t->state <= ORION_STOPPED) return;

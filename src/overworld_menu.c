@@ -132,6 +132,7 @@ static inline int get_mask(overworld_menu *this)
 
 static inline scene *run_stage(overworld_menu *this)
 {
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.5, 0);
     gameplay_scene *gp = gameplay_scene_create((scene *)this->bg,
         bekter_at(this->bg->chaps, this->bg->cur_chap_idx, struct chap_rec *),
         this->bg->cur_stage_idx, get_mask(this));
