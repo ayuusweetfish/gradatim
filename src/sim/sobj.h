@@ -33,6 +33,10 @@ typedef struct _sobj {
 #define OBJID_ONEWAY_M      66
 #define OBJID_ONEWAY_FIRST  OBJID_ONEWAY_L
 #define OBJID_ONEWAY_LAST   OBJID_ONEWAY_M
+#define OBJID_LUMP_FIRST    67
+#define OBJID_LUMP_LAST     68
+#define OBJID_SLIME_FIRST   68
+#define OBJID_SLIME_LAST    OBJID_LUMP_LAST
 
 #define OBJID_MUSHROOM_T    39
 #define OBJID_MUSHROOM_B    40

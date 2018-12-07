@@ -195,6 +195,22 @@ static inline void oneway_update_pred(sobj *o, double T, sobj *prot)
     o->h = (prot->vy >= (o->ay - o->vy) / o->t && is_above(o, prot) ? 0.3 : 0);
 }
 
+static inline void lump_update_pred(sobj *o, double T, sobj *prot)
+{
+    /* Update position */
+    double prog = get_prog(o, T);
+    o->x = o->vx + (o->ax - o->vx) * prog;
+    o->y = o->vy + (o->ay - o->vy) * prog;
+}
+
+static inline void slime_update_post(sobj *o, double T, sobj *prot)
+{
+    if (o->is_on) {
+        take_max(prot->tag, PROT_TAG_FAILURE);
+        prot->t = T;
+    }
+}
+
 static inline void mushroom_init(sobj *o)
 {
     switch (o->tag) {
@@ -349,6 +365,8 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
         cloud_update_pred(o, T, prot);
     else if (o->tag >= OBJID_ONEWAY_FIRST && o->tag <= OBJID_ONEWAY_LAST)
         oneway_update_pred(o, T, prot);
+    else if (o->tag >= OBJID_LUMP_FIRST && o->tag <= OBJID_LUMP_LAST)
+        lump_update_pred(o, T, prot);
     else if (o->tag >= OBJID_REFILL && o->tag <= OBJID_REFILL_WAIT)
         refill_update_pred(o, T, prot);
     else if (o->tag >= OBJID_PUFF_FIRST && o->tag <= OBJID_PUFF_LAST)
@@ -365,6 +383,8 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
         billow_update_post(o, T, prot);
     else if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_update_post(o, T, prot);
+    else if (o->tag >= OBJID_SLIME_FIRST && o->tag <= OBJID_SLIME_LAST)
+        slime_update_post(o, T, prot);
     else if (o->tag >= OBJID_MUSHROOM_FIRST && o->tag <= OBJID_MUSHROOM_LAST)
         mushroom_update_post(o, T, prot);
     else if (o->tag >= OBJID_REFILL && o->tag <= OBJID_REFILL_WAIT)

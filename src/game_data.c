@@ -134,6 +134,8 @@ struct stage_rec *stage_read(const char *path)
     this->grid_tex[OBJID_CLOUD_ONEWAY] =
     this->grid_tex[OBJID_CLOUD_RTRIP] = retrieve_texture("cloud.png");
     this->grid_tex[OBJID_ONEWAY_M] = retrieve_texture("cloud.png");
+    this->grid_tex[OBJID_LUMP_FIRST] = retrieve_texture("uwu.png");
+    this->grid_tex[OBJID_SLIME_FIRST] = retrieve_texture("uwu.png");
     this->grid_tex[OBJID_FRAGILE] = retrieve_texture("fragile1.png");
     this->grid_tex[OBJID_FRAGILE + 1] = retrieve_texture("fragile2.png");
     this->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("fragile3.png");
