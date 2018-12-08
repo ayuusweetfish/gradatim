@@ -566,8 +566,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
         }
     }
 
-    double prot_disp_x = this->simulator->prot.x * UNIT_PX;
-    double prot_disp_y = this->simulator->prot.y * UNIT_PX;
+    double prot_disp_x = align_pixel(this->simulator->prot.x * UNIT_PX);
+    double prot_disp_y = align_pixel(this->simulator->prot.y * UNIT_PX);
     double prot_w = this->simulator->prot.w * UNIT_PX;
     double prot_h = this->simulator->prot.h * UNIT_PX;
 
@@ -593,8 +593,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
     if (this->disp_state != DISP_FAILURE)
         render_objects(this, false, true, 0, 0);
 
-    prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
-    prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX;
+    prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX - cxi;
+    prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX - cyi;
     if (this->disp_state == DISP_LEADIN) {
         double radius = 0, radius_o = 0;
         if (this->disp_time <= LEADIN_DUR) {
