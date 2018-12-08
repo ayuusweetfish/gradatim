@@ -9,7 +9,8 @@
 typedef struct _particle {
     double x, y, vx, vy, drag;
     double angle, wander;
-    double w, h;
+    int w, h;
+    double life;
     SDL_Color c;
 } particle;
 
@@ -21,7 +22,9 @@ typedef struct _particle_sys {
 
 void particle_init(particle_sys *sys);
 void particle_add(particle_sys *sys,
-    double x, double y, SDL_Color c);
+    double x, double y, double vx, double vy, int w, int h,
+    double tmin, double tmax,
+    SDL_Color c);
 void particle_tick(particle_sys *sys, double dt);
 void particle_draw_aligned(particle_sys *sys,
     int xoffs, int yoffs, int align);

@@ -742,6 +742,41 @@ static void gameplay_scene_drop(gameplay_scene *this)
     }
 }
 
+static inline void add_hop_particles(gameplay_scene *this)
+{
+    int i;
+    for (i = 0; i < 5; ++i) {
+        int sz = i % 2 == 0 ? SPR_SCALE * 2 : SPR_SCALE;
+        int grey = 255 - rand() % 16;
+        particle_add(&this->particle,
+            this->simulator->prot.x * UNIT_PX + rand() % 31 - 15,
+            this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
+            -this->simulator->prot.vx * UNIT_PX / 6 + rand() % 31 - 15,
+            UNIT_PX * 2 + rand() % 31 - 15,
+            sz, sz,
+            0.1, 0.5,
+            (SDL_Color){grey, grey, grey});
+    }
+}
+
+static inline void add_dash_particles(gameplay_scene *this)
+{
+    int i;
+    for (i = 0; i < 21; ++i) {
+        int sz = i % 10 == 0 ? SPR_SCALE * 3 :
+            i % 3 == 0 ? SPR_SCALE * 2 : SPR_SCALE;
+        int col = i % 3 == 0 ? 32 : 16;
+        particle_add(&this->particle,
+            this->simulator->prot.x * UNIT_PX + rand() % 31 - 15,
+            this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
+            -this->simulator->prot.vx * UNIT_PX / 3 + rand() % 31 - 15,
+            UNIT_PX * 3 + rand() % 31 - 15,
+            sz, sz,
+            0.25, 1,
+            (SDL_Color){255 - rand() % col, 255 - rand() % col, 255 - rand() % col});
+    }
+}
+
 static void try_hop(gameplay_scene *this)
 {
     if (!can_hop(this)) return;
@@ -765,12 +800,8 @@ static void try_hop(gameplay_scene *this)
             else lo = mid;
         }
         this->mov_time = hi;
-    }
-    /* Create particles */
-    particle_add(&this->particle,
-        this->simulator->prot.x * UNIT_PX,
-        this->simulator->prot.y * UNIT_PX,
-        (SDL_Color){255, 255, 255});
+    } else return;
+    add_hop_particles(this);
 }
 
 static void try_dash(gameplay_scene *this, bool is_dirchg)
@@ -800,6 +831,7 @@ static void try_dash(gameplay_scene *this, bool is_dirchg)
     this->simulator->last_land = -1e10; /* Disable grace jumps */
     this->mov_state = MOV_DASH_BASE | dir_has | dir_denotes;
     this->mov_time = dur;
+    if (!is_dirchg) add_dash_particles(this);
 }
 
 static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *ev)

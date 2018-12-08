@@ -1,6 +1,8 @@
 #include "particle_sys.h"
 #include "global.h"
 
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 void particle_init(particle_sys *sys)
@@ -8,20 +10,29 @@ void particle_init(particle_sys *sys)
     sys->sz = 0;
 }
 
+static inline double rand_in(double a, double b)
+{
+    return (double)rand() / RAND_MAX * (b - a) + a;
+}
+
 void particle_add(particle_sys *sys,
-    double x, double y, SDL_Color c)
+    double x, double y, double vx, double vy, int w, int h,
+    double tmin, double tmax,
+    SDL_Color c)
 {
     /* TODO: Eliminate earliest particles in the pool */
     if (sys->sz >= PARTICLE_CAP) return;
     particle p;
     p.x = x;
     p.y = y;
-    p.vx = 100;
-    p.vy = 100;
-    p.drag = 0.92;
-    p.angle = 0;
-    p.wander = 0;
-    p.w = p.h = 16;
+    p.vx = vx;
+    p.vy = vy;
+    p.drag = 3;
+    p.angle = rand_in(-M_PI, +M_PI);
+    p.wander = 15;
+    p.w = w;
+    p.h = h;
+    p.life = rand_in(tmin, tmax);
     p.c = c;
     sys->pool[sys->sz++] = p;
 }
@@ -31,9 +42,20 @@ void particle_tick(particle_sys *sys, double dt)
     int i, n = sys->sz;
     for (i = 0; i < n; ++i) {
         particle *p = &sys->pool[i];
+        if ((p->life -= dt) <= 0) {
+            *p = sys->pool[--n];
+            --i;
+            continue;
+        }
         p->x += p->vx * dt;
         p->y += p->vy * dt;
+        p->vx *= (1 - p->drag * dt);
+        p->vy *= (1 - p->drag * dt);
+        p->angle += rand_in(-1, +1) * p->wander * dt;
+        p->vx += cos(p->angle) * 10 * dt;
+        p->vy += sin(p->angle) * 10 * dt;
     }
+    sys->sz = n;
 }
 
 void particle_draw_aligned(particle_sys *sys,
