@@ -851,6 +851,8 @@ static void try_dash(gameplay_scene *this, bool is_dirchg)
         if (!is_dirchg) add_hop_particles(this, t);
         return;
     }
+    /* In case of multiple dashes in one beat, simply exit without particles */
+    if ((this->mov_state & MOV_DASH_BASE) && t != 4) return;
     /* In case of direction updates, the time should not be reset */
     double dur = is_dirchg ? this->mov_time : DASH_DUR;
     if (is_dirchg && dur < DASH_MIN_DUR) return;
@@ -889,10 +891,10 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     if (ev->keysym.sym != SDLK_ESCAPE && get_audio_position(this) < 0) return;
     switch (ev->keysym.sym) {
         case SDLK_c:
-            if (ev->state == SDL_PRESSED) try_hop(this);
+            if (!ev->repeat && ev->state == SDL_PRESSED) try_hop(this);
             break;
         case SDLK_x:
-            if (ev->state == SDL_PRESSED) try_dash(this, false);
+            if (!ev->repeat && ev->state == SDL_PRESSED) try_dash(this, false);
             break;
         case SDLK_UP:
             toggle(this->ver_state, ev->state, VER_STATE_UP, VER_STATE_NONE);
