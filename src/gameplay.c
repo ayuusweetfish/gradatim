@@ -122,6 +122,78 @@ static inline char cant_dash(gameplay_scene *this, bool is_dirchg)
             0 : (b < i ? 1 : 2)) : 3;
 }
 
+/*
+ * type == 0: Normal
+ * type == 1: Early (blue)
+ * type == 2: Late (red)
+ * type == 3: Not at the beat (grey)
+ */
+static inline void add_hop_particles(gameplay_scene *this, char type)
+{
+    int i, n = (type == 0 ? 5 : 3);
+    for (i = 0; i < n; ++i) {
+        int sz = i % 2 == 0 ? SPR_SCALE * 2 : SPR_SCALE;
+        int r = 0, g = 0, b = 0;
+        if (type == 0) {
+            r = g = b = 255 - rand() % 16;
+        } else if (type == 1) {
+            r = 168 - rand() % 16;
+            g = 216 - rand() % 16;
+            b = 255;
+        } else if (type == 2) {
+            g = b = 192 - rand() % 16;
+            r = 255;
+        } else if (type == 3) {
+            r = g = b = 216 - rand() % 16;
+        }
+        particle_add(&this->particle,
+            this->simulator->prot.x * UNIT_PX + rand() % 31 - 15,
+            this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
+            -this->simulator->prot.vx * UNIT_PX / 6 + rand() % 31 - 15,
+            UNIT_PX * 2 + rand() % 31 - 15,
+            sz, sz, 0.2, 0.5, r, g, b);
+    }
+}
+
+/*
+ * type == 0: Normal
+ * type == 1: Using refill (green)
+ * type == 2: Tail
+ * type == 3: Tail, using refill
+ * type == 4: Afterglow
+ * type == 5: Afterglow, using refill
+ */
+static inline void add_dash_particles(gameplay_scene *this, char type)
+{
+    int i, n = (type >= 2 ? (type >= 4 ? 1 : 3) : 20);
+    for (i = 1; i <= n; ++i) {
+        int sz = i % 10 == 0 ? SPR_SCALE * 3 :
+            i % 3 == 0 ? SPR_SCALE * 2 : SPR_SCALE;
+        int r = 0, g = 0, b = 0;
+        if (type % 2 == 0) {
+            int col = i % 3 == 0 ? 32 : 16;
+            r = 255 - rand() % col;
+            g = 255 - rand() % col;
+            b = 255 - rand() % col;
+            switch (rand() % 3) {
+                case 0: r = 255; break;
+                case 1: g = 255; break;
+                case 2: b = 255; break;
+            }
+        } else {
+            r = 160 - rand() % 16;
+            g = 240;
+            b = 112 - rand() % 16;
+        }
+        particle_add(&this->particle,
+            this->simulator->prot.x * UNIT_PX + rand() % 31 - 15,
+            this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
+            -this->simulator->prot.vx * UNIT_PX / 3 + rand() % 31 - 15,
+            UNIT_PX * 3 + rand() % 31 - 15,
+            sz, sz, 0.25, 1, r, g, b);
+    }
+}
+
 static inline void switch_stage_ctx(gameplay_scene *this)
 {
     /* Update player's record */
@@ -318,6 +390,9 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             this->simulator->prot.ay += plunge_vy;
         }
         this->mov_time -= dt / BEAT;
+        add_dash_particles(this,
+            (this->mov_time > DASH_DUR / 2 ? 2 : 4) |
+            ((this->mov_state & MOV_USING_REFILL) ? 1 : 0));
     } else {
         /* Normal state */
         this->simulator->prot.vx = 0;
@@ -750,69 +825,6 @@ static void gameplay_scene_drop(gameplay_scene *this)
     }
 }
 
-/*
- * type == 0: Normal
- * type == 1: Early (blue)
- * type == 2: Late (red)
- * type == 3: Not at the beat (grey)
- */
-static inline void add_hop_particles(gameplay_scene *this, char type)
-{
-    int i, n = (type == 0 ? 5 : 3);
-    for (i = 0; i < n; ++i) {
-        int sz = i % 2 == 0 ? SPR_SCALE * 2 : SPR_SCALE;
-        int r = 0, g = 0, b = 0;
-        if (type == 0) {
-            r = g = b = 255 - rand() % 16;
-        } else if (type == 1) {
-            r = 168 - rand() % 16;
-            g = 216 - rand() % 16;
-            b = 255;
-        } else if (type == 2) {
-            g = b = 192 - rand() % 16;
-            r = 255;
-        } else if (type == 3) {
-            r = g = b = 216 - rand() % 16;
-        }
-        particle_add(&this->particle,
-            this->simulator->prot.x * UNIT_PX + rand() % 31 - 15,
-            this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
-            -this->simulator->prot.vx * UNIT_PX / 6 + rand() % 31 - 15,
-            UNIT_PX * 2 + rand() % 31 - 15,
-            sz, sz, 0.2, 0.5, r, g, b);
-    }
-}
-
-/*
- * type == 0: Normal
- * type == 1: Using refill (green)
- */
-static inline void add_dash_particles(gameplay_scene *this, char type)
-{
-    int i;
-    for (i = 0; i < 21; ++i) {
-        int sz = i % 10 == 0 ? SPR_SCALE * 3 :
-            i % 3 == 0 ? SPR_SCALE * 2 : SPR_SCALE;
-        int r = 0, g = 0, b = 0;
-        if (type == 0) {
-            int col = i % 3 == 0 ? 32 : 16;
-            r = 255 - rand() % col;
-            g = 255 - rand() % col;
-            b = 255 - rand() % col;
-        } else {
-            r = 160 - rand() % 16;
-            g = 224;
-            b = 96 - rand() % 16;
-        }
-        particle_add(&this->particle,
-            this->simulator->prot.x * UNIT_PX + rand() % 31 - 15,
-            this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
-            -this->simulator->prot.vx * UNIT_PX / 3 + rand() % 31 - 15,
-            UNIT_PX * 3 + rand() % 31 - 15,
-            sz, sz, 0.25, 1, r, g, b);
-    }
-}
-
 static void try_hop(gameplay_scene *this)
 {
     char t;
@@ -875,7 +887,8 @@ static void try_dash(gameplay_scene *this, bool is_dirchg)
         this->simulator->prot.vy *= DASH_DIAG_SCALE;
     }
     this->simulator->last_land = -1e10; /* Disable grace jumps */
-    this->mov_state = MOV_DASH_BASE | dir_has | dir_denotes;
+    this->mov_state =
+        MOV_DASH_BASE | dir_has | dir_denotes | (t == 4 ? MOV_USING_REFILL : 0);
     this->mov_time = dur;
     if (!is_dirchg) add_dash_particles(this, t == 4 ? 1 : 0);
 }

@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 typedef struct _sobj {
-    char tag;
+    unsigned char tag;
     double x, y, w, h;
     double vx, vy;
     double ax, ay;

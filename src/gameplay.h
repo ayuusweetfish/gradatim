@@ -63,7 +63,8 @@ typedef struct _gameplay_scene {
         MOV_DIAGDASH = MOV_DASH_BASE + 3,
         /* Bitmasks denoting dash direction */
         MOV_DASH_LEFT = 8,
-        MOV_DASH_UP = 16
+        MOV_DASH_UP = 16,
+        MOV_USING_REFILL = 32
     } mov_state;
     double mov_time;    /* Time remaining until movement state resets */
     double refill_time; /* Time until refill disappears; -1 if none persists */
