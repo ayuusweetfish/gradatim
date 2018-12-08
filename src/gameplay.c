@@ -329,6 +329,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
     if (this->refill_time >= 0)
         this->refill_time -= dt / (BEAT * this->chap->beat_mul);
 
+    particle_tick(&this->particle, dt);
+
     /* Horizontal speed should be cancelled out immediately
      * However, not if such will result in a 'bounce' */
     if (this->simulator->prot.vx * (this->simulator->prot.vx - hor_mov_vx) > 0)
@@ -652,6 +654,9 @@ static void gameplay_scene_draw(gameplay_scene *this)
         }, NULL);
     }
 
+    /* Draw particles */
+    particle_draw_aligned(&this->particle, -cxi, -cyi, SPR_SCALE);
+
     draw_overlay(this);
 
     /* The clock should not be disturbed by the metronome */
@@ -761,6 +766,11 @@ static void try_hop(gameplay_scene *this)
         }
         this->mov_time = hi;
     }
+    /* Create particles */
+    particle_add(&this->particle,
+        this->simulator->prot.x * UNIT_PX,
+        this->simulator->prot.y * UNIT_PX,
+        (SDL_Color){255, 255, 255});
 }
 
 static void try_dash(gameplay_scene *this, bool is_dirchg)
@@ -917,6 +927,8 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     ret->start_stage_idx = idx;
     ret->stage_start_time = 0;
     ret->refill_time = -1;
+
+    particle_init(&ret->particle);
 
     ret->cam_x = clamp(ret->simulator->prot.x,
         WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
