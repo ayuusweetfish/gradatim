@@ -772,7 +772,7 @@ static inline void add_hop_particles(gameplay_scene *this, char type)
             g = b = 192 - rand() % 16;
             r = 255;
         } else if (type == 3) {
-            r = g = b = 192 - rand() % 16;
+            r = g = b = 216 - rand() % 16;
         }
         particle_add(&this->particle,
             this->simulator->prot.x * UNIT_PX + rand() % 31 - 15,
