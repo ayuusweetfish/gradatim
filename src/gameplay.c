@@ -96,7 +96,7 @@ static inline double get_audio_position(gameplay_scene *this)
 
 static inline char cant_hop(gameplay_scene *this)
 {
-    if (this->mods & MOD_A_PIACERE) return true;
+    if (this->mods & MOD_A_PIACERE) return 0;
     double b = get_audio_position(this);
     int i = iround(b);
     return
@@ -107,7 +107,7 @@ static inline char cant_hop(gameplay_scene *this)
 
 static inline char cant_dash(gameplay_scene *this, bool is_dirchg)
 {
-    if (this->mods & MOD_A_PIACERE) return true;
+    if (this->mods & MOD_A_PIACERE) return 0;
     if (!is_dirchg && this->refill_time >= 0 && !cant_hop(this)) {
         this->refill_time = -1;
         return 4;
@@ -190,7 +190,9 @@ static inline void add_dash_particles(gameplay_scene *this, char type)
             this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
             -this->simulator->prot.vx * UNIT_PX / 3 + rand() % 31 - 15,
             UNIT_PX * 3 + rand() % 31 - 15,
-            sz, sz, 0.25, 1, r, g, b);
+            sz, sz,
+            type >= 2 ? 0.15 : 0.25,
+            type >= 2 ? 0.3 : 1, r, g, b);
     }
 }
 
