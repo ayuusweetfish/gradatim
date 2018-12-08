@@ -123,7 +123,7 @@ struct stage_rec *stage_read(const char *path)
     }
 
     /* TODO: This should be replaced */
-    this->prot_tex = retrieve_texture("uwu.png");
+    this->prot_tex = retrieve_texture("qwq.png");
     this->prot_fail_tex[0] = retrieve_texture("fragile1.png");
     this->prot_fail_tex[1] = retrieve_texture("fragile2.png");
     this->prot_fail_tex[2] = retrieve_texture("fragile3.png");
@@ -171,7 +171,7 @@ sim *stage_create_sim(struct stage_rec *this)
     s->worldc = this->world_c;
     s->prot.x = this->spawn_c;
     s->prot.y = this->spawn_r;
-    s->prot.w = s->prot.h = 0.6;
+    s->prot.w = s->prot.h = 0.625;
 
     int i, j;
 

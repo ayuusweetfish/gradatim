@@ -24,7 +24,7 @@
 static const double SZ = 1;
 #else
 /* TODO: Keep this updated with protagonist size */
-static const double SZ = 0.6;
+static const double SZ = 0.625;
 #endif
 
 /* Global minimum & maximum coordinates */

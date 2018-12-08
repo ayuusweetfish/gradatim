@@ -14,10 +14,11 @@
 
 #define lerp(__x, __a, __b) ((__a) + (__x) * ((__b) - (__a)))
 
-static const double UNIT_PX = 48;
+static const double UNIT_PX = 64;
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
-static const double SPR_SCALE = 3;
+static const double SPR_PX = 16;
+static const double SPR_SCALE = UNIT_PX / SPR_PX;
 
 static const double VIVACE_MUL = 1.2;
 static const double ANDANTE_MUL = 0.8;
@@ -41,15 +42,15 @@ static const double DASH_DIAG_SCALE = 0.8;
 static const double REFILL_PERSISTENCE = 2; /* In beats */
 static const int AV_OFFSET_INTV = 60;
 
-static const double CAM_MOV_FAC = 8;
+static const double CAM_MOV_FAC = 16;
 static const double STAGE_TRANSITION_DUR = 2;
 
 static const double LEADIN_INIT = 1;
 static const double LEADIN_DUR = 0.4; /* Seconds */
 static const double FAILURE_SPF = 0.1;
 static const double STRETTO_RANGE = 2.5;
-static const int HINT_FONTSZ = 30;
-static const int HINT_PADDING = 8;
+static const int HINT_FONTSZ = 36;
+static const int HINT_PADDING = 12;
 static const int CLOCK_CHAP_FONTSZ = 44;
 static const int CLOCK_STG_FONTSZ = 32;
 static const double CLOCK_BLINK_DUR = 2;
@@ -352,6 +353,11 @@ static inline texture get_texture(gameplay_scene *this, sobj *o)
         char *)) : this->rec->grid_tex[o->tag];
 }
 
+static inline int align_pixel(double x)
+{
+    return iround(x / SPR_SCALE) * SPR_SCALE;
+}
+
 static inline void render_objects(gameplay_scene *this,
     bool is_prev, bool is_after, double offsx, double offsy)
 {
@@ -363,15 +369,15 @@ static inline void render_objects(gameplay_scene *this,
         cmin = clamp(floorf(cx), 0, sim->gcols),
         cmax = clamp(ceilf(cx + WIN_W_UNITS), 0, sim->gcols);
     int r, c;
-    int cxi = iround(cx * UNIT_PX),
-        cyi = iround(cy * UNIT_PX);
+    int cxi = align_pixel(cx * UNIT_PX),
+        cyi = align_pixel(cy * UNIT_PX);
     for (r = rmin; r < rmax; ++r)
         for (c = cmin; c < cmax; ++c) {
             sobj *o = &sim_grid(sim, r, c);
             if (o->tag != 0) {
                 render_texture_scaled(get_texture(this, o),
-                    (int)o->x * UNIT_PX - cxi,
-                    (int)o->y * UNIT_PX - cyi,
+                    align_pixel((int)o->x * UNIT_PX - cxi),
+                    align_pixel((int)o->y * UNIT_PX - cyi),
                     SPR_SCALE
                 );
             }
@@ -379,8 +385,8 @@ static inline void render_objects(gameplay_scene *this,
     for (r = 0; r < sim->anim_sz; ++r) {
         sobj *o = sim->anim[r];
         render_texture_scaled(get_texture(this, o),
-            iround((o->x + o->tx) * UNIT_PX) - cxi,
-            iround((o->y + o->ty) * UNIT_PX) - cyi,
+            align_pixel((o->x + o->tx) * UNIT_PX - cxi),
+            align_pixel((o->y + o->ty) * UNIT_PX - cyi),
             SPR_SCALE
         );
     }
@@ -506,20 +512,15 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
     render_objects(this, false, false, 0, 0);
 
-    double prot_disp_x = (this->simulator->prot.x - this->cam_x) * UNIT_PX;
-    double prot_disp_y = (this->simulator->prot.y - this->cam_y) * UNIT_PX;
-    double prot_w = this->simulator->prot.w * UNIT_PX;
-    double prot_h = this->simulator->prot.h * UNIT_PX;
-
     /* Display hints */
     int i, j;
-    int cxi = iround(this->cam_x * UNIT_PX),
-        cyi = iround(this->cam_y * UNIT_PX);
+    int cxi = align_pixel(this->cam_x * UNIT_PX),
+        cyi = align_pixel(this->cam_y * UNIT_PX);
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 128);
     for (i = 0; i < this->rec->hint_ct; ++i) {
         element_place_anchored((element *)this->l_hints[i],
-            iround((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi,
-            iround((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi,
+            align_pixel((this->rec->hints[i].c + 0.5) * UNIT_PX - cxi),
+            align_pixel((this->rec->hints[i].r + 0.5) * UNIT_PX - cyi),
             0.5, 0.5);
         int x = this->l_hints[i]->_base._base.dim.x - HINT_PADDING,
             y = this->l_hints[i]->_base._base.dim.y - HINT_PADDING,
@@ -565,6 +566,11 @@ static void gameplay_scene_draw(gameplay_scene *this)
         }
     }
 
+    double prot_disp_x = this->simulator->prot.x * UNIT_PX;
+    double prot_disp_y = this->simulator->prot.y * UNIT_PX;
+    double prot_w = this->simulator->prot.w * UNIT_PX;
+    double prot_h = this->simulator->prot.h * UNIT_PX;
+
     texture prot_tex = this->rec->prot_tex;
     if (this->disp_state == DISP_FAILURE) {
         int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
@@ -579,7 +585,9 @@ static void gameplay_scene_draw(gameplay_scene *this)
     }
 
     render_texture_ex(prot_tex, &(SDL_Rect){
-        prot_disp_x, prot_disp_y, iround(prot_w), iround(prot_h),
+        align_pixel(prot_disp_x - cxi),
+        align_pixel(prot_disp_y - cyi),
+        iround(prot_w), iround(prot_h),
     }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
 
     if (this->disp_state != DISP_FAILURE)
