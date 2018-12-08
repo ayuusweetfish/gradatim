@@ -934,7 +934,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
                 try_dash(this, true);
             break;
         case SDLK_ESCAPE:
-            if (ev->state == SDL_PRESSED) {
+            if (ev->state == SDL_PRESSED && g_stage == (scene *)this) {
                 g_stage = (scene *)pause_scene_create(
                     &g_stage, (retry_callback)retry_reinit, this->bg);
                 pause_sound(this);
