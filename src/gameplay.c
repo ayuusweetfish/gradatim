@@ -856,7 +856,7 @@ static void try_dash(gameplay_scene *this, bool is_dirchg)
         return;
     }
     /* In case of direction updates, the time should not be reset */
-    double dur = (this->mov_state & MOV_DASH_BASE) ? this->mov_time : DASH_DUR;
+    double dur = is_dirchg ? this->mov_time : DASH_DUR;
     if (is_dirchg && dur < DASH_MIN_DUR) return;
     int dir_has = 0, dir_denotes = 0;
     if (this->ver_state == VER_STATE_UP) {
@@ -879,6 +879,7 @@ static void try_dash(gameplay_scene *this, bool is_dirchg)
     this->simulator->last_land = -1e10; /* Disable grace jumps */
     this->mov_state = MOV_DASH_BASE | dir_has | dir_denotes;
     this->mov_time = dur;
+    printf("> %d %.4lf\n", t, dur);
     if (!is_dirchg) add_dash_particles(this, t == 4 ? 1 : 0);
 }
 
