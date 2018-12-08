@@ -139,6 +139,7 @@ static void dialogue_drop(dialogue_scene *this)
 static void dialogue_key_handler(dialogue_scene *this, SDL_KeyboardEvent *ev)
 {
     if (ev->state != SDL_PRESSED || ev->keysym.sym != SDLK_RETURN) return;
+    if (this->script_idx >= this->script_len) return;
     dialogue_entry entry =
         bekter_at(this->script, this->script_idx, dialogue_entry);
     int textpos = (this->entry_lasted - AVAT_FADE_DUR * 2) / DELAY_PER_CHAR;
