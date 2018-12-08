@@ -779,9 +779,7 @@ static inline void add_hop_particles(gameplay_scene *this, char type)
             this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
             -this->simulator->prot.vx * UNIT_PX / 6 + rand() % 31 - 15,
             UNIT_PX * 2 + rand() % 31 - 15,
-            sz, sz,
-            0.2, 0.5,
-            (SDL_Color){r, g, b});
+            sz, sz, 0.2, 0.5, r, g, b);
     }
 }
 
@@ -811,15 +809,13 @@ static inline void add_dash_particles(gameplay_scene *this, char type)
             this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
             -this->simulator->prot.vx * UNIT_PX / 3 + rand() % 31 - 15,
             UNIT_PX * 3 + rand() % 31 - 15,
-            sz, sz,
-            0.25, 1,
-            (SDL_Color){r, g, b});
+            sz, sz, 0.25, 1, r, g, b);
     }
 }
 
 static void try_hop(gameplay_scene *this)
 {
-    int t;
+    char t;
     if ((t = cant_hop(this)) != 0) {
         add_hop_particles(this, t);
         return;
@@ -850,7 +846,7 @@ static void try_hop(gameplay_scene *this)
 
 static void try_dash(gameplay_scene *this, bool is_dirchg)
 {
-    int t;
+    char t;
     if ((t = cant_dash(this, is_dirchg)) != 0 && t != 4) {
         if (!is_dirchg) add_hop_particles(this, t);
         return;
@@ -879,7 +875,6 @@ static void try_dash(gameplay_scene *this, bool is_dirchg)
     this->simulator->last_land = -1e10; /* Disable grace jumps */
     this->mov_state = MOV_DASH_BASE | dir_has | dir_denotes;
     this->mov_time = dur;
-    printf("> %d %.4lf\n", t, dur);
     if (!is_dirchg) add_dash_particles(this, t == 4 ? 1 : 0);
 }
 

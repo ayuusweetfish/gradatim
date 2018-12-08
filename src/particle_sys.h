@@ -11,7 +11,7 @@ typedef struct _particle {
     double angle, wander;
     int w, h;
     double life;
-    SDL_Color c;
+    unsigned char r, g, b;
 } particle;
 
 #define PARTICLE_CAP 1024
@@ -24,7 +24,7 @@ void particle_init(particle_sys *sys);
 void particle_add(particle_sys *sys,
     double x, double y, double vx, double vy, int w, int h,
     double tmin, double tmax,
-    SDL_Color c);
+    unsigned char r, unsigned char g, unsigned char b);
 void particle_tick(particle_sys *sys, double dt);
 void particle_draw_aligned(particle_sys *sys,
     int xoffs, int yoffs, int align);

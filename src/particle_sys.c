@@ -18,7 +18,7 @@ static inline double rand_in(double a, double b)
 void particle_add(particle_sys *sys,
     double x, double y, double vx, double vy, int w, int h,
     double tmin, double tmax,
-    SDL_Color c)
+    unsigned char r, unsigned char g, unsigned char b)
 {
     /* TODO: Eliminate earliest particles in the pool */
     if (sys->sz >= PARTICLE_CAP) return;
@@ -33,7 +33,9 @@ void particle_add(particle_sys *sys,
     p.w = w;
     p.h = h;
     p.life = rand_in(tmin, tmax);
-    p.c = c;
+    p.r = r;
+    p.g = g;
+    p.b = b;
     sys->pool[sys->sz++] = p;
 }
 
@@ -69,7 +71,7 @@ void particle_draw_aligned(particle_sys *sys,
         r.y = iround((p.y + yoffs) / align) * align;
         r.w = p.w;
         r.h = p.h;
-        SDL_SetRenderDrawColor(g_renderer, p.c.r, p.c.g, p.c.b, 255);
+        SDL_SetRenderDrawColor(g_renderer, p.r, p.g, p.b, 255);
         SDL_RenderFillRect(g_renderer, &r);
     }
 }
