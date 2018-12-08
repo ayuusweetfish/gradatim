@@ -90,19 +90,22 @@ static inline double get_audio_position(gameplay_scene *this)
     return (sec + AUD_OFFSET + profile.av_offset * 0.001) / BEAT;
 }
 
-static inline bool can_hop(gameplay_scene *this)
+/* `cant_*` functions eturn 0 if normal, 1 if early and 2 if late */
+
+static inline short cant_hop(gameplay_scene *this)
 {
     if (this->mods & MOD_A_PIACERE) return true;
     double b = get_audio_position(this);
     int i = iround(b);
     return (fabs(b - i) <= HOP_TOLERANCE * this->chap->beat_mul) &&
-        (this->chap->hop_mask & (1 << (i % this->chap->sig)));
+        (this->chap->hop_mask & (1 << (i % this->chap->sig))) ?
+        0 : (b < i ? 1 : 2);
 }
 
-static inline bool can_dash(gameplay_scene *this, bool is_dirchg)
+static inline bool cant_dash(gameplay_scene *this, bool is_dirchg)
 {
     if (this->mods & MOD_A_PIACERE) return true;
-    if (!is_dirchg && this->refill_time >= 0 && can_hop(this)) {
+    if (!is_dirchg && this->refill_time >= 0 && !cant_hop(this)) {
         this->refill_time = -1;
         return true;
     }
@@ -111,7 +114,8 @@ static inline bool can_dash(gameplay_scene *this, bool is_dirchg)
     int mask = (this->mods & MOD_RUBATO) ?
         this->chap->hop_mask : this->chap->dash_mask;
     return (fabs(b - i) <= DASH_TOLERANCE * this->chap->beat_mul) &&
-        (mask & (1 << (i % this->chap->sig)));
+        (mask & (1 << (i % this->chap->sig))) ?
+        0 : (b < i ? 1 : 2);
 }
 
 static inline void switch_stage_ctx(gameplay_scene *this)
@@ -742,20 +746,35 @@ static void gameplay_scene_drop(gameplay_scene *this)
     }
 }
 
-static inline void add_hop_particles(gameplay_scene *this)
+/*
+ * type == 0: Normal
+ * type == 1: Early (blue)
+ * type == 2: Late (red)
+ */
+static inline void add_hop_particles(gameplay_scene *this, int type)
 {
-    int i;
-    for (i = 0; i < 5; ++i) {
+    int i, n = (type == 0 ? 5 : 3);
+    for (i = 0; i < n; ++i) {
         int sz = i % 2 == 0 ? SPR_SCALE * 2 : SPR_SCALE;
-        int grey = 255 - rand() % 16;
+        int r = 0, g = 0, b = 0;
+        if (type == 0) {
+            r = g = b = 255 - rand() % 16;
+        } else if (type == 1) {
+            r = 168 - rand() % 16;
+            g = 216 - rand() % 16;
+            b = 255;
+        } else if (type == 2) {
+            g = b = 192 - rand() % 16;
+            r = 255;
+        }
         particle_add(&this->particle,
             this->simulator->prot.x * UNIT_PX + rand() % 31 - 15,
             this->simulator->prot.y * UNIT_PX + rand() % 31 - 15,
             -this->simulator->prot.vx * UNIT_PX / 6 + rand() % 31 - 15,
             UNIT_PX * 2 + rand() % 31 - 15,
             sz, sz,
-            0.1, 0.5,
-            (SDL_Color){grey, grey, grey});
+            0.2, 0.5,
+            (SDL_Color){r, g, b});
     }
 }
 
@@ -779,7 +798,11 @@ static inline void add_dash_particles(gameplay_scene *this)
 
 static void try_hop(gameplay_scene *this)
 {
-    if (!can_hop(this)) return;
+    int t;
+    if ((t = cant_hop(this)) != 0) {
+        add_hop_particles(this, t);
+        return;
+    }
     if ((this->simulator->cur_time - this->simulator->last_land) <= HOP_GRACE_DUR) {
         /* Grace jump */
         this->simulator->prot.vy = -HOP_SPD;
@@ -801,12 +824,16 @@ static void try_hop(gameplay_scene *this)
         }
         this->mov_time = hi;
     } else return;
-    add_hop_particles(this);
+    add_hop_particles(this, 0);
 }
 
 static void try_dash(gameplay_scene *this, bool is_dirchg)
 {
-    if (!can_dash(this, is_dirchg)) return;
+    int t;
+    if ((t = cant_dash(this, is_dirchg)) != 0) {
+        add_hop_particles(this, t);
+        return;
+    }
     /* In case of direction updates, the time should not be reset */
     double dur = (this->mov_state & MOV_DASH_BASE) ? this->mov_time : DASH_DUR;
     if (is_dirchg && dur < DASH_MIN_DUR) return;
