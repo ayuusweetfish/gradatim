@@ -14,7 +14,7 @@
 
 #define lerp(__x, __a, __b) ((__a) + (__x) * ((__b) - (__a)))
 
-static const double UNIT_PX = 64;
+static const double UNIT_PX = 48;
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 static const double SPR_PX = 16;
@@ -42,15 +42,15 @@ static const double DASH_DIAG_SCALE = 0.8;
 static const double REFILL_PERSISTENCE = 2; /* In beats */
 static const int AV_OFFSET_INTV = 60;
 
-static const double CAM_MOV_FAC = 16;
+static const double CAM_MOV_FAC = 8;
 static const double STAGE_TRANSITION_DUR = 2;
 
 static const double LEADIN_INIT = 1;
 static const double LEADIN_DUR = 0.4; /* Seconds */
 static const double FAILURE_SPF = 0.1;
 static const double STRETTO_RANGE = 2.5;
-static const int HINT_FONTSZ = 36;
-static const int HINT_PADDING = 12;
+static const int HINT_FONTSZ = 30;
+static const int HINT_PADDING = 8;
 static const int CLOCK_CHAP_FONTSZ = 44;
 static const int CLOCK_STG_FONTSZ = 32;
 static const double CLOCK_BLINK_DUR = 2;
@@ -159,16 +159,29 @@ static inline void switch_stage_ctx(gameplay_scene *this)
     }
 }
 
-static inline void update_camera(gameplay_scene *this, double rate)
+static inline void get_camera_delta(gameplay_scene *this, double *dx, double *dy)
 {
     double dest_x = clamp(this->simulator->prot.x,
         this->rec->cam_c1 + WIN_W_UNITS / 2, this->rec->cam_c2 - WIN_W_UNITS / 2);
     double dest_y = clamp(this->simulator->prot.y,
         this->rec->cam_r1 + WIN_H_UNITS / 2, this->rec->cam_r2 - WIN_H_UNITS / 2);
-    double cam_dx = dest_x - (this->cam_x + WIN_W_UNITS / 2);
-    double cam_dy = dest_y - (this->cam_y + WIN_H_UNITS / 2);
+    *dx = dest_x - (this->cam_x + WIN_W_UNITS / 2);
+    *dy = dest_y - (this->cam_y + WIN_H_UNITS / 2);
+}
+
+static inline void update_camera(gameplay_scene *this, double rate)
+{
+    double cam_dx, cam_dy;
+    get_camera_delta(this, &cam_dx, &cam_dy);
     this->cam_x += rate * cam_dx;
     this->cam_y += rate * cam_dy;
+}
+
+static inline bool is_camera_fast(gameplay_scene *this)
+{
+    double cam_dx, cam_dy;
+    get_camera_delta(this, &cam_dx, &cam_dy);
+    return (sqr(cam_dx) + sqr(cam_dy) >= 1);
 }
 
 static inline void stop_prot(gameplay_scene *this)
@@ -566,8 +579,11 @@ static void gameplay_scene_draw(gameplay_scene *this)
         }
     }
 
-    double prot_disp_x = align_pixel(this->simulator->prot.x * UNIT_PX);
-    double prot_disp_y = align_pixel(this->simulator->prot.y * UNIT_PX);
+    bool is_prot_fast =
+        sqr(this->simulator->prot.vx) + sqr(this->simulator->prot.vy)
+        >= HOR_SPD * HOR_SPD;
+    double prot_disp_x = this->simulator->prot.x * UNIT_PX;
+    double prot_disp_y = this->simulator->prot.y * UNIT_PX;
     double prot_w = this->simulator->prot.w * UNIT_PX;
     double prot_h = this->simulator->prot.h * UNIT_PX;
 
@@ -584,17 +600,23 @@ static void gameplay_scene_draw(gameplay_scene *this)
         prot_h = prot_tex.range.h * SPR_SCALE;
     }
 
+    if (!is_prot_fast) {
+        prot_disp_x = align_pixel(prot_disp_x) - cxi;
+        prot_disp_y = align_pixel(prot_disp_y) - cyi;
+    } else {
+        prot_disp_x -= iround(this->cam_x * UNIT_PX);
+        prot_disp_y -= iround(this->cam_y * UNIT_PX);
+    }
+
     render_texture_ex(prot_tex, &(SDL_Rect){
-        align_pixel(prot_disp_x - cxi),
-        align_pixel(prot_disp_y - cyi),
-        iround(prot_w), iround(prot_h),
+        prot_disp_x, prot_disp_y, iround(prot_w), iround(prot_h),
     }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
 
     if (this->disp_state != DISP_FAILURE)
         render_objects(this, false, true, 0, 0);
 
-    prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX - cxi;
-    prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX - cyi;
+    prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
+    prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX;
     if (this->disp_state == DISP_LEADIN) {
         double radius = 0, radius_o = 0;
         if (this->disp_time <= LEADIN_DUR) {
