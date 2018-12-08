@@ -56,7 +56,7 @@ static const int CLOCK_STG_FONTSZ = 32;
 static const double CLOCK_BLINK_DUR = 2;
 
 /* Short for metronome - too long! */
-static const int MT_PADDING = 12;
+static const int MT_PADDING = 8;
 static const int MT_WEIGHT = 8;
 static const SDL_Rect MT_DOWNBEAT[4] = {
     (SDL_Rect){
@@ -444,12 +444,12 @@ static inline void draw_overlay(gameplay_scene *this)
 {
     int beats_i;
     double beats_d;
-    if (!get_pos_in_bar(this, 1./16, 1, &beats_i, &beats_d)) return;
+    if (!get_pos_in_bar(this, 1./24, 1, &beats_i, &beats_d)) return;
     bool is_downbeat = this->chap->dash_mask & (1 << beats_i),
         is_upbeat = this->chap->hop_mask & (1 << beats_i);
     if (!is_upbeat) return;
     int opacity = iround((
-        beats_d < 0 ? (1 + beats_d * 16) :
+        beats_d < 0 ? (1 + beats_d * 24) :
         beats_d < 0.5 ? (1 - beats_d * 2) : 0) * 255);
     SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, opacity);
