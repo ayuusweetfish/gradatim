@@ -14,7 +14,7 @@
 
 #define lerp(__x, __a, __b) ((__a) + (__x) * ((__b) - (__a)))
 
-static const double UNIT_PX = 48;
+static const double UNIT_PX = 64;
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
 static const double SPR_PX = 16;
