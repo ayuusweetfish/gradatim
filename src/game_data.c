@@ -148,8 +148,14 @@ sim *stage_create_sim(struct stage_rec *this)
 
     /* Populate the grid */
     for (i = 0; i < this->n_rows; ++i)
-        for (j = 0; j < this->n_cols; ++j)
-            sim_grid(s, i, j).tag = this->grid[i * this->n_cols + j];
+        for (j = 0; j < this->n_cols; ++j) {
+            int t = this->grid[i * this->n_cols + j];
+            sim_grid(s, i, j).tag = t;
+            int tx, ty;
+            grid_offset(t, &tx, &ty);
+            sim_grid(s, i, j).tx = -tx * 1./16;
+            sim_grid(s, i, j).ty = -ty * 1./16;
+        }
 
     /* Initialize all animate objects */
     for (i = 0; i < this->n_anim; ++i)
