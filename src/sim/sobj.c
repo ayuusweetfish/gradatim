@@ -59,6 +59,21 @@ static inline bool is_near(sobj *o, sobj *prot)
         in_range(prot->y + prot->h, o->y - EPS, o->y + o->h + EPS));
 }
 
+static inline void bg_init(sobj *o)
+{
+    o->w = o->h = 0;
+}
+
+static const double TORCH_ANIMLEN = 2;
+static const int TORCH_NFRAMES = OBJID_TORCH_LAST - OBJID_TORCH_FIRST;
+static const double TORCH_FRAMEFRAC = TORCH_NFRAMES / TORCH_ANIMLEN;
+
+static inline void torch_update_pred(sobj *o, double T, sobj *prot)
+{
+    o->tag = OBJID_TORCH_FIRST +
+        (int)(fmod(T, TORCH_ANIMLEN) * TORCH_FRAMEFRAC);
+}
+
 static inline void fragile_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->t != -1) {
@@ -112,7 +127,7 @@ static inline void billow_update_pred(sobj *o, double T, sobj *prot)
         /* Starts disappearing */
         o->t = -1;
         int f_idx = (beat_d - 1 + BILLOW_ANIM) / BILLOW_FRMLEN;
-        o->tag = OBJID_BILLOW_EMPTY - 1 - f_idx;
+        o->tag = OBJID_BILLOW + f_idx;
     } else if (o->t != -1) {
         int f_idx = (T - o->t) / BILLOW_FRMLEN;
         o->tag = max(OBJID_BILLOW, OBJID_BILLOW_EMPTY - 1 - f_idx);
@@ -246,11 +261,10 @@ static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
     }
 }
 
-static const double REFILL_FRM1 = 4./3;
-static const double REFILL_FRM2 = 6./3;
-static const double REFILL_FRM3 = 10./3;
-static const double REFILL_FRM4 = 12./3;
 static const double REFILL_REGEN_DUR = 4;
+static const double REFILL_ANIMLEN = 2;
+static const int REFILL_NFRAMES = OBJID_REFILL_WAIT - OBJID_REFILL;
+static const double REFILL_FRAMEFRAC = REFILL_NFRAMES / REFILL_ANIMLEN;
 
 static inline void refill_init(sobj *o)
 {
@@ -263,13 +277,9 @@ static inline void refill_init(sobj *o)
 static inline void refill_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->tag == OBJID_REFILL_WAIT && T - o->t >= REFILL_REGEN_DUR) o->t = -1;
-    if (o->t == -1) {
-        double phase = fmod(T, REFILL_FRM4);
-        if (phase < REFILL_FRM1) o->tag = OBJID_REFILL;
-        else if (phase < REFILL_FRM2) o->tag = OBJID_REFILL + 1;
-        else if (phase < REFILL_FRM3) o->tag = OBJID_REFILL + 2;
-        else o->tag = OBJID_REFILL + 3;
-    }
+    if (o->t == -1)
+        o->tag = OBJID_REFILL +
+            (int)(fmod(T, REFILL_ANIMLEN) * REFILL_FRAMEFRAC);
 }
 
 static inline void refill_update_post(sobj *o, double T, sobj *prot)
@@ -335,7 +345,9 @@ static inline void nxstage_init(sobj *o)
 
 void sobj_init(sobj *o)
 {
-    if (o->tag >= OBJID_BILLOW && o->tag <= OBJID_BILLOW_EMPTY)
+    if (o->tag >= OBJID_BG_FIRST && o->tag <= OBJID_BG_LAST)
+        bg_init(o);
+    else if (o->tag >= OBJID_BILLOW && o->tag <= OBJID_BILLOW_EMPTY)
         billow_init(o);
     else if (o->tag == OBJID_SPRING || o->tag == OBJID_SPRING_PRESS)
         spring_init(o);
@@ -355,6 +367,8 @@ void sobj_init(sobj *o)
 
 void sobj_update_pred(sobj *o, double T, sobj *prot)
 {
+    if (o->tag >= OBJID_TORCH_FIRST && o->tag <= OBJID_TORCH_LAST)
+        torch_update_pred(o, T, prot);
     if (o->tag >= OBJID_FRAGILE && o->tag <= OBJID_FRAGILE_EMPTY)
         fragile_update_pred(o, T, prot);
     else if (o->tag >= OBJID_BILLOW && o->tag <= OBJID_BILLOW_EMPTY)
@@ -393,7 +407,9 @@ void sobj_update_post(sobj *o, double T, sobj *prot)
 
 bool sobj_needs_update(sobj *o)
 {
-    return o->tag >= 30;
+    return
+        (o->tag >= OBJID_TORCH_FIRST && o->tag <= OBJID_TORCH_LAST) ||
+        o->tag >= 30;
 }
 
 void sobj_new_round()
