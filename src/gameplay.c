@@ -107,8 +107,8 @@ static inline char cant_hop(gameplay_scene *this)
 
 static inline char cant_dash(gameplay_scene *this, bool is_dirchg)
 {
-    if (this->mods & MOD_A_PIACERE) return 0;
-    if (!is_dirchg && this->refill_time >= 0 && !cant_hop(this)) {
+    if ((this->mods & MOD_A_PIACERE) || is_dirchg) return 0;
+    if (this->refill_time >= 0 && !cant_hop(this)) {
         this->refill_time = -1;
         return 4;
     }
@@ -872,7 +872,7 @@ static void try_dash(gameplay_scene *this, bool is_dirchg)
         return;
     }
     /* In case of multiple dashes in one beat, simply exit without particles */
-    if ((this->mov_state & MOV_DASH_BASE) && t != 4) return;
+    if (!is_dirchg && (this->mov_state & MOV_DASH_BASE) && t != 4) return;
     /* In case of direction updates, the time should not be reset */
     double dur = is_dirchg ? this->mov_time : DASH_DUR;
     if (is_dirchg && dur < DASH_MIN_DUR) return;
