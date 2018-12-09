@@ -476,8 +476,8 @@ static inline void render_objects(gameplay_scene *this,
             sobj *o = &sim_grid(sim, r, c);
             if (o->tag != 0) {
                 render_texture_scaled(get_texture(this, o),
-                    align_pixel(((int)o->x + o->ty) * UNIT_PX - cxi),
-                    align_pixel(((int)o->y + o->ty) * UNIT_PX - cyi),
+                    align_pixel(((int)o->x + o->ty) * UNIT_PX) - cxi,
+                    align_pixel(((int)o->y + o->ty) * UNIT_PX) - cyi,
                     SPR_SCALE
                 );
             }
@@ -485,8 +485,8 @@ static inline void render_objects(gameplay_scene *this,
     for (r = 0; r < sim->anim_sz; ++r) {
         sobj *o = sim->anim[r];
         render_texture_scaled(get_texture(this, o),
-            align_pixel((o->x + o->tx) * UNIT_PX - cxi),
-            align_pixel((o->y + o->ty) * UNIT_PX - cyi),
+            align_pixel((o->x + o->tx) * UNIT_PX) - cxi,
+            align_pixel((o->y + o->ty) * UNIT_PX) - cyi,
             SPR_SCALE
         );
     }
@@ -619,8 +619,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 128);
     for (i = 0; i < this->rec->hint_ct; ++i) {
         element_place_anchored((element *)this->l_hints[i],
-            align_pixel((this->rec->hints[i].c + 0.5) * UNIT_PX - cxi),
-            align_pixel((this->rec->hints[i].r + 0.5) * UNIT_PX - cyi),
+            align_pixel((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi,
+            align_pixel((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi,
             0.5, 0.5);
         int x = this->l_hints[i]->_base._base.dim.x - HINT_PADDING,
             y = this->l_hints[i]->_base._base.dim.y - HINT_PADDING,
