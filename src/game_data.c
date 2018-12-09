@@ -149,12 +149,13 @@ sim *stage_create_sim(struct stage_rec *this)
     /* Populate the grid */
     for (i = 0; i < this->n_rows; ++i)
         for (j = 0; j < this->n_cols; ++j) {
-            int t = this->grid[i * this->n_cols + j];
+            unsigned char t = this->grid[i * this->n_cols + j];
             sim_grid(s, i, j).tag = t;
             int tx, ty;
             grid_offset(t, &tx, &ty);
             sim_grid(s, i, j).tx = -tx * 1./16;
             sim_grid(s, i, j).ty = -ty * 1./16;
+            if (t != 0) printf("%d %.4lf %.4lf\n", (int)t, -tx * 1./16, -ty * 1./16);
         }
 
     /* Initialize all animate objects */

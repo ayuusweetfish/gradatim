@@ -1,5 +1,6 @@
 #include "sobj.h"
 #include "sim.h"
+#include "../resources.h"
 
 #include <math.h>
 #include <stdbool.h>
@@ -279,9 +280,14 @@ static inline void refill_init(sobj *o)
 static inline void refill_update_pred(sobj *o, double T, sobj *prot)
 {
     if (o->tag == OBJID_REFILL_WAIT && T - o->t >= REFILL_REGEN_DUR) o->t = -1;
-    if (o->t == -1)
+    if (o->t == -1) {
         o->tag = OBJID_REFILL +
             (int)(fmod(T, REFILL_ANIMLEN) * REFILL_FRAMEFRAC);
+        int tx, ty;
+        grid_offset(o->tag, &tx, &ty);
+        o->tx = -tx * 1./16;
+        o->ty = -ty * 1./16;
+    }
 }
 
 static inline void refill_update_post(sobj *o, double T, sobj *prot)

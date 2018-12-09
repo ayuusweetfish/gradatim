@@ -36,7 +36,7 @@ struct stage_rec {
     int spawn_r, spawn_c;
 
     /* Grid data */
-    char *grid;
+    unsigned char *grid;
     /* Animate & extra objects */
     int n_anim;
     sobj *anim;
