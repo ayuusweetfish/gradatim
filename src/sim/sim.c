@@ -113,7 +113,7 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
     sobj *o = &sim_grid(this, py, px);
     for (i = 0; i <= 1; ++i)
         for (j = 0; j <= 1; ++j)
-            if (px + i < this->gcols && py + j < this->grows) {
+            if (px + j < this->gcols && py + i < this->grows) {
                 o = &sim_grid(this, py + i, px + j);
                 if (o->tag != 0) {
                     in |= (cur = apply_intsc(this, o));
