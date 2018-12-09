@@ -155,7 +155,6 @@ sim *stage_create_sim(struct stage_rec *this)
             grid_offset(t, &tx, &ty);
             sim_grid(s, i, j).tx = -tx * 1./16;
             sim_grid(s, i, j).ty = -ty * 1./16;
-            if (t != 0) printf("%d %.4lf %.4lf\n", (int)t, -tx * 1./16, -ty * 1./16);
         }
 
     /* Initialize all animate objects */

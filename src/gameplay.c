@@ -476,7 +476,7 @@ static inline void render_objects(gameplay_scene *this,
             sobj *o = &sim_grid(sim, r, c);
             if (o->tag != 0 && ((o->tag < OBJID_DRAW_AFTER) ^ is_after)) {
                 render_texture_scaled(get_texture(this, o),
-                    align_pixel(((int)o->x + o->ty) * UNIT_PX) - cxi,
+                    align_pixel(((int)o->x + o->tx) * UNIT_PX) - cxi,
                     align_pixel(((int)o->y + o->ty) * UNIT_PX) - cyi,
                     SPR_SCALE
                 );
