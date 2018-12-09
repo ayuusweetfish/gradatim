@@ -131,7 +131,9 @@ static inline void billow_update_pred(sobj *o, double T, sobj *prot)
     } else if (o->t != -1) {
         int f_idx = (T - o->t) / BILLOW_FRMLEN;
         o->tag = max(OBJID_BILLOW, OBJID_BILLOW_EMPTY - 1 - f_idx);
-    } else if (o->t == -1 && !is_touching(o, prot, 1, 1) && cur_beat) {
+    } else if (o->t == -1 && !is_touching(o, prot, 1, 1) &&
+        (cur_beat || (!cur_beat && next_beat && beat_d >= 1 - BILLOW_ANIM)))
+    {
         /* Starts appearing */
         o->t = T;
     } else {
