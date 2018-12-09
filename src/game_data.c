@@ -118,7 +118,7 @@ struct stage_rec *stage_read(const char *path)
             &h.r, &h.c, &stridx, &keyidx, &imgidx, &h.mul, &h.mask);
         h.str = bekter_at(this->strtab, stridx, char *);
         h.key = bekter_at(this->strtab, keyidx, char *);
-        h.img = bekter_at(this->strtab, imgidx, char *);
+        h.img = (imgidx == -1 ? NULL : bekter_at(this->strtab, imgidx, char *));
         this->hints[i] = h;
     }
 

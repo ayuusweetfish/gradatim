@@ -49,8 +49,8 @@ static const double LEADIN_INIT = 1;
 static const double LEADIN_DUR = 0.4; /* Seconds */
 static const double FAILURE_SPF = 0.1;
 static const double STRETTO_RANGE = 2.5;
-static const int HINT_FONTSZ = 30;
-static const int HINT_PADDING = 8;
+static const int HINT_FONTSZ = 36;
+static const int HINT_PADDING = 12;
 static const int CLOCK_CHAP_FONTSZ = 44;
 static const int CLOCK_STG_FONTSZ = 32;
 static const double CLOCK_BLINK_DUR = 2;
@@ -228,7 +228,7 @@ static inline void switch_stage_ctx(gameplay_scene *this)
                 this->rec->hints[i].str, this->rec->hints[i].key);
             int w;
             int sig = this->chap->sig * this->rec->hints[i].mul;
-            for (j = 0; j < sig; ++j) {
+            for (j = 0; j < sig; ++j) if (this->rec->hints[i].img != NULL) {
                 sprite_reload(this->s_hints[i][j], this->rec->hints[i].img);
                 if (j == 0) w = this->s_hints[i][j]->_base.dim.w / sig;
                 /* The image should be horizontally sliced into `sig` pieces */
@@ -633,14 +633,17 @@ static void gameplay_scene_draw(gameplay_scene *this)
             /* Expand horizontally if necessary */
             sig = this->chap->sig * this->rec->hints[i].mul;
             int w1 = this->w_hints[i] * sig + HINT_PADDING * 2;
+            int xoff = 0;   /* Offset of sprites, in order to centre-align */
             if (w < w1) {
                 x -= (w1 - w) / 2;
                 w = w1;
+            } else {
+                xoff = (w - w1) / 2;
             }
             /* Display all sprites */
             for (j = 0; j < sig; ++j) {
                 element_place((element *)this->s_hints[i][j],
-                    x + HINT_PADDING + this->w_hints[i] * j,
+                    x + HINT_PADDING + this->w_hints[i] * j + xoff,
                     this->l_hints[i]->_base._base.dim.y + h - HINT_PADDING * 2);
             }
             /* Update height */
