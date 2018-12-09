@@ -420,6 +420,11 @@ bool sobj_needs_update(sobj *o)
         o->tag >= 128;
 }
 
+bool sobj_needs_collision(sobj *o)
+{
+    return o->tag != 0 && (o->tag < OBJID_BG_FIRST || o->tag > OBJID_BG_LAST);
+}
+
 void sobj_new_round()
 {
     puff_used = false;

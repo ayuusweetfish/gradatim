@@ -23,6 +23,9 @@ sim *sim_create(int grows, int gcols)
     ret->anim_cap = 16;
     ret->anim = malloc(ret->anim_cap * sizeof(sobj *));
     ret->anim_sz = 0;
+    ret->block_cap = 16;
+    ret->block = malloc(ret->block_cap * sizeof(sobj *));
+    ret->block_sz = 0;
     ret->volat_cap = 16;
     ret->volat = malloc(ret->volat_cap * sizeof(sobj *));
     ret->volat_sz = 0;
@@ -44,8 +47,20 @@ void sim_drop(sim *this)
 {
     free(this->grid);
     free(this->anim);
+    free(this->block);
     free(this->volat);
     free(this);
+}
+
+/* Adds a given object (usu. extra object) to the `block` list, if necessary */
+void sim_check_block(sim *this, sobj *o)
+{
+    if (!sobj_needs_collision(o)) return;
+    this->block[this->block_sz++] = o;
+    if (this->block_sz == this->block_cap) {
+        this->block_cap <<= 1;
+        this->block = realloc(this->block, this->block_cap * sizeof(sobj *));
+    }
 }
 
 /* Adds a given object (usu. grid cell) to the `volat` list, if necessary */
@@ -68,6 +83,7 @@ void sim_add(sim *this, sobj *o)
         this->anim_cap <<= 1;
         this->anim = realloc(this->anim, this->anim_cap * sizeof(sobj *));
     }
+    sim_check_block(this, o);
     sim_check_volat(this, o);
 }
 
@@ -121,8 +137,8 @@ static inline bool check_intsc(sim *this, bool inst, bool mark_lands)
                     if (inst && in) return true;
                 }
             }
-    for (i = 0; i < this->anim_sz; ++i) {
-        o = this->anim[i];
+    for (i = 0; i < this->block_sz; ++i) {
+        o = this->block[i];
         in |= (cur = apply_intsc(this, o));
         if (mark_lands) o->is_on = cur;
         if (inst && in) return true;

@@ -20,6 +20,8 @@ typedef struct _sim {
 
     sobj **anim;        /* List of moving & extra objects */
     int anim_sz, anim_cap;
+    sobj **block;       /* List of extra objects that need collision detection */
+    int block_sz, block_cap;
     sobj **volat;       /* List of stuff that need to be updated frequently */
     int volat_sz, volat_cap;
 

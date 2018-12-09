@@ -74,6 +74,7 @@ typedef struct _sobj {
 
 void sobj_init(sobj *o);
 bool sobj_needs_update(sobj *o);
+bool sobj_needs_collision(sobj *o);
 void sobj_update_pred(sobj *o, double T, sobj *prot);
 void sobj_update_post(sobj *o, double T, sobj *prot);
 void sobj_new_round();
