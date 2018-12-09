@@ -417,7 +417,7 @@ bool sobj_needs_update(sobj *o)
 {
     return
         (o->tag >= OBJID_TORCH_FIRST && o->tag <= OBJID_TORCH_LAST) ||
-        o->tag >= 30;
+        o->tag >= 128;
 }
 
 void sobj_new_round()
