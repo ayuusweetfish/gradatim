@@ -247,12 +247,16 @@ struct chap_rec *chap_read(const char *path)
     fgetc(f);   /* Skip the newline character */
     if (m > MAX_CHAP_STAGES) { free(this); fclose(f); return NULL; }
     this->n_stages = m;
+
+    int world_r = 0, world_c = 0;
     for (i = 0; i < m; ++i) {
         char s[64];
         fgets(s, sizeof s, f);
         int p = strlen(s) - 1;
         while (p > 0 && isspace(s[p])) s[p--] = '\0';
         this->stages[i] = stage_read(s);
+        world_r = (this->stages[i]->world_r += world_r);
+        world_c = (this->stages[i]->world_c += world_c);
     }
 
     fclose(f);
