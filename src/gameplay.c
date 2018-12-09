@@ -369,7 +369,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                 this->simulator->prot.ax =
                     (this->mov_state & MOV_DASH_LEFT) ?
                     +DASH_HOR_ACCEL : -DASH_HOR_ACCEL;
-                this->simulator->prot.ay = -SIM_GRAVITY;
+                this->simulator->prot.ay = -SIM_GRAVITY - 0.1;
+                if ((this->mov_state & 3) != 3) this->simulator->prot.vy = 0;
             }
             if (this->mov_state & MOV_VERDASH & 3) {
                 /* If a diagonal dash is taking place,
@@ -377,15 +378,15 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                 this->simulator->prot.ay =
                     (this->mov_state & MOV_DASH_UP) ? DASH_VER_ACCEL : 0;
             }
-            if (this->mov_state & 3) {
+            if ((this->mov_state & 3) == 3) {
                 this->simulator->prot.ax *= DASH_DIAG_SCALE;
                 this->simulator->prot.ay *= DASH_DIAG_SCALE;
             }
             /* In case the protagonist runs into something,
              * the velocity becomes 0 and should not change any more */
-            if (this->simulator->prot.vx * this->simulator->prot.ax >= 0)
+            if (this->simulator->prot.vx * this->simulator->prot.ax > 1e-8)
                 this->simulator->prot.ax = 0;
-            if (this->simulator->prot.vy * this->simulator->prot.ay >= 0)
+            if (this->simulator->prot.vy * this->simulator->prot.ay > 1e-8)
                 this->simulator->prot.ay = 0;
             /* In case a plunge is in progress, its speed change
              * should be taken into account */
