@@ -318,7 +318,7 @@ static inline void mud_wet_update_pred(sobj *o, double T, sobj *prot)
 {
     if (!mud_wet_used && o->is_on) {
         mud_wet_used = true;
-        prot->vx *= (1 + SIM_STEPLEN * (o->tag == OBJID_MUD ? -80 : 20));
+        prot->vx *= (1 + SIM_STEPLEN * (o->tag <= OBJID_MUD_LAST ? -80 : 20));
     }
 }
 
@@ -371,7 +371,7 @@ void sobj_update_pred(sobj *o, double T, sobj *prot)
         refill_update_pred(o, T, prot);
     else if (o->tag >= OBJID_PUFF_FIRST && o->tag <= OBJID_PUFF_LAST)
         puff_update_pred(o, T, prot);
-    else if (o->tag == OBJID_MUD || o->tag == OBJID_WET)
+    else if (o->tag >= OBJID_MUD_FIRST && o->tag <= OBJID_WET_LAST)
         mud_wet_update_pred(o, T, prot);
 }
 

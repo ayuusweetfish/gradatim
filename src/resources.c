@@ -6,8 +6,13 @@
 
 #include <string.h>
 
-bekter(SDL_Texture *) sdl_tex_list;
-bekter(_texture_kvpair) res_map[RES_HASH_SZ];
+#define RES_HASH_SZ 997
+#define GRID_SZ 256
+
+static bekter(SDL_Texture *) sdl_tex_list;
+static bekter(_texture_kvpair) res_map[RES_HASH_SZ];
+static texture grid[GRID_SZ];
+static int grid_tx[GRID_SZ], grid_ty[GRID_SZ];
 
 static unsigned int elf_hash(const char *s)
 {
@@ -48,6 +53,26 @@ static void load_image(const char *path)
     bekter_pushback(res_map[hash], p);
 }
 
+static void load_grid(const char *image, const char *csv)
+{
+    SDL_Texture *tex = texture_from_file(image, NULL, NULL);
+    if (tex == NULL) return;
+
+    FILE *f = fopen(csv, "r");
+    if (f == NULL) { SDL_DestroyTexture(tex); return; }
+
+    int i;
+    for (i = 1; i < GRID_SZ; ++i) {
+        int x, y, w, h, tx, ty;
+        fscanf(f, "%d,%d,%d,%d,%d,%d",
+            &x, &y, &w, &h, &tx, &ty);
+        grid[i] = (texture){tex, (SDL_Rect){x, y, w, h}};
+        grid_tx[i] = tx;
+        grid_ty[i] = ty;
+    }
+    fclose(f);
+}
+
 void load_images()
 {
     int i;
@@ -80,6 +105,7 @@ void load_images()
     load_image("puff_r.png");
     load_image("rua1.png");
     load_image("rua2.png");
+    load_grid("grid.png", "grid.csv");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     load_image("clock.png");
     load_image("retry_count.png");
@@ -127,6 +153,17 @@ texture retrieve_texture(const char *name)
         if (strcmp(name, p.name) == 0) return p.value;
     }
     return (texture){0};
+}
+
+texture grid_texture(unsigned char idx)
+{
+    return grid[idx];
+}
+
+void grid_offset(unsigned char idx, int *x, int *y)
+{
+    *x = grid_tx[idx];
+    *y = grid_ty[idx];
 }
 
 texture temp_texture(SDL_Texture *sdl_tex)

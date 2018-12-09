@@ -8,8 +8,6 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-#define RES_HASH_SZ 997
-
 typedef struct _texture {
     SDL_Texture *sdl_tex;
     SDL_Rect range;
@@ -23,6 +21,8 @@ typedef struct _texture_kvpair {
 void load_images();
 void release_images();
 texture retrieve_texture(const char *name);
+texture grid_texture(unsigned char idx);
+void grid_offset(unsigned char idx, int *x, int *y);
 texture temp_texture(SDL_Texture *sdl_tex);
 void render_texture(texture t, SDL_Rect *dim);
 void render_texture_ex(texture t, SDL_Rect *dim,

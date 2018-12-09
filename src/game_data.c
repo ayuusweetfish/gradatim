@@ -128,37 +128,8 @@ struct stage_rec *stage_read(const char *path)
     this->prot_fail_tex[1] = retrieve_texture("fragile2.png");
     this->prot_fail_tex[2] = retrieve_texture("fragile3.png");
     this->prot_fail_tex[3] = retrieve_texture("fragile4.png");
-    this->grid_tex[1] = retrieve_texture("block.png");
-    this->grid_tex[OBJID_SPRING] = retrieve_texture("spring1.png");
-    this->grid_tex[OBJID_SPRING_PRESS] = retrieve_texture("spring2.png");
-    this->grid_tex[OBJID_CLOUD_ONEWAY] =
-    this->grid_tex[OBJID_CLOUD_RTRIP] = retrieve_texture("cloud.png");
-    this->grid_tex[OBJID_ONEWAY_M] = retrieve_texture("cloud.png");
-    this->grid_tex[OBJID_LUMP_FIRST] = retrieve_texture("uwu.png");
-    this->grid_tex[OBJID_SLIME_FIRST] = retrieve_texture("uwu.png");
-    this->grid_tex[OBJID_FRAGILE] = retrieve_texture("fragile1.png");
-    this->grid_tex[OBJID_FRAGILE + 1] = retrieve_texture("fragile2.png");
-    this->grid_tex[OBJID_FRAGILE + 2] = retrieve_texture("fragile3.png");
-    this->grid_tex[OBJID_FRAGILE + 3] = retrieve_texture("fragile4.png");
-    this->grid_tex[OBJID_BILLOW] = retrieve_texture("fragile1.png");
-    this->grid_tex[OBJID_BILLOW + 1] = retrieve_texture("fragile3.png");
-    this->grid_tex[OBJID_BILLOW + 2] = retrieve_texture("fragile2.png");
-    this->grid_tex[OBJID_MUSHROOM_T] = retrieve_texture("mushroom_t.png");
-    this->grid_tex[OBJID_MUSHROOM_B] = retrieve_texture("mushroom_b.png");
-    this->grid_tex[OBJID_MUSHROOM_BR] =
-    this->grid_tex[OBJID_MUSHROOM_BL] =
-    this->grid_tex[OBJID_MUSHROOM_TR] =
-    this->grid_tex[OBJID_MUSHROOM_TL] = retrieve_texture("mushroom_tl.png");
-    this->grid_tex[OBJID_REFILL] = retrieve_texture("refill1.png");
-    this->grid_tex[OBJID_REFILL + 1] = retrieve_texture("refill2.png");
-    this->grid_tex[OBJID_REFILL + 2] = retrieve_texture("refill3.png");
-    this->grid_tex[OBJID_REFILL + 3] = retrieve_texture("refill4.png");
-    this->grid_tex[OBJID_PUFF_L] = retrieve_texture("puff_l.png");
-    this->grid_tex[OBJID_PUFF_L_CURL] = retrieve_texture("spring1.png");
-    this->grid_tex[OBJID_PUFF_L_AFTER] = retrieve_texture("fragile2.png");
-    this->grid_tex[OBJID_PUFF_R] = retrieve_texture("puff_r.png");
-    this->grid_tex[OBJID_MUD] = retrieve_texture("fragile1.png");
-    this->grid_tex[OBJID_WET] = retrieve_texture("fragile2.png");
+    for (i = 1; i < 256; ++i)
+        this->grid_tex[i] = grid_texture(i);
 
     fclose(f);
     return this;
