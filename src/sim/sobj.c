@@ -60,6 +60,14 @@ static inline bool is_near(sobj *o, sobj *prot)
         in_range(prot->y + prot->h, o->y - EPS, o->y + o->h + EPS));
 }
 
+static inline void update_offset(sobj *o)
+{
+    int tx, ty;
+    grid_offset(o->tag, &tx, &ty);
+    o->tx = -tx * 1./16;
+    o->ty = -ty * 1./16;
+}
+
 static inline void bg_init(sobj *o)
 {
     o->w = o->h = 0;
@@ -155,6 +163,7 @@ static inline void spring_update_pred(sobj *o, double T, sobj *prot)
         o->y = (int)o->y + 10./16;
         o->h = 6./16;
         o->t = -1;
+        update_offset(o);
     }
 }
 
@@ -173,6 +182,7 @@ static inline void spring_update_post(sobj *o, double T, sobj *prot)
         o->h = 3./16;
         prot->vy = -SPRING_SPD;
         prot->ay = 0;
+        update_offset(o);
     }
 }
 
@@ -283,10 +293,7 @@ static inline void refill_update_pred(sobj *o, double T, sobj *prot)
     if (o->t == -1) {
         o->tag = OBJID_REFILL +
             (int)(fmod(T, REFILL_ANIMLEN) * REFILL_FRAMEFRAC);
-        int tx, ty;
-        grid_offset(o->tag, &tx, &ty);
-        o->tx = -tx * 1./16;
-        o->ty = -ty * 1./16;
+        update_offset(o);
     }
 }
 
