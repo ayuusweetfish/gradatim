@@ -225,10 +225,13 @@ static inline void oneway_update_pred(sobj *o, double T, sobj *prot)
 
 static inline void lump_update_pred(sobj *o, double T, sobj *prot)
 {
+    /* Mostly same as horizontal clouds */
     /* Update position */
     double prog = get_prog(o, T);
     o->x = o->vx + (o->ax - o->vx) * prog;
     o->y = o->vy + (o->ay - o->vy) * prog;
+    if (is_landing(o, prot))
+        prot->x += (o->ax - o->vx) * (prog - get_prog(o, T - SIM_STEPLEN));
 }
 
 static inline void slime_update_post(sobj *o, double T, sobj *prot)
