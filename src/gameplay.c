@@ -26,17 +26,17 @@ static const double ANDANTE_MUL = 0.8;
 #define AUD_OFFSET  (-this->chap->offs / this->mul + 0.04)
 #define BEAT        (this->chap->beat / this->mul)
 #define HOP_SPD SIM_GRAVITY
-static const double HOP_PRED_DUR = 0.2;
-static const double HOP_GRACE_DUR = 0.15;
-#define ANTHOP_DELUGE_SPD (6.0 * SIM_GRAVITY)
+static const double HOP_PRED_DUR = 0.3;
+static const double HOP_GRACE_DUR = 0.2;
+#define ANTHOP_DELUGE_SPD (10.0 * SIM_GRAVITY)
 static const double HOR_SPD = 4;
 static const double DASH_DUR = 1;
 #define DASH_HOR_V0     (6.5 * 1.414213562)
 #define DASH_HOR_ACCEL  (DASH_HOR_V0 * DASH_DUR)
 #define DASH_VER_V0     (5.5 * 1.414213562)
 #define DASH_VER_ACCEL  (DASH_VER_V0 * DASH_DUR - SIM_GRAVITY)
-static const double HOP_TOLERANCE = 1./6;
-static const double DASH_TOLERANCE = 1./5;
+static const double HOP_TOLERANCE = 1./4;
+static const double DASH_TOLERANCE = 1./3;
 static const double DASH_MIN_DUR = 1 - DASH_DUR * DASH_TOLERANCE;
 static const double DASH_DIAG_SCALE = 0.8;
 static const double REFILL_PERSISTENCE = 2; /* In beats */
@@ -348,6 +348,9 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
     this->simulator->prot.ay =
         (this->ver_state == VER_STATE_DOWN) ? 4.0 * SIM_GRAVITY : 0;
     double plunge_vy = this->simulator->prot.ay;
+    double hor_mov_vx =
+        (this->hor_state == HOR_STATE_LEFT) ? -HOR_SPD :
+        (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
     if (this->mov_state == MOV_ANTHOP) {
         if (this->mov_time <= 0) {
             /* Perform a jump */
@@ -358,7 +361,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             this->simulator->prot.ay = ANTHOP_DELUGE_SPD;
         }
         this->mov_time -= dt / BEAT;
-        this->simulator->prot.vx = 0;
+        /* Cancel out the vertical velocity */
+        this->simulator->prot.vx = -hor_mov_vx / 2;
     } else if (this->mov_state & MOV_DASH_BASE) {
         if (this->mov_time <= 0) {
             /* XXX: Avoid duplicates? */
@@ -401,9 +405,6 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         /* Normal state */
         this->simulator->prot.vx = 0;
     }
-    double hor_mov_vx =
-        (this->hor_state == HOR_STATE_LEFT) ? -HOR_SPD :
-        (this->hor_state == HOR_STATE_RIGHT) ? +HOR_SPD : 0;
     this->simulator->prot.vx += hor_mov_vx;
 
     double rt = this->rem_time + dt / (BEAT * this->chap->beat_mul);

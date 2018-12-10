@@ -265,7 +265,7 @@ void sim_tick(sim *this)
  * is around the corners of moving platforms, in which case
  * mispredictions may cause an incorrect anticipated deluge but no
  * following jump. However, the player would continue to fall anyway. */
-bool sim_prophecy(sim *this, double time)
+static inline bool sim_prophecy_partial(sim *this, double time)
 {
     double x0 = this->prot.x, y0 = this->prot.y;
     this->prot.x += (this->prot.vx + this->prot.ax * time / 2) * time;
@@ -285,4 +285,16 @@ bool sim_prophecy(sim *this, double time)
     this->prot.x = x0;
     this->prot.y = y0;
     return in;
+}
+
+bool sim_prophecy(sim *this, double time)
+{
+    if (sim_prophecy_partial(this, time)) return true;
+    double vx0 = this->prot.vx, ax0 = this->prot.ax;
+    this->prot.vx = 0;
+    this->prot.ax = 0;
+    bool ret = sim_prophecy_partial(this, time);
+    this->prot.vx = vx0;
+    this->prot.ax = ax0;
+    return ret;
 }
