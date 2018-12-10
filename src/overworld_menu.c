@@ -7,6 +7,7 @@
 #include "profile_data.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
 
 static const double MOV_X = 30;
@@ -261,9 +262,9 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     ret->menu_time = 0;
 
     char s[64];
-    strcpy(s, "Chapter X - ");
-    s[8] = '1' + bg->cur_chap_idx;
-    gen_roman_numeral(s + 12, bg->cur_stage_idx + 1);
+    if (bg->cur_chap_idx == 0) strcpy(s, "Prelude - ");
+    else sprintf(s, "Chapter %d - ", bg->cur_chap_idx);
+    gen_roman_numeral(s + strlen(s), bg->cur_stage_idx + 1);
     label *l = label_create(FONT_UPRIGHT, 40,
         (SDL_Color){255, 255, 255}, WIN_W, s);
     element_place_anchored((element *)l, WIN_W - 12, 12, 1, 0);

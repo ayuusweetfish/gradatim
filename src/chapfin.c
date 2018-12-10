@@ -28,7 +28,7 @@ static const double I3 = 0.02;
 
 static const double CAM_MOVE = 4;
 static const double LINE_X = 0.15;
-static const double LINE_Y = 0.4;
+static const double LINE_Y = 0.387;
 static const double LINE_WIDTH = 4;
 static const double ICON_BASE_X = 0.75;
 static const double ICON_SZ = 0.05;
@@ -240,7 +240,8 @@ chapfin_scene *chapfin_scene_create(gameplay_scene *g)
             rand() % (WIN_W / 4) + WIN_W / 4, (double)(i + 1) / 12);
 
     char s[64];
-    sprintf(s, "C h a p t e r  %d", g->chap->idx + 1);
+    if (g->chap->idx == 0) sprintf(s, "P r e l u d e");
+    else sprintf(s, "C h a p t e r  %d", g->chap->idx);
     label *l = label_create(FONT_UPRIGHT, 40,
         (SDL_Color){255, 255, 255}, WIN_W, s);
     element_place_anchored((element *)l, WIN_W / 2, WIN_H * 0.3, 0.5, 0.5);
