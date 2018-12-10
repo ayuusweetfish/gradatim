@@ -4,6 +4,7 @@
 #include "transition.h"
 #include "resources.h"
 #include "profile_data.h"
+#include "intro.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -13,11 +14,12 @@
 
 static void draw_loop()
 {
-    static Uint32 last_time = 0;
+    static Uint32 last_time = (Uint32)(-1);
     Uint32 cur_time = SDL_GetTicks();
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
     SDL_RenderClear(g_renderer);
-    scene_tick(g_stage, (cur_time - last_time) * 0.001);
+    scene_tick(g_stage,
+        last_time == (Uint32)(-1) ? 0 : (cur_time - last_time) * 0.001);
     scene_draw(g_stage);
     SDL_RenderPresent(g_renderer);
     last_time = cur_time;
@@ -49,15 +51,8 @@ int main()
     load_images();
 
     g_orion = orion_create(44100, 2);
-    orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "copycat.ogg");
-    orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, BGM_LOOP_A, BGM_LOOP_B);
-    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0, profile.bgm_vol * VOL_VALUE);
-    orion_apply_lowpass(&g_orion, TRACKID_MAIN_BGM, TRACKID_MAIN_BGM_LP, 1760);
-    orion_play_loop(&g_orion, TRACKID_MAIN_BGM_LP, 0, 0, -1);
-    orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0, 0);
-    orion_overall_play(&g_orion);
 
-    g_stage = (scene *)colour_scene_create(0, 192, 255);
+    g_stage = (scene *)intro_scene_create();
 
     bool running = true;
     SDL_Event e;
