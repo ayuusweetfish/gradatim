@@ -25,6 +25,7 @@ typedef struct _gameplay_scene {
     double rem_time;
     bool paused;
     unsigned int dialogue_triggered;
+    int dialogue_idx;   /* For delayed dialogue */
 
     /* For updating player's records */
     int start_stage_idx;
@@ -40,6 +41,8 @@ typedef struct _gameplay_scene {
     enum display_state {
         DISP_NORMAL,    /* Normal simulation and gameplay */
         DISP_LEADIN,    /* Flashlight lead in */
+        DISP_DIALOGUE_IN,   /* With a dialogue overlay, zooming in */
+        DISP_DIALOGUE_OUT,  /* With a dialogue overlay, zooming out */
         DISP_FAILURE,   /* Failure animation */
         DISP_CHAPFIN    /* End of chapter */
     } disp_state;
@@ -49,6 +52,8 @@ typedef struct _gameplay_scene {
     /* The position of the camera's top-left corner in the
      * simulated world, expressed in units */
     double cam_x, cam_y;
+    /* Scales everything from a certain point */
+    double scale;
 
     /* Input state */
     enum { HOR_STATE_NONE, HOR_STATE_LEFT, HOR_STATE_RIGHT } hor_state, facing;

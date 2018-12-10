@@ -49,6 +49,8 @@ static const double LEADIN_INIT = 1;
 static const double LEADIN_DUR = 0.4; /* Seconds */
 static const double FAILURE_SPF = 0.1;
 static const double STRETTO_RANGE = 2.5;
+static const double DIALOGUE_ZOOM_DUR = 0.9;
+static const double DIALOGUE_ZOOM_SCALE = 3;
 static const int HINT_FONTSZ = 36;
 static const int HINT_PADDING = 12;
 static const int CLOCK_CHAP_FONTSZ = 44;
@@ -305,6 +307,34 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         }
         this->simulator->cur_time += dt / (BEAT * this->chap->beat_mul);
         return;
+    } else if (this->disp_state == DISP_DIALOGUE_IN) {
+        if (g_stage == (scene *)this && this->dialogue_idx == -1) {
+            this->disp_state = DISP_DIALOGUE_OUT;
+            this->disp_time = DIALOGUE_ZOOM_DUR;
+        } else {
+            double r = (this->disp_time -= dt);
+            if (r < 0 && g_stage == (scene *)this) {
+                stage_dialogue *d = bekter_at_ptr(this->rec->plot,
+                    this->dialogue_idx, stage_dialogue);
+                g_stage = (scene *)dialogue_create(&g_stage, d->content);
+                this->dialogue_idx = -1;
+            }
+            r = (r < 0) ? 1 : 1 - r / DIALOGUE_ZOOM_DUR;
+            r = ease_quad_inout(r);
+            r = 1 + (DIALOGUE_ZOOM_SCALE - 1) * r;
+            this->scale = r;
+        }
+    } else if (this->disp_state == DISP_DIALOGUE_OUT) {
+        if ((this->disp_time -= dt) <= 0) {
+            this->disp_state = DISP_NORMAL;
+            this->scale = 1;
+        } else {
+            double r = (this->disp_time -= dt);
+            r = (r < 0) ? 0 : r / DIALOGUE_ZOOM_DUR;
+            r = ease_quad_inout(r);
+            r = 1 + (DIALOGUE_ZOOM_SCALE - 1) * r;
+            this->scale = r;
+        }
     } else if (this->disp_state == DISP_CHAPFIN) {
         if (g_stage == (scene *)this)
             g_stage = (scene *)chapfin_scene_create(this);
@@ -439,7 +469,10 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             this->simulator->prot.ax = this->simulator->prot.ay =
             this->simulator->prot.vx = this->simulator->prot.vy = 0;
             this->dialogue_triggered |= (1 << i);
-            g_stage = (scene *)dialogue_create(&g_stage, d->content);
+            this->disp_state = DISP_DIALOGUE_IN;
+            this->disp_time = DIALOGUE_ZOOM_DUR;
+            this->dialogue_idx = i;
+            break;
         }
     }
 
@@ -461,8 +494,26 @@ static inline int align_pixel(double x)
     return iround(x / SPR_SCALE) * SPR_SCALE;
 }
 
+static inline void render_object(gameplay_scene *this,
+    bool rounds, int cxi, int cyi, int sx, int sy, sobj *o)
+{
+    int x = align_pixel(((rounds ? (int)o->x : o->x) + o->tx) * UNIT_PX) - cxi,
+        y = align_pixel(((rounds ? (int)o->y : o->y) + o->ty) * UNIT_PX) - cyi;
+    if (this->scale == 1) {
+        render_texture_scaled(get_texture(this, o), x, y, SPR_SCALE);
+    } else {
+        x = round(sx + (x - sx) * this->scale);
+        y = round(sy + (y - sy) * this->scale);
+        render_texture_scaled(get_texture(this, o),
+            x, y, SPR_SCALE * this->scale);
+        render_texture_scaled(get_texture(this, o),
+            x + 1, y + 1, SPR_SCALE * this->scale);
+    }
+}
+
 static inline void render_objects(gameplay_scene *this,
-    bool is_prev, bool is_after, double offsx, double offsy)
+    bool is_prev, bool is_after, double offsx, double offsy,
+    int scale_x, int scale_y)
 {
     sim *sim = (is_prev ? this->prev_sim : this->simulator);
     double cx = (is_prev ? this->cam_x + offsx : this->cam_x);
@@ -477,23 +528,13 @@ static inline void render_objects(gameplay_scene *this,
     for (r = rmin; r < rmax; ++r)
         for (c = cmin; c < cmax; ++c) {
             sobj *o = &sim_grid(sim, r, c);
-            if (o->tag != 0 && ((o->tag < OBJID_DRAW_AFTER) ^ is_after)) {
-                render_texture_scaled(get_texture(this, o),
-                    align_pixel(((int)o->x + o->tx) * UNIT_PX) - cxi,
-                    align_pixel(((int)o->y + o->ty) * UNIT_PX) - cyi,
-                    SPR_SCALE
-                );
-            }
+            if (o->tag != 0 && ((o->tag < OBJID_DRAW_AFTER) ^ is_after))
+                render_object(this, true, cxi, cyi, scale_x, scale_y, o);
         }
     for (r = 0; r < sim->anim_sz; ++r) {
         sobj *o = sim->anim[r];
-        if ((o->tag < OBJID_DRAW_AFTER) ^ is_after) {
-            render_texture_scaled(get_texture(this, o),
-                align_pixel((o->x + o->tx) * UNIT_PX) - cxi,
-                align_pixel((o->y + o->ty) * UNIT_PX) - cyi,
-                SPR_SCALE
-            );
-        }
+        if ((o->tag < OBJID_DRAW_AFTER) ^ is_after)
+            render_object(this, false, cxi, cyi, scale_x, scale_y, o);
     }
 }
 
@@ -607,16 +648,6 @@ static void gameplay_scene_draw(gameplay_scene *this)
     SDL_SetRenderDrawColor(g_renderer, 216, 224, 255, 255);
     SDL_RenderClear(g_renderer);
 
-    /* Draw the previous stage during transition */
-    if (this->prev_sim != NULL) {
-        int delta_x = this->simulator->worldc - this->prev_sim->worldc;
-        int delta_y = this->simulator->worldr - this->prev_sim->worldr;
-        render_objects(this, true, false, delta_x, delta_y);
-        render_objects(this, true, true, delta_x, delta_y);
-    }
-
-    render_objects(this, false, false, 0, 0);
-
     int cxi = align_pixel(this->cam_x * UNIT_PX),
         cyi = align_pixel(this->cam_y * UNIT_PX);
     bool is_prot_fast =
@@ -627,19 +658,6 @@ static void gameplay_scene_draw(gameplay_scene *this)
     double prot_w = this->simulator->prot.w * UNIT_PX;
     double prot_h = this->simulator->prot.h * UNIT_PX;
 
-    texture prot_tex = this->rec->prot_tex;
-    if (this->disp_state == DISP_FAILURE) {
-        int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
-            0, FAILURE_NF - 1);
-        prot_tex = this->rec->prot_fail_tex[f_idx];
-        /* The failure animation should be displayed above everything else */
-        render_objects(this, false, true, 0, 0);
-        prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
-        prot_disp_y -= (prot_tex.range.h * SPR_SCALE - prot_h) / 2;
-        prot_w = prot_tex.range.w * SPR_SCALE;
-        prot_h = prot_tex.range.h * SPR_SCALE;
-    }
-
     if (!is_prot_fast) {
         prot_disp_x = align_pixel(prot_disp_x) - cxi;
         prot_disp_y = align_pixel(prot_disp_y) - cyi;
@@ -648,8 +666,30 @@ static void gameplay_scene_draw(gameplay_scene *this)
         prot_disp_y -= iround(this->cam_y * UNIT_PX);
     }
 
-    if (this->disp_state != DISP_FAILURE)
-        render_objects(this, false, true, 0, 0);
+    /* Draw the previous stage during transition */
+    if (this->prev_sim != NULL) {
+        int delta_x = this->simulator->worldc - this->prev_sim->worldc;
+        int delta_y = this->simulator->worldr - this->prev_sim->worldr;
+        render_objects(this, true, false, delta_x, delta_y, prot_disp_x, prot_disp_y);
+        render_objects(this, true, true, delta_x, delta_y, prot_disp_x, prot_disp_y);
+    }
+
+    render_objects(this, false, false, 0, 0, prot_disp_x, prot_disp_y);
+
+    texture prot_tex = this->rec->prot_tex;
+    if (this->disp_state == DISP_FAILURE) {
+        int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
+            0, FAILURE_NF - 1);
+        prot_tex = this->rec->prot_fail_tex[f_idx];
+        /* The failure animation should be displayed above everything else;
+         * No dialogue or stage transition
+         * should be running during failure animation */
+        render_objects(this, false, true, 0, 0, 0, 0);
+        prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
+        prot_disp_y -= (prot_tex.range.h * SPR_SCALE - prot_h) / 2;
+        prot_w = prot_tex.range.w * SPR_SCALE;
+        prot_h = prot_tex.range.h * SPR_SCALE;
+    }
 
     /* Display hints */
     int i, j;
@@ -715,8 +755,12 @@ static void gameplay_scene_draw(gameplay_scene *this)
     }
 
     render_texture_ex(prot_tex, &(SDL_Rect){
-        prot_disp_x, prot_disp_y, iround(prot_w), iround(prot_h),
+        prot_disp_x, prot_disp_y,
+        iround(prot_w * this->scale), iround(prot_h * this->scale),
     }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
+
+    if (this->disp_state != DISP_FAILURE)
+        render_objects(this, false, true, 0, 0, prot_disp_x, prot_disp_y);
 
     /* Lead-in or modifier flashlight */
     prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
@@ -1044,6 +1088,7 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
         WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
     ret->cam_y = clamp(ret->simulator->prot.y,
         WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
+    ret->scale = 1;
 
     return ret;
 }
