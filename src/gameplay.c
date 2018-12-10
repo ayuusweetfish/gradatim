@@ -224,8 +224,9 @@ static inline void switch_stage_ctx(gameplay_scene *this)
         /* Update hints */
         int i, j;
         for (i = 0; i < this->rec->hint_ct; ++i) {
-            label_set_keyed_text(this->l_hints[i],
-                this->rec->hints[i].str, this->rec->hints[i].key);
+            if (this->rec->hints[i].str != NULL)
+                label_set_keyed_text(this->l_hints[i],
+                    this->rec->hints[i].str, this->rec->hints[i].key);
             int w;
             int sig = this->chap->sig * this->rec->hints[i].mul;
             for (j = 0; j < sig; ++j) if (this->rec->hints[i].img != NULL) {
@@ -621,14 +622,18 @@ static void gameplay_scene_draw(gameplay_scene *this)
         cyi = align_pixel(this->cam_y * UNIT_PX);
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 128);
     for (i = 0; i < this->rec->hint_ct; ++i) {
-        element_place_anchored((element *)this->l_hints[i],
-            align_pixel((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi,
-            align_pixel((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi,
-            0.5, 0.5);
-        int x = this->l_hints[i]->_base._base.dim.x - HINT_PADDING,
-            y = this->l_hints[i]->_base._base.dim.y - HINT_PADDING,
-            w = this->l_hints[i]->_base._base.dim.w + HINT_PADDING * 2,
+        int x, y, w, h;
+        x = align_pixel((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi;
+        y = align_pixel((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi;
+        if (this->rec->hints[i].str != NULL) {
+            element_place_anchored((element *)this->l_hints[i], x, y, 0.5, 0.5);
+            x = this->l_hints[i]->_base._base.dim.x - HINT_PADDING;
+            y = this->l_hints[i]->_base._base.dim.y - HINT_PADDING;
+            w = this->l_hints[i]->_base._base.dim.w + HINT_PADDING * 2;
             h = this->l_hints[i]->_base._base.dim.h + HINT_PADDING * 2;
+        } else {
+            w = h = 0;
+        }
         int sig;
         if (this->rec->hints[i].img != NULL) {
             /* Expand horizontally if necessary */
@@ -645,10 +650,14 @@ static void gameplay_scene_draw(gameplay_scene *this)
             for (j = 0; j < sig; ++j) {
                 element_place((element *)this->s_hints[i][j],
                     x + HINT_PADDING + this->w_hints[i] * j + xoff,
-                    this->l_hints[i]->_base._base.dim.y + h - HINT_PADDING * 2);
+                    y + h - HINT_PADDING);
             }
             /* Update height */
             h += this->s_hints[i][0]->_base.dim.h - HINT_PADDING;
+            if (this->rec->hints[i].str == NULL) {
+                y -= HINT_PADDING;
+                h += HINT_PADDING;
+            }
         }
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){x, y, w, h});
         element_draw((element *)this->l_hints[i]);
