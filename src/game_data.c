@@ -158,8 +158,13 @@ sim *stage_create_sim(struct stage_rec *this)
         }
 
     /* Initialize all animate objects */
-    for (i = 0; i < this->n_anim; ++i)
+    for (i = 0; i < this->n_anim; ++i) {
+        int tx, ty;
+        grid_offset(this->anim[i].tag, &tx, &ty);
+        this->anim[i].tx = -tx * 1./16;
+        this->anim[i].ty = -ty * 1./16;
         sim_add(s, &this->anim[i]);
+    }
 
     sim_reinit(s);
     return s;
