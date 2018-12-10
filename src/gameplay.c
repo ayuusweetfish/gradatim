@@ -616,10 +616,46 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
     render_objects(this, false, false, 0, 0);
 
-    /* Display hints */
-    int i, j;
     int cxi = align_pixel(this->cam_x * UNIT_PX),
         cyi = align_pixel(this->cam_y * UNIT_PX);
+    bool is_prot_fast =
+        sqr(this->simulator->prot.vx) + sqr(this->simulator->prot.vy)
+        >= HOR_SPD * HOR_SPD;
+    double prot_disp_x = this->simulator->prot.x * UNIT_PX;
+    double prot_disp_y = this->simulator->prot.y * UNIT_PX;
+    double prot_w = this->simulator->prot.w * UNIT_PX;
+    double prot_h = this->simulator->prot.h * UNIT_PX;
+
+    texture prot_tex = this->rec->prot_tex;
+    if (this->disp_state == DISP_FAILURE) {
+        int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
+            0, FAILURE_NF - 1);
+        prot_tex = this->rec->prot_fail_tex[f_idx];
+        /* The failure animation should be displayed above everything else */
+        render_objects(this, false, true, 0, 0);
+        prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
+        prot_disp_y -= (prot_tex.range.h * SPR_SCALE - prot_h) / 2;
+        prot_w = prot_tex.range.w * SPR_SCALE;
+        prot_h = prot_tex.range.h * SPR_SCALE;
+    }
+
+    if (!is_prot_fast) {
+        prot_disp_x = align_pixel(prot_disp_x) - cxi;
+        prot_disp_y = align_pixel(prot_disp_y) - cyi;
+    } else {
+        prot_disp_x -= iround(this->cam_x * UNIT_PX);
+        prot_disp_y -= iround(this->cam_y * UNIT_PX);
+    }
+
+    render_texture_ex(prot_tex, &(SDL_Rect){
+        prot_disp_x, prot_disp_y, iround(prot_w), iround(prot_h),
+    }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
+
+    if (this->disp_state != DISP_FAILURE)
+        render_objects(this, false, true, 0, 0);
+
+    /* Display hints */
+    int i, j;
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 128);
     for (i = 0; i < this->rec->hint_ct; ++i) {
         int x, y, w, h;
@@ -681,42 +717,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
         }
     }
 
-    bool is_prot_fast =
-        sqr(this->simulator->prot.vx) + sqr(this->simulator->prot.vy)
-        >= HOR_SPD * HOR_SPD;
-    double prot_disp_x = this->simulator->prot.x * UNIT_PX;
-    double prot_disp_y = this->simulator->prot.y * UNIT_PX;
-    double prot_w = this->simulator->prot.w * UNIT_PX;
-    double prot_h = this->simulator->prot.h * UNIT_PX;
-
-    texture prot_tex = this->rec->prot_tex;
-    if (this->disp_state == DISP_FAILURE) {
-        int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
-            0, FAILURE_NF - 1);
-        prot_tex = this->rec->prot_fail_tex[f_idx];
-        /* The failure animation should be displayed above everything else */
-        render_objects(this, false, true, 0, 0);
-        prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
-        prot_disp_y -= (prot_tex.range.h * SPR_SCALE - prot_h) / 2;
-        prot_w = prot_tex.range.w * SPR_SCALE;
-        prot_h = prot_tex.range.h * SPR_SCALE;
-    }
-
-    if (!is_prot_fast) {
-        prot_disp_x = align_pixel(prot_disp_x) - cxi;
-        prot_disp_y = align_pixel(prot_disp_y) - cyi;
-    } else {
-        prot_disp_x -= iround(this->cam_x * UNIT_PX);
-        prot_disp_y -= iround(this->cam_y * UNIT_PX);
-    }
-
-    render_texture_ex(prot_tex, &(SDL_Rect){
-        prot_disp_x, prot_disp_y, iround(prot_w), iround(prot_h),
-    }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
-
-    if (this->disp_state != DISP_FAILURE)
-        render_objects(this, false, true, 0, 0);
-
+    /* Lead-in or modifier flashlight */
     prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
     prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX;
     if (this->disp_state == DISP_LEADIN) {
