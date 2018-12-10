@@ -648,10 +648,6 @@ static void gameplay_scene_draw(gameplay_scene *this)
         prot_disp_y -= iround(this->cam_y * UNIT_PX);
     }
 
-    render_texture_ex(prot_tex, &(SDL_Rect){
-        prot_disp_x, prot_disp_y, iround(prot_w), iround(prot_h),
-    }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
-
     if (this->disp_state != DISP_FAILURE)
         render_objects(this, false, true, 0, 0);
 
@@ -717,6 +713,10 @@ static void gameplay_scene_draw(gameplay_scene *this)
             }
         }
     }
+
+    render_texture_ex(prot_tex, &(SDL_Rect){
+        prot_disp_x, prot_disp_y, iround(prot_w), iround(prot_h),
+    }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
 
     /* Lead-in or modifier flashlight */
     prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
