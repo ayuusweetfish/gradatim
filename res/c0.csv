@@ -1,11 +1,12 @@
 216,255,192,255,255,192
 Gradatim
-120,1
+116,1
 xooo
-0.05,140
-2
--1,mmm.ogg,-1
-0,lowpass,14400
+4.16,112
+3
+-1,periwinkle.ogg,-1
+0,lowpass,440
+0,lowpass,880
 7
 0-1.csv
 0-2.csv

@@ -16,6 +16,10 @@
 #define TRACKID_MAIN_BGM_LP 1
 #define TRACKID_STAGE_BGM   8
 
+#define BGM_LOOP_A  (5.85 * 44100)
+#define BGM_LOOP_B  ((5.85 + 336 * 60.0 / 165) * 44100)
+#define BGM_BEAT    (60.0 / 165)
+
 #define iround(__x)  ((int)((__x) + 0.5))
 #define sqr(__x) ((__x) * (__x))
 double clamp(double x, double l, double u);

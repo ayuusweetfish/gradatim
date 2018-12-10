@@ -349,6 +349,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             this->simulator->prot.tag = 0;
             break;
         case PROT_TAG_NXSTAGE:
+            if (this->disp_state != DISP_NORMAL) break;
             /* Move on to the next stage */
             if (this->prev_sim == NULL) {
                 this->prev_sim = this->simulator;
@@ -634,9 +635,13 @@ static inline void update_sound(gameplay_scene *this)
             val[this->rec->aud[i].tid] += d;
             sum += d;
         }
-        for (i = 0; i < this->chap->n_tracks; ++i)
+        for (i = 0; i < this->chap->n_tracks; ++i) {
+#ifndef NDEBUG
+            printf("%.4lf%c", val[i] / sum, i == this->chap->n_tracks - 1 ? '\n' : ' ');
+#endif
             orion_ramp(&g_orion, TRACKID_STAGE_BGM + i,
                 0.03, val[i] / sum * profile.bgm_vol * VOL_VALUE);
+        }
     }
 }
 
@@ -690,6 +695,14 @@ static void gameplay_scene_draw(gameplay_scene *this)
         prot_w = prot_tex.range.w * SPR_SCALE;
         prot_h = prot_tex.range.h * SPR_SCALE;
     }
+
+    render_texture_ex(prot_tex, &(SDL_Rect){
+        prot_disp_x, prot_disp_y,
+        iround(prot_w * this->scale), iround(prot_h * this->scale),
+    }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
+
+    if (this->disp_state != DISP_FAILURE)
+        render_objects(this, false, true, 0, 0, prot_disp_x, prot_disp_y);
 
     /* Display hints */
     int i, j;
@@ -753,14 +766,6 @@ static void gameplay_scene_draw(gameplay_scene *this)
             }
         }
     }
-
-    render_texture_ex(prot_tex, &(SDL_Rect){
-        prot_disp_x, prot_disp_y,
-        iround(prot_w * this->scale), iround(prot_h * this->scale),
-    }, 0, NULL, (this->facing == HOR_STATE_LEFT ? SDL_FLIP_HORIZONTAL : 0));
-
-    if (this->disp_state != DISP_FAILURE)
-        render_objects(this, false, true, 0, 0, prot_disp_x, prot_disp_y);
 
     /* Lead-in or modifier flashlight */
     prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;

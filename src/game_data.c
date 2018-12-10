@@ -262,6 +262,9 @@ struct chap_rec *chap_read(const char *path)
         this->stages[i] = stage_read(s);
         world_r = (this->stages[i]->world_r += world_r);
         world_c = (this->stages[i]->world_c += world_c);
+#ifndef NDEBUG
+        printf("Stage #%d: %d %d\n", i + 1, world_r, world_c);
+#endif
     }
 
     fclose(f);
