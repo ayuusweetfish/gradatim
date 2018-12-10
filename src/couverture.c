@@ -23,7 +23,7 @@ couverture *couverture_create()
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, BGM_LOOP_A, BGM_LOOP_B);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0, profile.bgm_vol * VOL_VALUE);
     orion_apply_lowpass(&g_orion, TRACKID_MAIN_BGM, TRACKID_MAIN_BGM_LP, 1760);
-    orion_play_loop(&g_orion, TRACKID_MAIN_BGM_LP, 0, 0, -1);
+    orion_play_loop(&g_orion, TRACKID_MAIN_BGM_LP, 0, BGM_LOOP_A, BGM_LOOP_B);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0, 0);
     orion_overall_play(&g_orion);
 
