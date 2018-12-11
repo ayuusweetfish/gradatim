@@ -280,7 +280,9 @@ static void retry_reinit(gameplay_scene *this)
 {
     stop_prot(this);
     this->simulator->prot.x = this->rec->spawn_c;
-    this->simulator->prot.y = this->rec->spawn_r;
+    this->simulator->prot.y = this->rec->spawn_r + (1 - this->simulator->prot.h);
+    this->simulator->prot.vx = this->simulator->prot.vy =
+    this->simulator->prot.ax = this->simulator->prot.ay = 0;
     this->facing = HOR_STATE_RIGHT;
     this->disp_state = DISP_NORMAL;
     sim_reinit(this->simulator);
