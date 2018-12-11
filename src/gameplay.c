@@ -346,6 +346,14 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             /* Failure */
             this->disp_state = DISP_FAILURE;
             this->disp_time = FAILURE_SPF * FAILURE_NF;
+            /* In case FAILURE tag overwrites the NXSTAGE tag */
+            /* The bug is triggered if the protagonist enters a stage
+             * with instant failure, and this stage is completed
+             * in one run with no retries afterwards */
+            if (this->prev_sim != NULL) {
+                sim_drop(this->prev_sim);
+                this->prev_sim = NULL;
+            }
             this->simulator->prot.tag = 0;
             break;
         case PROT_TAG_NXSTAGE:
@@ -567,6 +575,15 @@ static inline bool get_pos_in_bar(gameplay_scene *this, double ant, int mul,
 
 static inline void draw_overlay(gameplay_scene *this)
 {
+    double opacity_mul = 1;
+    if (this->disp_state == DISP_DIALOGUE_IN) {
+        opacity_mul = (this->disp_time < 0 ?
+            0 : this->disp_time / DIALOGUE_ZOOM_DUR);
+    } else if (this->disp_state == DISP_DIALOGUE_OUT) {
+        opacity_mul = 1 - (this->disp_time < 0 ?
+            0 : this->disp_time / DIALOGUE_ZOOM_DUR);
+    }
+
     int beats_i;
     double beats_d;
     if (!get_pos_in_bar(this, 1./24, 1, &beats_i, &beats_d)) return;
@@ -575,7 +592,7 @@ static inline void draw_overlay(gameplay_scene *this)
     if (!is_upbeat) return;
     int opacity = iround((
         beats_d < 0 ? (1 + beats_d * 24) :
-        beats_d < 0.5 ? (1 - beats_d * 2) : 0) * 255);
+        beats_d < 0.5 ? (1 - beats_d * 2) : 0) * 255 * opacity_mul);
     SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, opacity);
     if (is_downbeat)
@@ -809,15 +826,15 @@ static void gameplay_scene_draw(gameplay_scene *this)
     /* Draw particles */
     particle_draw_aligned(&this->particle, -cxi, -cyi, SPR_SCALE);
 
+    /* The metronome should not cover the clock */
     draw_overlay(this);
 
-    /* The clock should not be disturbed by the metronome */
     if (profile.show_clock) {
         int sig = this->chap->sig;
         double r = this->simulator->cur_time - this->stage_start_time;
         int chap_time = (int)(this->simulator->cur_time * 48);
         int stage_time = (int)(r * 48);
-        if (stage_time < -0.1) return;
+        if (stage_time < -0.1 * 48) return;
         char s[16], d[8];
 
         chap_time *= this->chap->beat_mul;
@@ -1037,13 +1054,13 @@ void gameplay_init_textures(gameplay_scene *this)
     }
 
     switch_stage_ctx(this);
+    this->stage_start_time = 0;
 
     this->cam_x = clamp(this->simulator->prot.x,
         WIN_W_UNITS / 2, this->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
     this->cam_y = clamp(this->simulator->prot.y,
         WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
     this->scale = 1;
-
 }
 
 gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx, int mods)
@@ -1096,7 +1113,6 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     ret->chap = chap;
     ret->cur_stage_idx = idx - 1;
     ret->start_stage_idx = idx;
-    ret->stage_start_time = 0;
     ret->refill_time = -1;
 
     particle_init(&ret->particle);
