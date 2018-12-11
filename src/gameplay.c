@@ -456,6 +456,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         clamp(this->simulator->prot.x, this->rec->cam_c1, this->rec->cam_c2);
     this->simulator->prot.y =
         clamp(this->simulator->prot.y, this->rec->cam_r1, this->rec->cam_r2);
+    if (this->simulator->prot.y == this->rec->cam_r2)
+        this->simulator->prot.tag = PROT_TAG_FAILURE;
 
     if (this->refill_time >= 0)
         this->refill_time -= dt / (BEAT * this->chap->beat_mul);
