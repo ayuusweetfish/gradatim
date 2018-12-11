@@ -105,6 +105,17 @@ static void couverture_drop(couverture *this)
     floue_drop(this->f);
 }
 
+void couverture_generate_dots(couverture *this)
+{
+    int i, j;
+    for (i = 0; i < NG; ++i)
+        for (j = 0; j < GSZ; ++j)
+            floue_add(this->f,
+                (SDL_Point){P[i].x + rand() % 401 - 200, P[i].y + rand() % 401 - 200},
+                (SDL_Color){255, 255, 255}, 120, 0.5
+            );
+}
+
 couverture *couverture_create()
 {
     couverture *this = malloc(sizeof(couverture));
@@ -114,13 +125,6 @@ couverture *couverture_create()
     this->_base.drop = (scene_drop_func)couverture_drop;
 
     this->f = floue_create((SDL_Color){255, 255, 255, 216});
-    int i, j;
-    for (i = 0; i < NG; ++i)
-        for (j = 0; j < GSZ; ++j)
-            floue_add(this->f,
-                (SDL_Point){P[i].x + rand() % 401 - 200, P[i].y + rand() % 401 - 200},
-                (SDL_Color){255, 255, 255}, 120, 0.5
-            );
 
     orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "copycat.ogg");
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM, BGM_LOOP_A, BGM_LOOP_A, BGM_LOOP_B);

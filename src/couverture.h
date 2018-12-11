@@ -14,6 +14,7 @@ typedef struct _couverture {
     floue *f;
 } couverture;
 
+void couverture_generate_dots(couverture *this);
 couverture *couverture_create();
 
 #endif

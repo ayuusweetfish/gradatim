@@ -18,8 +18,9 @@ static scene *goto_couverture(intro_scene *this)
     return (scene *)couverture_create();
 }
 
-static void goto_couverture_cleanup(intro_scene *this, void *unused)
+static void goto_couverture_cleanup(intro_scene *this, couverture *that)
 {
+    couverture_generate_dots(that);
     SDL_SetTextureColorMod(this->quaver->tex.sdl_tex, 255, 255, 255);
     SDL_SetTextureAlphaMod(this->quaver->tex.sdl_tex, 255);
     element_drop((element *)this->quaver);
