@@ -186,10 +186,14 @@ static inline void spring_update_post(sobj *o, double T, sobj *prot)
     }
 }
 
+static bool cloud_used;
+
 static inline double get_prog(sobj *o, double T)
 {
     if (o->tag == OBJID_CLOUD_ONEWAY) {
-        return fmod(T, o->t) / o->t;
+        int period = (int)o->t;
+        double phase = (o->t - period) * period;
+        return fmod(T + period - phase, period) / period;
     } else {
         double p = fabs(1 - fmod(T, 2 * o->t) / o->t);
         return 0.5 * (1 - cos(p * M_PI));
@@ -211,7 +215,10 @@ static inline void cloud_update_pred(sobj *o, double T, sobj *prot)
     if (is_landing(o, prot)) {
         /* Move the protagonist
          * Here it's assumed that every step is SIM_STEPLEN beats */
-        prot->x += (o->ax - o->vx) * (prog - get_prog(o, T - SIM_STEPLEN));
+        if (!cloud_used) {
+            prot->x += (o->ax - o->vx) * (prog - get_prog(o, T - SIM_STEPLEN));
+            cloud_used = true;
+        }
     } else {
         /* Resize according to protagonist's speed */
         o->h = (prot->vy >= (o->ay - o->vy) / o->t && is_above(o, prot) ? 0.3 : 0);
@@ -230,8 +237,10 @@ static inline void lump_update_pred(sobj *o, double T, sobj *prot)
     double prog = get_prog(o, T);
     o->x = o->vx + (o->ax - o->vx) * prog;
     o->y = o->vy + (o->ay - o->vy) * prog;
-    if (is_landing(o, prot))
+    if (is_landing(o, prot) && !cloud_used) {
         prot->x += (o->ax - o->vx) * (prog - get_prog(o, T - SIM_STEPLEN));
+        cloud_used = true;
+    }
 }
 
 static inline void slime_update_post(sobj *o, double T, sobj *prot)
@@ -437,6 +446,7 @@ bool sobj_needs_collision(sobj *o)
 
 void sobj_new_round()
 {
+    cloud_used = false;
     puff_used = false;
     mud_wet_used = false;
 }
