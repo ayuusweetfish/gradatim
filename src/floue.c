@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-static const double SCALE = 4;
+static const double SCALE = 2;
 static const double V_MAX = WIN_W / 32;
 static const double AAA = 0.3;
 static const double AA_MAX = 0.5;
@@ -35,6 +35,7 @@ void floue_add(floue *this, SDL_Point p, SDL_Color c, int sz, double opacity)
     this->y[this->n] = p.y;
     this->c[this->n] = c;
     this->sz[this->n] = sz;
+    this->scale[this->n] = 1;
     this->v[this->n] = random_in(V_MAX / 4, V_MAX);
     this->a[this->n] = random_abs(M_PI);
     this->aa[this->n] = 0;
@@ -92,18 +93,21 @@ void floue_tick(floue *this, double dt)
 
 void floue_draw(floue *this)
 {
-    if (this->c0.a == 255) {
-        SDL_SetRenderDrawColor(g_renderer, this->c0.r, this->c0.g, this->c0.b, 255);
+    if (this->c0.a != 255) {
+        SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
         SDL_RenderFillRect(g_renderer, NULL);
     }
+    SDL_SetRenderDrawColor(g_renderer, this->c0.r, this->c0.g, this->c0.b, this->c0.a);
+    SDL_RenderFillRect(g_renderer, NULL);
     int i;
     for (i = 0; i < this->n; ++i) {
         SDL_SetTextureColorMod(this->tex[i],
             this->c[i].r, this->c[i].g, this->c[i].b);
         SDL_RenderCopy(g_renderer, this->tex[i], NULL, &(SDL_Rect){
-            this->x[i] - this->sz[i] / 2,
-            this->y[i] - this->sz[i] / 2,
-            this->sz[i], this->sz[i]
+            this->x[i] - this->sz[i] * this->scale[i] / 2,
+            this->y[i] - this->sz[i] * this->scale[i] / 2,
+            this->sz[i] * this->scale[i],
+            this->sz[i] * this->scale[i]
         });
     }
 }

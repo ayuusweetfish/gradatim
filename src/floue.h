@@ -14,6 +14,7 @@ typedef struct _floue {
     SDL_Color c[FLOUE_CAP];
     double x[FLOUE_CAP], y[FLOUE_CAP];
     int sz[FLOUE_CAP];
+    double scale[FLOUE_CAP];
     double v[FLOUE_CAP], a[FLOUE_CAP], aa[FLOUE_CAP];
 } floue;
 
