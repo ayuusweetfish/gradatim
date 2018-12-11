@@ -72,7 +72,8 @@ static void couverture_draw(couverture *this)
     double t = (orion_tell(&g_orion, TRACKID_MAIN_BGM) - BGM_LOOP_A) / 44100.0;
     if (t >= 0) {
         if (!this->canon_playing) {
-            orion_play_loop(&g_orion, TRACKID_MAIN_BGM_CANON, 0, BGM_LOOP_A, BGM_LOOP_B);
+            orion_play_loop(&g_orion, TRACKID_MAIN_BGM_CANON,
+                BGM_LOOP_A - 16 * BGM_BEAT * 44100, BGM_LOOP_A, BGM_LOOP_B);
             orion_ramp(&g_orion, TRACKID_MAIN_BGM_CANON, 0, profile.bgm_vol * VOL_VALUE / 3);
             this->canon_playing = true;
         }
