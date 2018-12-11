@@ -359,8 +359,7 @@ overworld_scene *overworld_create(scene *bg)
     ret->chaps = bekter_create();
     ret->stage_tex = bekter_create();
     load_chapter(ret, "c0.csv");
-    load_chapter(ret, "chap.csv");
-    load_chapter(ret, "chap2.csv");
+    load_chapter(ret, "c1.csv");
 
     ret->cur_chap_idx = 0;
     ret->cur_stage_idx = 0;
