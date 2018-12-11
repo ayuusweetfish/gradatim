@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 static const double TINT_DUR = 1./2;  /* In beats */
+static const double POP_DUR = 1./3;
 
 #define NC 4    /* Number of colours */
 static const SDL_Color BG_C[NC] = {
@@ -48,21 +49,45 @@ static inline SDL_Color get_colour(const SDL_Color C[], int bar, double beat)
     }
 }
 
+static inline double get_scale(double beat, double mul)
+{
+    if (beat < POP_DUR) {
+        double rate = beat / POP_DUR;
+        return 1 + mul * (1 - cos(M_PI * (1 + rate)));
+    } else if (beat >= 4 - POP_DUR) {
+        double rate = (beat - (4 - POP_DUR)) / POP_DUR;
+        return 1 + mul * (1 - cos(M_PI * rate));
+    } else {
+        return 1;
+    }
+}
+
 static void couverture_draw(couverture *this)
 {
     double t = (orion_tell(&g_orion, TRACKID_MAIN_BGM) - BGM_LOOP_A) / 44100.0;
     if (t >= 0) {
         int bar = (int)(t / (BGM_BEAT * 4));
         double beat = t / BGM_BEAT - bar * 4;
+        double beat_real = beat;
 
         bar %= NC;
         this->f->c0 = get_colour(BG_C, bar, beat);
 
         int i, j;
         for (i = 0; i < NG; ++i) {
-            if ((beat += 1) >= 4) { bar = (bar + 1) % NC; beat -= 4; }
-            for (j = 0; j < GSZ; ++j)
+            if ((beat += (1 - 0.03 * GSZ)) >= 4) {
+                bar = (bar + 1) % NC;
+                beat -= 4;
+            }
+            for (j = 0; j < GSZ; ++j) {
+                if ((beat += 0.03) >= 4) {
+                    bar = (bar + 1) % NC;
+                    beat -= 4;
+                }
                 this->f->c[i * GSZ + j] = get_colour(DOT_C, bar, beat);
+                this->f->scale[i * GSZ + j] =
+                    get_scale(beat_real, -0.04) * get_scale(beat, 0.06);
+            }
         }
     }
     floue_draw(this->f);
@@ -86,7 +111,7 @@ couverture *couverture_create()
     for (i = 0; i < NG; ++i)
         for (j = 0; j < GSZ; ++j)
             floue_add(this->f,
-                (SDL_Point){P[i].x + rand() % 201 - 100, P[i].y + rand() % 201 - 100},
+                (SDL_Point){P[i].x + rand() % 401 - 200, P[i].y + rand() % 401 - 200},
                 (SDL_Color){255, 255, 255}, 120, 0.5
             );
 
