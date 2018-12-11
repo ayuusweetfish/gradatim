@@ -50,7 +50,7 @@ static const double LEADIN_DUR = 0.4; /* Seconds */
 static const double FAILURE_SPF = 0.1;
 static const double STRETTO_RANGE = 2.5;
 static const double DIALOGUE_ZOOM_DUR = 0.9;
-static const double DIALOGUE_ZOOM_SCALE = 3;
+static const double DIALOGUE_ZOOM_SCALE = 1.5;
 static const int HINT_FONTSZ = 36;
 static const int HINT_PADDING = 12;
 static const int CLOCK_CHAP_FONTSZ = 44;
@@ -467,6 +467,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             this->mov_state = MOV_NORMAL;
             this->ver_state = VER_STATE_NONE;
             this->hor_state = HOR_STATE_NONE;
+            this->facing = (d->face == false ? HOR_STATE_LEFT : HOR_STATE_RIGHT);
             this->simulator->prot.ax = this->simulator->prot.ay =
             this->simulator->prot.vx = this->simulator->prot.vy = 0;
             this->dialogue_triggered |= (1 << i);

@@ -8,10 +8,13 @@
 #include "bekter.h"
 #include "resources.h"
 
+#include <stdbool.h>
+
 /* For stages */
 
 typedef struct _stage_dialogue {
     int r1, c1, r2, c2; /* Trigger area */
+    bool face;  /* false: left; true: right */
     bekter(dialogue_entry) content;
 } stage_dialogue;
 

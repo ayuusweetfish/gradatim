@@ -82,7 +82,9 @@ struct stage_rec *stage_read(const char *path)
     this->plot_ct = m;
     for (i = 0; i < m; ++i) {
         struct _stage_dialogue d;
-        fscanf(f, "%d,%d,%d,%d,", &d.r1, &d.c1, &d.r2, &d.c2);
+        int face;
+        fscanf(f, "%d,%d,%d,%d,%d,", &d.r1, &d.c1, &d.r2, &d.c2, &face);
+        d.face = face;
         d.content = bekter_create();
         int j = 0, a, b, c;
         while (true) {
@@ -123,7 +125,7 @@ struct stage_rec *stage_read(const char *path)
     }
 
     /* TODO: This should be replaced */
-    this->prot_tex = retrieve_texture("qwq.png");
+    this->prot_tex = retrieve_texture("uwu.png");
     this->prot_fail_tex[0] = retrieve_texture("fragile1.png");
     this->prot_fail_tex[1] = retrieve_texture("fragile2.png");
     this->prot_fail_tex[2] = retrieve_texture("fragile3.png");
