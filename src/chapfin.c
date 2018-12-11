@@ -55,8 +55,7 @@ static void chapfin_draw(chapfin_scene *this)
 {
     double u_opacity = 0;
     if (this->summary_shown) {
-        SDL_SetRenderDrawColor(g_renderer, 255, 192, 192, 255);
-        SDL_RenderClear(g_renderer);
+        this->f->c0 = (SDL_Color){255, 192, 192, 255};
         floue_draw(this->f);
         int i;
         for (i = 0; i < N_MODS; ++i)
@@ -111,8 +110,7 @@ static void chapfin_draw(chapfin_scene *this)
         if (r > 1) r = 1;
         double s = (this->time - (D1 + F + D2 + T1 + D3)) / T2_TEXT_DUR;
         if (s > 1) s = 1;
-        SDL_SetRenderDrawColor(g_renderer, 255, 192, 192, 255);
-        SDL_RenderClear(g_renderer);
+        this->f->c0 = (SDL_Color){255, 192, 192, 255};
         floue_draw(this->f);
         unveil_draw(this->u, r, 1);
         int grey = iround(s * 255);

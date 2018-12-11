@@ -21,8 +21,8 @@ static const double MENU_TR_DUR = 0.15;
 static const double BLINK_DUR = 0.75;
 
 static const double ITEM_H = 0.1;
-static const double START_Y = 0.85;
-static const double ITEM_OFFSET_Y = 0.4;
+static const double START_Y = 0.82;
+static const double ITEM_OFFSET_Y = 0.325;
 
 static int glob_menu_val[N_MODS] = { 0 };
 
@@ -277,12 +277,6 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     sp->_base.dim.w /= 2;
     sp->_base.dim.h /= 2;
     element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * 0.175, 0, 0.5);
-    bekter_pushback(ret->_base.children, sp);
-
-    sp = sprite_create("retry_count.png");
-    sp->_base.dim.w /= 2;
-    sp->_base.dim.h /= 2;
-    element_place_anchored((element *)sp, WIN_W - MENU_W + 24, WIN_H * 0.275, 0, 0.5);
     bekter_pushback(ret->_base.children, sp);
 
     ret->stg_rec = *profile_get_stage(bg->cur_chap_idx, bg->cur_stage_idx);
