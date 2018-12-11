@@ -5,6 +5,7 @@
 #include "resources.h"
 #include "profile_data.h"
 #include "intro.h"
+#include "overworld.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -52,7 +53,12 @@ int main()
 
     g_orion = orion_create(44100, 2);
 
+#ifdef NDEBUG
     g_stage = (scene *)intro_scene_create();
+#else
+    g_stage = (scene *)overworld_create(NULL);
+    orion_overall_play(&g_orion);
+#endif
 
     bool running = true;
     SDL_Event e;
