@@ -13,9 +13,10 @@ static const SDL_Color BG_C[NC] = {
     {245, 255, 234, 255}, {234, 245, 255, 255},
     {251, 234, 255, 255}, {255, 234, 234, 255}
 };
-static const SDL_Color DOT_C[NC] = {
-    {255, 202, 54, 255}, {192, 216, 255, 255},
-    {234, 192, 255, 255}, {255, 192, 192, 255}
+static const SDL_Color DOT_C[NC + 1] = {
+    {220, 240, 192, 255}, {192, 216, 255, 255},
+    {234, 192, 255, 255}, {255, 192, 192, 255},
+    {255, 210, 96, 255}
 };
 
 #define NG 3    /* Number of circle groups on floue */
@@ -31,12 +32,12 @@ static void couverture_tick(couverture *this, double dt)
     floue_tick(this->f, dt);
 }
 
-static inline SDL_Color get_colour(const SDL_Color C[], int bar, double beat)
+static inline SDL_Color get_colour(const SDL_Color C[], int nc, int bar, double beat)
 {
     if (beat >= 4 - TINT_DUR) {
-        int r1 = C[bar].r, r2 = C[(bar + 1) % NC].r,
-            g1 = C[bar].g, g2 = C[(bar + 1) % NC].g,
-            b1 = C[bar].b, b2 = C[(bar + 1) % NC].b;
+        int r1 = C[bar].r, r2 = C[(bar + 1) % nc].r,
+            g1 = C[bar].g, g2 = C[(bar + 1) % nc].g,
+            b1 = C[bar].b, b2 = C[(bar + 1) % nc].b;
         double rate = (beat - (4 - TINT_DUR)) / TINT_DUR;
         return (SDL_Color){
             iround(r1 + rate * (r2 - r1)),
@@ -68,25 +69,31 @@ static void couverture_draw(couverture *this)
     if (t >= 0) {
         int bar = (int)(t / (BGM_BEAT * 4));
         double beat = t / BGM_BEAT - bar * 4;
-        double beat_real = beat;
-
         bar %= NC;
-        this->f->c0 = get_colour(BG_C, bar, beat);
+
+        double downbeat_scale = get_scale(beat, -0.04);
+        SDL_Color downbeat_c = { 0 };
+        if (bar == NC - 1 && beat >= 4 - TINT_DUR)
+            downbeat_c = get_colour(DOT_C, NC + 1, NC, beat);
+
+        this->f->c0 = get_colour(BG_C, NC, bar, beat);
 
         int i, j;
         for (i = 0; i < NG; ++i) {
             if ((beat += (1 - 0.03 * GSZ)) >= 4) {
-                bar = (bar + 1) % NC;
+                /* Do not take the modulo, as DOT_C[NC] will be needed */
+                bar++;
                 beat -= 4;
             }
             for (j = 0; j < GSZ; ++j) {
                 if ((beat += 0.03) >= 4) {
-                    bar = (bar + 1) % NC;
+                    bar++;
                     beat -= 4;
                 }
-                this->f->c[i * GSZ + j] = get_colour(DOT_C, bar, beat);
+                this->f->c[i * GSZ + j] = downbeat_c.a != 0 ?
+                    downbeat_c : get_colour(DOT_C, NC + 1, bar, beat);
                 this->f->scale[i * GSZ + j] =
-                    get_scale(beat_real, -0.04) * get_scale(beat, 0.06);
+                    downbeat_scale * get_scale(beat, 0.06);
             }
         }
     }
