@@ -71,6 +71,12 @@ static void couverture_draw(couverture *this)
 {
     double t = (orion_tell(&g_orion, TRACKID_MAIN_BGM) - BGM_LOOP_A) / 44100.0;
     if (t >= 0) {
+        if (!this->canon_playing) {
+            orion_play_loop(&g_orion, TRACKID_MAIN_BGM_CANON, 0, BGM_LOOP_A, BGM_LOOP_B);
+            orion_ramp(&g_orion, TRACKID_MAIN_BGM_CANON, 0, profile.bgm_vol * VOL_VALUE / 3);
+            this->canon_playing = true;
+        }
+
         int bar = (int)(t / (BGM_BEAT * 4));
         double beat = t / BGM_BEAT - bar * 4;
         bar %= NC;
@@ -185,12 +191,18 @@ couverture *couverture_create()
     bekter_pushback(this->_base.children, l);
 
     orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "copycat.ogg");
-    orion_play_loop(&g_orion, TRACKID_MAIN_BGM, BGM_LOOP_A, BGM_LOOP_A, BGM_LOOP_B);
-    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0, profile.bgm_vol * VOL_VALUE);
+    orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, BGM_LOOP_A, BGM_LOOP_B);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0, profile.bgm_vol * VOL_VALUE * 2 / 3);
+
     orion_apply_lowpass(&g_orion, TRACKID_MAIN_BGM, TRACKID_MAIN_BGM_LP, 1760);
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM_LP, 0, BGM_LOOP_A, BGM_LOOP_B);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0, 0);
+
+    orion_apply_lowpass(&g_orion, TRACKID_MAIN_BGM, TRACKID_MAIN_BGM_CANON, 22050);
+
     orion_overall_play(&g_orion);
+
+    this->canon_playing = false;
 
     return this;
 }

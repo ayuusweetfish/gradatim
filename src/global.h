@@ -12,9 +12,10 @@
 #define WIN_W   1080
 #define WIN_H   720
 
-#define TRACKID_MAIN_BGM    0
-#define TRACKID_MAIN_BGM_LP 1
-#define TRACKID_STAGE_BGM   8
+#define TRACKID_MAIN_BGM        0
+#define TRACKID_MAIN_BGM_LP     1
+#define TRACKID_MAIN_BGM_CANON  2
+#define TRACKID_STAGE_BGM       8
 
 #define BGM_LOOP_A  (5.85 * 44100)
 #define BGM_LOOP_B  ((5.85 + 336 * 60.0 / 165) * 44100)

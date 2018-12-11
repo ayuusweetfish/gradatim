@@ -195,8 +195,9 @@ options_scene *options_create(scene *bg)
         " ..`.  ..`.  Select      ..`.  ..`.  Adjust      ..`.  Back", "^v<>~");
     element_place_anchored((element *)footer, WIN_W / 2, WIN_H * 6 / 7, 0.5, 0.5);
 
-    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, BGM_LP_VOL * profile.bgm_vol * VOL_VALUE);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, BGM_LP_VOL * profile.bgm_vol * VOL_VALUE * 2 / 3);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, BGM_VOL * profile.bgm_vol * VOL_VALUE);
+    orion_ramp(&g_orion, TRACKID_MAIN_BGM_CANON, 0.2, BGM_LP_VOL * profile.bgm_vol * VOL_VALUE / 3);
 
     return this;
 }

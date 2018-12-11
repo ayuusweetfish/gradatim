@@ -15,6 +15,8 @@ typedef struct _couverture {
 
     floue *f;
     overworld_scene *ow;    /* Loaded at the start */
+
+    bool canon_playing;
 } couverture;
 
 void couverture_generate_dots(couverture *this);
