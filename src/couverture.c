@@ -1,6 +1,10 @@
 #include "couverture.h"
 #include "global.h"
+#include "options.h"
+#include "transition.h"
 #include "profile_data.h"
+#include "label.h"
+#include "button.h"
 #include "orion/orion.h"
 
 #include <stdlib.h>
@@ -98,6 +102,8 @@ static void couverture_draw(couverture *this)
         }
     }
     floue_draw(this->f);
+
+    scene_draw_children((scene *)this);
 }
 
 static void couverture_drop(couverture *this)
@@ -114,17 +120,69 @@ void couverture_generate_dots(couverture *this)
                 (SDL_Point){P[i].x + rand() % 401 - 200, P[i].y + rand() % 401 - 200},
                 (SDL_Color){255, 255, 255}, 120, 0.5
             );
+
+    this->ow = overworld_create((scene *)this);
+}
+
+static void options_cb(couverture *this)
+{
+    g_stage = transition_slidedown_create(&g_stage,
+        (scene *)options_create((scene *)this), 0.5);
+    ((transition_scene *)g_stage)->preserves_a = true;
+}
+
+static void credits_cb(couverture *this)
+{
+}
+
+static void start_cb(couverture *this)
+{
+    g_stage = transition_slidedown_create(&g_stage, (scene *)this->ow, 0.5);
+    ((transition_scene *)g_stage)->preserves_a = true;
 }
 
 couverture *couverture_create()
 {
     couverture *this = malloc(sizeof(couverture));
     memset(this, 0, sizeof(*this));
+    this->_base.children = bekter_create();
     this->_base.tick = (scene_tick_func)couverture_tick;
     this->_base.draw = (scene_draw_func)couverture_draw;
     this->_base.drop = (scene_drop_func)couverture_drop;
 
     this->f = floue_create((SDL_Color){255, 255, 255, 216});
+
+    label *title = label_create(FONT_UPRIGHT, 72,
+        (SDL_Color){0}, WIN_W, "G  R  A  D  A  T  I  M");
+    element_place_anchored((element *)title, WIN_W / 2, WIN_H * 0.375, 0.5, 0.5);
+    bekter_pushback(this->_base.children, title);
+
+    button *options = button_create((button_callback)options_cb,
+        this, "options_btn.png", "options_btn.png", "options_btn.png", 1.03, 0.98);
+    element_place_anchored((element *)options, WIN_W * 0.3, WIN_H * 0.6, 0.5, 0.5);
+    bekter_pushback(this->_base.children, options);
+
+    button *credits = button_create((button_callback)credits_cb,
+        this, "credits_btn.png", "credits_btn.png", "credits_btn.png", 1.03, 0.98);
+    element_place_anchored((element *)credits, WIN_W * 0.5, WIN_H * 0.6, 0.5, 0.5);
+    bekter_pushback(this->_base.children, credits);
+
+    button *start = button_create((button_callback)start_cb,
+        this, "retry_count.png", "retry_count.png", "retry_count.png", 1.03, 0.98);
+    element_place_anchored((element *)start, WIN_W * 0.7, WIN_H * 0.6, 0.5, 0.5);
+    bekter_pushback(this->_base.children, start);
+
+    label *l = label_create(FONT_UPRIGHT, 36, (SDL_Color){0}, WIN_W, "Options");
+    element_place_anchored((element *)l, WIN_W * 0.3, WIN_H * 0.725, 0.5, 0.5);
+    bekter_pushback(this->_base.children, l);
+
+    l = label_create(FONT_UPRIGHT, 36, (SDL_Color){0}, WIN_W, "Credits");
+    element_place_anchored((element *)l, WIN_W * 0.5, WIN_H * 0.725, 0.5, 0.5);
+    bekter_pushback(this->_base.children, l);
+
+    l = label_create(FONT_UPRIGHT, 36, (SDL_Color){0}, WIN_W, "Run");
+    element_place_anchored((element *)l, WIN_W * 0.7, WIN_H * 0.725, 0.5, 0.5);
+    bekter_pushback(this->_base.children, l);
 
     orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "copycat.ogg");
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM, BGM_LOOP_A, BGM_LOOP_A, BGM_LOOP_B);

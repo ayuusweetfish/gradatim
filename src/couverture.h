@@ -6,12 +6,15 @@
 
 #include "scene.h"
 #include "floue.h"
+#include "overworld.h"
 
 #include <stdbool.h>
 
 typedef struct _couverture {
     scene _base;
+
     floue *f;
+    overworld_scene *ow;    /* Loaded at the start */
 } couverture;
 
 void couverture_generate_dots(couverture *this);

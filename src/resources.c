@@ -125,6 +125,8 @@ void load_images()
     load_image("dash_4beat.png");
     load_image("hopdash_4beat.png");
     load_image("alldash_4beat.png");
+    load_image("options_btn.png");
+    load_image("credits_btn.png");
 }
 
 void release_images()

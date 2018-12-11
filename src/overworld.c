@@ -185,6 +185,7 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
     switch (ev->keysym.sym) {
         case SDLK_ESCAPE:
             g_stage = transition_slideup_create(&g_stage, this->bg, 0.5);
+            ((transition_scene *)g_stage)->preserves_a = true;
             break;
         case SDLK_SPACE:
         case SDLK_RETURN:
