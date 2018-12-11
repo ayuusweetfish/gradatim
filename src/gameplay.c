@@ -528,7 +528,7 @@ static inline void render_object(gameplay_scene *this,
 }
 
 static inline void render_objects(gameplay_scene *this,
-    bool is_prev, bool is_after, double offsx, double offsy,
+    bool is_prev, bool is_after, int offsx, int offsy,
     int scale_x, int scale_y)
 {
     sim *sim = (is_prev ? this->prev_sim : this->simulator);
@@ -539,8 +539,8 @@ static inline void render_objects(gameplay_scene *this,
         cmin = clamp(floorf(cx), 0, sim->gcols),
         cmax = clamp(ceilf(cx + WIN_W_UNITS), 0, sim->gcols);
     int r, c;
-    int cxi = align_pixel(cx * UNIT_PX),
-        cyi = align_pixel(cy * UNIT_PX);
+    int cxi = align_pixel(this->cam_x * UNIT_PX) + (is_prev ? offsx * UNIT_PX : 0),
+        cyi = align_pixel(this->cam_y * UNIT_PX) + (is_prev ? offsy * UNIT_PX : 0);
     for (r = rmin; r < rmax; ++r)
         for (c = cmin; c < cmax; ++c) {
             sobj *o = &sim_grid(sim, r, c);
