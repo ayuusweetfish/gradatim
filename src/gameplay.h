@@ -89,6 +89,7 @@ typedef struct _gameplay_scene {
 } gameplay_scene;
 
 gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx, int mods);
+void gameplay_init_textures(gameplay_scene *this);
 void gameplay_run_leadin(gameplay_scene *this);
 
 #endif

@@ -26,7 +26,8 @@ static void loading_tick(loading_scene *this, double dt)
     if ((this->_base.elapsed += dt) < ANIM_TOT_DUR)
         scene_tick(this->_base.a, dt);
     if (this->since_finish >= 0) {
-        if ((this->since_finish += dt) >= ANIM_TOT_DUR) {
+        this->since_finish = (this->since_finish == 0 ? 1e-7 : this->since_finish + dt);
+        if (this->since_finish >= ANIM_TOT_DUR) {
             *(this->_base.p) = this->_base.b;
             scene_drop(this);
         }

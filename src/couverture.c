@@ -118,19 +118,6 @@ static void couverture_drop(couverture *this)
     floue_drop(this->f);
 }
 
-void couverture_generate_dots(couverture *this)
-{
-    int i, j;
-    for (i = 0; i < NG; ++i)
-        for (j = 0; j < GSZ; ++j)
-            floue_add(this->f,
-                (SDL_Point){P[i].x + rand() % 401 - 200, P[i].y + rand() % 401 - 200},
-                (SDL_Color){255, 255, 255}, 120, 0.5
-            );
-
-    this->ow = overworld_create((scene *)this);
-}
-
 static void options_cb(couverture *this)
 {
     g_stage = transition_slidedown_create(&g_stage,
@@ -148,16 +135,17 @@ static void start_cb(couverture *this)
     ((transition_scene *)g_stage)->preserves_a = true;
 }
 
-couverture *couverture_create()
+void couverture_generate_dots(couverture *this)
 {
-    couverture *this = malloc(sizeof(couverture));
-    memset(this, 0, sizeof(*this));
-    this->_base.children = bekter_create();
-    this->_base.tick = (scene_tick_func)couverture_tick;
-    this->_base.draw = (scene_draw_func)couverture_draw;
-    this->_base.drop = (scene_drop_func)couverture_drop;
+    int i, j;
+    for (i = 0; i < NG; ++i)
+        for (j = 0; j < GSZ; ++j)
+            floue_add(this->f,
+                (SDL_Point){P[i].x + rand() % 401 - 200, P[i].y + rand() % 401 - 200},
+                (SDL_Color){255, 255, 255}, 120, 0.5
+            );
 
-    this->f = floue_create((SDL_Color){255, 255, 255, 216});
+    this->ow = overworld_create((scene *)this);
 
     label *title = label_create(FONT_UPRIGHT, 72,
         (SDL_Color){0}, WIN_W, "G  R  A  D  A  T  I  M");
@@ -190,6 +178,19 @@ couverture *couverture_create()
     l = label_create(FONT_UPRIGHT, 36, (SDL_Color){0}, WIN_W, "Run");
     element_place_anchored((element *)l, WIN_W * 0.7, WIN_H * 0.725, 0.5, 0.5);
     bekter_pushback(this->_base.children, l);
+
+}
+
+couverture *couverture_create()
+{
+    couverture *this = malloc(sizeof(couverture));
+    memset(this, 0, sizeof(*this));
+    this->_base.children = bekter_create();
+    this->_base.tick = (scene_tick_func)couverture_tick;
+    this->_base.draw = (scene_draw_func)couverture_draw;
+    this->_base.drop = (scene_drop_func)couverture_drop;
+
+    this->f = floue_create((SDL_Color){255, 255, 255, 216});
 
     orion_load_ogg(&g_orion, TRACKID_MAIN_BGM, "copycat.ogg");
     orion_play_loop(&g_orion, TRACKID_MAIN_BGM, 0, BGM_LOOP_A, BGM_LOOP_B);

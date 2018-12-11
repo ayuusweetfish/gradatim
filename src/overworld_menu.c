@@ -143,6 +143,7 @@ static inline scene *run_stage(overworld_menu *this)
 
 static inline void init_stage(overworld_menu *this, gameplay_scene *gp)
 {
+    gameplay_init_textures(gp);
     gameplay_run_leadin(gp);
     scene_drop(this);
 }

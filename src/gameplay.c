@@ -1011,6 +1011,41 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     }
 }
 
+void gameplay_init_textures(gameplay_scene *this)
+{
+    int i, j;
+    for (i = 0; i < MAX_HINTS; ++i) {
+        this->l_hints[i] = label_create(FONT_UPRIGHT, HINT_FONTSZ,
+            (SDL_Color){255, 255, 255}, WIN_W, "");
+        for (j = 0; j < MAX_SIG; ++j)
+            this->s_hints[i][j] = sprite_create_empty();
+    }
+
+    if (profile.show_clock) {
+        label *l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_CHAP_FONTSZ,
+            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
+        this->clock_chap = l;
+        l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_CHAP_FONTSZ * 3 / 4,
+            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
+        this->clock_chap_dec = l;
+        l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_STG_FONTSZ,
+            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
+        this->clock_stg = l;
+        l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_STG_FONTSZ * 3 / 4,
+            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
+        this->clock_stg_dec = l;
+    }
+
+    switch_stage_ctx(this);
+
+    this->cam_x = clamp(this->simulator->prot.x,
+        WIN_W_UNITS / 2, this->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
+    this->cam_y = clamp(this->simulator->prot.y,
+        WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
+    this->scale = 1;
+
+}
+
 gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx, int mods)
 {
     gameplay_scene *ret = malloc(sizeof(gameplay_scene));
@@ -1057,44 +1092,14 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
         orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
     }
 
-    int j;
-    for (i = 0; i < MAX_HINTS; ++i) {
-        ret->l_hints[i] = label_create(FONT_UPRIGHT, HINT_FONTSZ,
-            (SDL_Color){255, 255, 255}, WIN_W, "");
-        for (j = 0; j < MAX_SIG; ++j)
-            ret->s_hints[i][j] = sprite_create_empty();
-    }
-
-    if (profile.show_clock) {
-        label *l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_CHAP_FONTSZ,
-            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
-        ret->clock_chap = l;
-        l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_CHAP_FONTSZ * 3 / 4,
-            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
-        ret->clock_chap_dec = l;
-        l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_STG_FONTSZ,
-            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
-        ret->clock_stg = l;
-        l = label_create_outlined(FONT_UPRIGHT, FONT_UPRIGHT_OUTLINE, CLOCK_STG_FONTSZ * 3 / 4,
-            (SDL_Color){255, 255, 255}, (SDL_Color){64, 64, 64}, WIN_W, "");
-        ret->clock_stg_dec = l;
-    }
-
     ret->prev_sim = NULL;
     ret->chap = chap;
     ret->cur_stage_idx = idx - 1;
-    switch_stage_ctx(ret);
     ret->start_stage_idx = idx;
     ret->stage_start_time = 0;
     ret->refill_time = -1;
 
     particle_init(&ret->particle);
-
-    ret->cam_x = clamp(ret->simulator->prot.x,
-        WIN_W_UNITS / 2, ret->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
-    ret->cam_y = clamp(ret->simulator->prot.y,
-        WIN_H_UNITS / 2, ret->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
-    ret->scale = 1;
 
     return ret;
 }
