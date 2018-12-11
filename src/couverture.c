@@ -70,42 +70,43 @@ static inline double get_scale(double beat, double mul)
 static void couverture_draw(couverture *this)
 {
     double t = (orion_tell(&g_orion, TRACKID_MAIN_BGM) - BGM_LOOP_A) / 44100.0;
-    if (t >= 0) {
-        if (!this->canon_playing) {
-            orion_play_loop(&g_orion, TRACKID_MAIN_BGM_CANON,
-                BGM_LOOP_A - 16 * BGM_BEAT * 44100, BGM_LOOP_A, BGM_LOOP_B);
-            orion_ramp(&g_orion, TRACKID_MAIN_BGM_CANON, 0, profile.bgm_vol * VOL_VALUE / 3);
-            this->canon_playing = true;
+
+    if (t >= 0 && !this->canon_playing) {
+        orion_play_loop(&g_orion, TRACKID_MAIN_BGM_CANON,
+            BGM_LOOP_A + (-16 * BGM_BEAT + t) * 44100,
+            BGM_LOOP_A, BGM_LOOP_B);
+        orion_ramp(&g_orion, TRACKID_MAIN_BGM_CANON, 0, profile.bgm_vol * VOL_VALUE / 3);
+        this->canon_playing = true;
+    }
+
+    t += BGM_BEAT * 40000;
+    int bar = (int)(t / (BGM_BEAT * 4));
+    double beat = t / BGM_BEAT - bar * 4;
+    bar %= NC;
+
+    double downbeat_scale = get_scale(beat, -0.04);
+    SDL_Color downbeat_c = { 0 };
+    if (bar == NC - 1 && beat >= 4 - TINT_DUR)
+        downbeat_c = get_colour(DOT_C, NC + 1, NC, beat);
+
+    this->f->c0 = get_colour(BG_C, NC, bar, beat);
+
+    int i, j;
+    for (i = 0; i < NG; ++i) {
+        if ((beat += (1 - 0.03 * GSZ)) >= 4) {
+            /* Do not take the modulo, as DOT_C[NC] will be needed */
+            bar++;
+            beat -= 4;
         }
-
-        int bar = (int)(t / (BGM_BEAT * 4));
-        double beat = t / BGM_BEAT - bar * 4;
-        bar %= NC;
-
-        double downbeat_scale = get_scale(beat, -0.04);
-        SDL_Color downbeat_c = { 0 };
-        if (bar == NC - 1 && beat >= 4 - TINT_DUR)
-            downbeat_c = get_colour(DOT_C, NC + 1, NC, beat);
-
-        this->f->c0 = get_colour(BG_C, NC, bar, beat);
-
-        int i, j;
-        for (i = 0; i < NG; ++i) {
-            if ((beat += (1 - 0.03 * GSZ)) >= 4) {
-                /* Do not take the modulo, as DOT_C[NC] will be needed */
+        for (j = 0; j < GSZ; ++j) {
+            if ((beat += 0.03) >= 4) {
                 bar++;
                 beat -= 4;
             }
-            for (j = 0; j < GSZ; ++j) {
-                if ((beat += 0.03) >= 4) {
-                    bar++;
-                    beat -= 4;
-                }
-                this->f->c[i * GSZ + j] = downbeat_c.a != 0 ?
-                    downbeat_c : get_colour(DOT_C, NC + 1, bar, beat);
-                this->f->scale[i * GSZ + j] =
-                    downbeat_scale * get_scale(beat, 0.06);
-            }
+            this->f->c[i * GSZ + j] = downbeat_c.a != 0 ?
+                downbeat_c : get_colour(DOT_C, NC + 1, bar, beat);
+            this->f->scale[i * GSZ + j] =
+                downbeat_scale * get_scale(beat, 0.06);
         }
     }
     floue_draw(this->f);
@@ -149,7 +150,7 @@ void couverture_generate_dots(couverture *this)
 
     label *title = label_create(FONT_UPRIGHT, 72,
         (SDL_Color){0}, WIN_W, "G  R  A  D  A  T  I  M");
-    element_place_anchored((element *)title, WIN_W / 2, WIN_H * 0.375, 0.5, 0.5);
+    element_place_anchored((element *)title, WIN_W / 2, WIN_H * 0.35, 0.5, 0.5);
     bekter_pushback(this->_base.children, title);
 
     button *options = button_create((button_callback)options_cb,
