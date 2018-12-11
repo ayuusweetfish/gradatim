@@ -35,6 +35,7 @@ struct stage_rec *stage_read(const char *path)
         for (j = 0; j < this->n_cols; ++j) {
             int t;
             fscanf(f, "%d", &t);
+            if (t == -1) t = 0;
             fgetc(f);
             this->grid[i * this->n_cols + j] = t;
         }
