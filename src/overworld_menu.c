@@ -185,6 +185,7 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
             break;
         case SDLK_SPACE:
         case SDLK_RETURN:
+            if (this->quit_time >= 0) break;
             if (this->menu_idx == N_MODS) {
                 g_stage = (scene *)loading_create(&g_stage,
                     (loading_routine)run_stage, (loading_postroutine)init_stage, this);
