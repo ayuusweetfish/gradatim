@@ -8,7 +8,7 @@
 /* Type of samples */
 typedef signed short orion_smp;
 /* Number of tracks available */
-#define ORION_NUM_TRACKS    16
+#define ORION_NUM_TRACKS    20
 
 enum orion_playstate {
     ORION_UNINIT = 0,
