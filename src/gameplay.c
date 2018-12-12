@@ -1107,10 +1107,7 @@ void gameplay_init_textures(gameplay_scene *this)
     switch_stage_ctx(this);
     this->stage_start_time = 0;
 
-    this->cam_x = clamp(this->simulator->prot.x,
-        WIN_W_UNITS / 2, this->simulator->gcols - WIN_W_UNITS / 2) - WIN_W_UNITS / 2;
-    this->cam_y = clamp(this->simulator->prot.y,
-        WIN_H_UNITS / 2, this->simulator->grows - WIN_H_UNITS / 2) - WIN_H_UNITS / 2;
+    update_camera(this, 1);
     this->scale = 1;
 }
 
