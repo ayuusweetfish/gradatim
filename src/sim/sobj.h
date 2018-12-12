@@ -71,6 +71,7 @@ typedef struct _sobj {
 #define PROT_TAG_NXSTAGE    8
 #define PROT_TAG_REFILL     7
 #define PROT_TAG_PUFF       6
+#define PROT_TAG_SPRING     5
 
 void sobj_init(sobj *o);
 bool sobj_needs_update(sobj *o);

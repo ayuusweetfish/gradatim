@@ -115,7 +115,7 @@ struct chap_rec {
     unsigned int hop_mask;
 
     /* Tracks */
-#define MAX_CHAP_TRACKS 7
+#define MAX_CHAP_TRACKS 6
     struct _chap_track tracks[MAX_CHAP_TRACKS];
     int n_tracks;
 

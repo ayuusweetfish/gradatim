@@ -388,6 +388,10 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             this->simulator->prot.tag = 0;
             orion_play_once(&g_orion, TRACKID_FX_PICKUP);
             break;
+        case PROT_TAG_SPRING:
+            this->simulator->prot.tag = 0;
+            orion_play_once(&g_orion, TRACKID_FX_SPRING);
+            break;
     }
 
     this->simulator->prot.ay =
@@ -1163,12 +1167,14 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
     orion_load_ogg(&g_orion, TRACKID_FX_UNAVAIL, "unavail.ogg");
     orion_load_ogg(&g_orion, TRACKID_FX_NXSTAGE, "nxstage.ogg");
     orion_load_ogg(&g_orion, TRACKID_FX_FAIL, "fail.ogg");
+    orion_load_ogg(&g_orion, TRACKID_FX_SPRING, "spring.ogg");
     orion_ramp(&g_orion, TRACKID_FX_PICKUP, 0, profile.sfx_vol * VOL_VALUE);
     orion_ramp(&g_orion, TRACKID_FX_HOP, 0, profile.sfx_vol * VOL_VALUE);
     orion_ramp(&g_orion, TRACKID_FX_DASH, 0, profile.sfx_vol * VOL_VALUE);
     orion_ramp(&g_orion, TRACKID_FX_UNAVAIL, 0, profile.sfx_vol * VOL_VALUE);
     orion_ramp(&g_orion, TRACKID_FX_NXSTAGE, 0, profile.sfx_vol * VOL_VALUE);
     orion_ramp(&g_orion, TRACKID_FX_FAIL, 0, profile.sfx_vol * VOL_VALUE);
+    orion_ramp(&g_orion, TRACKID_FX_SPRING, 0, profile.sfx_vol * VOL_VALUE);
 
     ret->prev_sim = NULL;
     ret->chap = chap;

@@ -182,6 +182,7 @@ static inline void spring_update_post(sobj *o, double T, sobj *prot)
         o->h = 3./16;
         prot->vy = -SPRING_SPD;
         prot->ay = 0;
+        take_max(prot->tag, PROT_TAG_SPRING);
         update_offset(o);
     }
 }
