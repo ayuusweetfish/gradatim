@@ -8,6 +8,7 @@
 #include "dialogue.h"
 #include "profile_data.h"
 #include "chapfin.h"
+#include "orion/orion.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -372,6 +373,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
                 this->simulator->prot.y -= delta_y;
                 this->cam_x -= delta_x;
                 this->cam_y -= delta_y;
+                orion_play_once(&g_orion, TRACKID_FX_NXSTAGE);
             } else if (this->simulator->cur_time - this->simulator->prot.t
                 >= STAGE_TRANSITION_DUR)
             {
@@ -383,6 +385,7 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
         case PROT_TAG_REFILL:
             this->refill_time = REFILL_PERSISTENCE;
             this->simulator->prot.tag = 0;
+            orion_play_once(&g_orion, TRACKID_FX_PICKUP);
             break;
     }
 
@@ -943,12 +946,12 @@ static void gameplay_scene_drop(gameplay_scene *this)
     }
 }
 
-static void try_hop(gameplay_scene *this)
+static bool try_hop(gameplay_scene *this)
 {
     char t;
     if ((t = cant_hop(this)) != 0) {
         add_hop_particles(this, t);
-        return;
+        return false;
     }
     if ((this->simulator->cur_time - this->simulator->last_land) <= HOP_GRACE_DUR) {
         /* Grace jump */
@@ -970,22 +973,23 @@ static void try_hop(gameplay_scene *this)
             else lo = mid;
         }
         this->mov_time = hi;
-    } else return;
+    } else return false;
     add_hop_particles(this, 0);
+    return true;
 }
 
-static void try_dash(gameplay_scene *this, bool is_dirchg)
+static bool try_dash(gameplay_scene *this, bool is_dirchg)
 {
     char t;
     if ((t = cant_dash(this, is_dirchg)) != 0 && t != 4) {
         if (!is_dirchg) add_hop_particles(this, t);
-        return;
+        return false;
     }
     /* In case of multiple dashes in one beat, simply exit without particles */
-    if (!is_dirchg && (this->mov_state & MOV_DASH_BASE) && t != 4) return;
+    if (!is_dirchg && (this->mov_state & MOV_DASH_BASE) && t != 4) return false;
     /* In case of direction updates, the time should not be reset */
     double dur = is_dirchg ? this->mov_time : DASH_DUR;
-    if (is_dirchg && dur < DASH_MIN_DUR) return;
+    if (is_dirchg && dur < DASH_MIN_DUR) return false;
     int dir_has = 0, dir_denotes = 0;
     if (this->ver_state == VER_STATE_UP) {
         dir_has |= 2;
@@ -1009,6 +1013,7 @@ static void try_dash(gameplay_scene *this, bool is_dirchg)
         MOV_DASH_BASE | dir_has | dir_denotes | (t == 4 ? MOV_USING_REFILL : 0);
     this->mov_time = dur;
     if (!is_dirchg) add_dash_particles(this, t == 4 ? 1 : 0);
+    return !is_dirchg;
 }
 
 static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *ev)
@@ -1022,10 +1027,18 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     if (ev->keysym.sym != SDLK_ESCAPE && get_audio_position(this) < 0) return;
     switch (ev->keysym.sym) {
         case SDLK_c:
-            if (!ev->repeat && ev->state == SDL_PRESSED) try_hop(this);
+            if (!ev->repeat && ev->state == SDL_PRESSED) {
+                if (try_hop(this))
+                    orion_play_once(&g_orion, TRACKID_FX_HOP);
+                else orion_play_once(&g_orion, TRACKID_FX_UNAVAIL);
+            }
             break;
         case SDLK_x:
-            if (!ev->repeat && ev->state == SDL_PRESSED) try_dash(this, false);
+            if (!ev->repeat && ev->state == SDL_PRESSED) {
+                if (try_dash(this, false))
+                    orion_play_once(&g_orion, TRACKID_FX_DASH);
+                else orion_play_once(&g_orion, TRACKID_FX_UNAVAIL);
+            }
             break;
         case SDLK_UP:
             toggle(this->ver_state, ev->state, VER_STATE_UP, VER_STATE_NONE);
@@ -1145,6 +1158,17 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
         orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0, 0);
         orion_pause(&g_orion, TRACKID_STAGE_BGM + i);
     }
+
+    orion_load_ogg(&g_orion, TRACKID_FX_PICKUP, "pickup.ogg");
+    orion_load_ogg(&g_orion, TRACKID_FX_HOP, "hop.ogg");
+    orion_load_ogg(&g_orion, TRACKID_FX_DASH, "dash.ogg");
+    orion_load_ogg(&g_orion, TRACKID_FX_UNAVAIL, "unavail.ogg");
+    orion_load_ogg(&g_orion, TRACKID_FX_NXSTAGE, "nxstage.ogg");
+    orion_ramp(&g_orion, TRACKID_FX_PICKUP, 0, profile.sfx_vol * VOL_VALUE);
+    orion_ramp(&g_orion, TRACKID_FX_HOP, 0, profile.sfx_vol * VOL_VALUE);
+    orion_ramp(&g_orion, TRACKID_FX_DASH, 0, profile.sfx_vol * VOL_VALUE);
+    orion_ramp(&g_orion, TRACKID_FX_UNAVAIL, 0, profile.sfx_vol * VOL_VALUE);
+    orion_ramp(&g_orion, TRACKID_FX_NXSTAGE, 0, profile.sfx_vol * VOL_VALUE);
 
     ret->prev_sim = NULL;
     ret->chap = chap;

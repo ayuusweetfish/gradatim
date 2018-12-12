@@ -21,8 +21,13 @@
 #define TRACKID_MENU_OPEN       5
 #define TRACKID_MENU_CLOSE      6
 #define TRACKID_MENU_CONFIRM    7
+#define TRACKID_FX_PICKUP       8
+#define TRACKID_FX_HOP          9
+#define TRACKID_FX_DASH         10
+#define TRACKID_FX_UNAVAIL      11
+#define TRACKID_FX_NXSTAGE      12
 #define TRACKID_FX_LAST         TRACKID_MENU_CONFIRM
-#define TRACKID_STAGE_BGM       8
+#define TRACKID_STAGE_BGM       13
 
 #define BGM_LOOP_A  (5.85 * 44100)
 #define BGM_LOOP_B  ((5.85 + 336 * 60.0 / 165) * 44100)
