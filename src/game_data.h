@@ -88,6 +88,8 @@ struct _chap_track {
 struct chap_rec {
     /* Colours in the overworld */
     int r1, g1, b1, r2, g2, b2;
+    /* Background colour during gameplay */
+    int r3, g3, b3;
     /* Index */
     int idx;
     /* Title */

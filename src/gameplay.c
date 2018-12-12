@@ -679,7 +679,7 @@ static void gameplay_scene_draw(gameplay_scene *this)
     int i, j;
 
     /* Background colour */
-    SDL_SetRenderDrawColor(g_renderer, this->chap->r1, this->chap->g1, this->chap->b1, 255);
+    SDL_SetRenderDrawColor(g_renderer, this->chap->r3, this->chap->g3, this->chap->b3, 255);
     SDL_RenderFillRect(g_renderer, NULL);
 
     /* Parallax sidescrollers */
