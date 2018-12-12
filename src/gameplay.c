@@ -59,6 +59,7 @@ static const double FAILURE_SPF = 0.05;
 static const double STRETTO_RANGE = 2.5;
 static const double DIALOGUE_ZOOM_DUR = 0.9;
 static const double DIALOGUE_ZOOM_SCALE = 1.5;
+static const double DIALOGUE_BGM_FADE = 0.2;
 static const int HINT_FONTSZ = 36;
 static const int HINT_PADDING = 12;
 static const int CLOCK_CHAP_FONTSZ = 44;
@@ -678,12 +679,15 @@ static inline void update_sound(gameplay_scene *this)
             val[this->rec->aud[i].tid] += d;
             sum += d;
         }
+        bool is_dialogue =
+            this->disp_state == DISP_DIALOGUE_IN || this->disp_state == DISP_DIALOGUE_OUT;
         for (i = 0; i < this->chap->n_tracks; ++i) {
 #ifndef NDEBUG
             printf("%.4lf%c", val[i] / sum, i == this->chap->n_tracks - 1 ? '\n' : ' ');
 #endif
             orion_ramp(&g_orion, TRACKID_STAGE_BGM + i,
-                0.03, val[i] / sum * profile.bgm_vol * VOL_VALUE);
+                0.03, val[i] / sum * profile.bgm_vol * VOL_VALUE *
+                    (is_dialogue ? DIALOGUE_BGM_FADE : 1));
         }
     }
 }
