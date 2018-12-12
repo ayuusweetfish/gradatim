@@ -739,6 +739,16 @@ static void gameplay_scene_draw(gameplay_scene *this)
         prot_disp_y -= iround(this->cam_y * UNIT_PX);
     }
 
+    /* This is for retrieving dimensions only;
+     * will possibly be changed later */
+    int nf = (this->simulator->prot.vx != 0 || this->simulator->cur_time < 0) ?
+        0 : (int)this->simulator->cur_time % NORMAL_NF;
+    texture prot_tex = this->rec->prot_tex[nf];
+    prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
+    prot_disp_y -= (prot_tex.range.h * SPR_SCALE - prot_h) / 2;
+    prot_w = prot_tex.range.w * SPR_SCALE;
+    prot_h = prot_tex.range.h * SPR_SCALE;
+
     /* Draw the previous stage during transition */
     if (this->prev_sim != NULL) {
         int delta_x = this->simulator->worldc - this->prev_sim->worldc;
@@ -749,9 +759,6 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
     render_objects(this, false, false, 0, 0, prot_disp_x, prot_disp_y);
 
-    int nf = (this->simulator->prot.vx != 0 || this->simulator->cur_time < 0) ?
-        0 : (int)this->simulator->cur_time % NORMAL_NF;
-    texture prot_tex = this->rec->prot_tex[nf];
     if (this->disp_state == DISP_FAILURE) {
         int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
             0, FAILURE_NF - 1);
@@ -771,11 +778,6 @@ static void gameplay_scene_draw(gameplay_scene *this)
             prot_tex = this->rec->prot_hop_tex[HOP_FRAME_SMALLVEL];
         }
     }
-
-    prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
-    prot_disp_y -= (prot_tex.range.h * SPR_SCALE - prot_h) / 2;
-    prot_w = prot_tex.range.w * SPR_SCALE;
-    prot_h = prot_tex.range.h * SPR_SCALE;
 
     render_texture_ex(prot_tex, &(SDL_Rect){
         prot_disp_x, prot_disp_y,
