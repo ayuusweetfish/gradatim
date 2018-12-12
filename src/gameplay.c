@@ -46,9 +46,15 @@ static const int AV_OFFSET_INTV = 60;
 static const double CAM_MOV_FAC = 8;
 static const double STAGE_TRANSITION_DUR = 2;
 
+#define HOP_FRAME_ANT1  0
+#define HOP_FRAME_ANT2  1
+#define HOP_FRAME_SMALLVEL  1
+#define HOP_FRAME_LARGEVEL  2
+static const double HOP_LARGEVEL = 0.5;
+
 static const double LEADIN_INIT = 0.5;
 static const double LEADIN_DUR = 0.4; /* Seconds */
-static const double HOP_SPF = 0.03;
+static const double HOP_SPF = 0.05;
 static const double FAILURE_SPF = 0.03;
 static const double STRETTO_RANGE = 2.5;
 static const double DIALOGUE_ZOOM_DUR = 0.9;
@@ -344,6 +350,8 @@ static void gameplay_scene_tick(gameplay_scene *this, double dt)
             g_stage = (scene *)chapfin_scene_create(this);
         stop_prot(this);
     }
+
+    this->since_hop += dt;
 
     switch (this->simulator->prot.tag) {
         case PROT_TAG_FAILURE:
@@ -752,6 +760,16 @@ static void gameplay_scene_draw(gameplay_scene *this)
          * No dialogue or stage transition
          * should be running during failure animation */
         render_objects(this, false, true, 0, 0, 0, 0);
+    } else if (fabs(this->simulator->prot.vy) > 1e-6) {
+        if (this->since_hop < HOP_SPF) {
+            prot_tex = this->rec->prot_hop_tex[HOP_FRAME_ANT1];
+        } else if (this->since_hop < HOP_SPF * 2) {
+            prot_tex = this->rec->prot_hop_tex[HOP_FRAME_ANT2];
+        } else if (this->simulator->prot.vy < -HOP_LARGEVEL) {
+            prot_tex = this->rec->prot_hop_tex[HOP_FRAME_LARGEVEL];
+        } else {
+            prot_tex = this->rec->prot_hop_tex[HOP_FRAME_SMALLVEL];
+        }
     }
 
     prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
@@ -1037,16 +1055,22 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     switch (ev->keysym.sym) {
         case SDLK_c:
             if (!ev->repeat && ev->state == SDL_PRESSED) {
-                if (try_hop(this))
+                if (try_hop(this)) {
                     orion_play_once(&g_orion, TRACKID_FX_HOP);
-                else orion_play_once(&g_orion, TRACKID_FX_UNAVAIL);
+                    this->since_hop = 0;
+                } else {
+                    orion_play_once(&g_orion, TRACKID_FX_UNAVAIL);
+                }
             }
             break;
         case SDLK_x:
             if (!ev->repeat && ev->state == SDL_PRESSED) {
-                if (try_dash(this, false))
+                if (try_dash(this, false)) {
                     orion_play_once(&g_orion, TRACKID_FX_DASH);
-                else orion_play_once(&g_orion, TRACKID_FX_UNAVAIL);
+                    this->since_hop = 0;
+                } else {
+                    orion_play_once(&g_orion, TRACKID_FX_UNAVAIL);
+                }
             }
             break;
         case SDLK_UP:
@@ -1131,6 +1155,7 @@ gameplay_scene *gameplay_scene_create(scene *bg, struct chap_rec *chap, int idx,
 
     ret->rem_time = 0;
     ret->facing = HOR_STATE_RIGHT;
+    ret->since_hop = -1e10;
 
     if (mods & MOD_STRETTO) mods |= MOD_SEMPLICE;
     ret->mods = mods;

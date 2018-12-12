@@ -128,6 +128,9 @@ struct stage_rec *stage_read(const char *path)
     /* TODO: This should be replaced */
     this->prot_tex[0] = retrieve_texture("prot1.png");
     this->prot_tex[1] = retrieve_texture("prot2.png");
+    this->prot_hop_tex[0] = retrieve_texture("prot3.png");
+    this->prot_hop_tex[1] = retrieve_texture("prot4.png");
+    this->prot_hop_tex[2] = retrieve_texture("prot5.png");
     this->prot_fail_tex[0] = retrieve_texture("prot6.png");
     this->prot_fail_tex[1] = retrieve_texture("prot7.png");
     this->prot_fail_tex[2] = retrieve_texture("prot8.png");
