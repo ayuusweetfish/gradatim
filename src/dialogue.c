@@ -184,10 +184,10 @@ dialogue_scene *dialogue_create(scene **bg, bekter(dialogue_entry) script)
 
     /* Text label */
     l = label_create(FONT_ITALIC, 32,
-        (SDL_Color){255, 255, 255}, WIN_W * 50 / 72, "");
+        (SDL_Color){255, 255, 255}, WIN_W * 45 / 72, "");
     ret->text_disp = l;
     bekter_pushback(ret->_base.children, l);
-    element_place((element *)l, WIN_W / 4, WIN_H * 50 / 72);
+    element_place((element *)l, WIN_W * 20 / 72, WIN_H * 50 / 72);
 
     int i;
     dialogue_entry *orig_entry, entry;
