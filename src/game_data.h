@@ -76,7 +76,7 @@ void stage_drop(struct stage_rec *this);
 
 struct _chap_ss {
     char *image;
-    double y, ymul, vx;
+    double scale, xskip, y, mul, vx;
 };
 
 struct _chap_track {

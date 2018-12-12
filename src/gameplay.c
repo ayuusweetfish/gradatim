@@ -686,18 +686,21 @@ static void gameplay_scene_draw(gameplay_scene *this)
     for (i = 0; i < this->chap->n_ss; ++i) {
         double cx = this->cam_x + this->rec->world_c;
         double cy = this->cam_y + this->rec->world_r;
-        double tx = -cx * this->chap->ss[i].ymul;
-        double ty = (this->chap->ss[i].y - cy * this->chap->ss[i].ymul);
+        double tx = -cx * this->chap->ss[i].mul +
+            this->chap->ss[i].vx * this->simulator->cur_time;
+        double ty = (this->chap->ss[i].y - cy * this->chap->ss[i].mul);
         int txi = align_pixel(tx * UNIT_PX);
         int tyi = align_pixel(ty * UNIT_PX);
-        int w = this->ss_tex[i].range.w;
-        txi %= w;
-        if (txi > 0) txi -= w;  /* Take (remainder - modulus) */
+        int w = this->ss_tex[i].range.w * this->chap->ss[i].scale,
+            h = this->ss_tex[i].range.h * this->chap->ss[i].scale,
+            xskip = w * this->chap->ss[i].xskip;
+        txi %= xskip;
+        if (txi > 0) txi -= xskip;  /* Take (remainder - modulus) */
         while (txi < WIN_W) {
             render_texture(this->ss_tex[i], &(SDL_Rect){
-                txi, tyi, w, this->ss_tex[i].range.h
+                txi, tyi, w, h
             });
-            txi += w;
+            txi += xskip;
         }
     }
 

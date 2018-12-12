@@ -259,11 +259,11 @@ struct chap_rec *chap_read(const char *path)
         fgetc(f);
         char str[64];
         int p;
-        double y, ymul, vx;
+        double scale, xskip, y, mul, vx;
         for (p = 0; (str[p] = fgetc(f)) != ','; ++p) ;
         str[p] = '\0';
-        fscanf(f, "%lf,%lf,%lf", &y, &ymul, &vx);
-        this->ss[i] = (struct _chap_ss){strdup(str), y, ymul, vx};
+        fscanf(f, "%lf,%lf,%lf,%lf,%lf", &scale, &xskip, &y, &mul, &vx);
+        this->ss[i] = (struct _chap_ss){strdup(str), scale, xskip, y, mul, vx};
     }
 
     fscanf(f, "%d", &m);

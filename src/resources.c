@@ -106,6 +106,8 @@ void load_images()
     load_image("rua1.png");
     load_image("rua2.png");
     load_grid("grid.png", "grid.csv");
+    load_image("forest_sidescroll.png");
+    load_image("cloud_sidescroll.png");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     load_image("clock.png");
     load_image("retry_count.png");
@@ -127,8 +129,6 @@ void load_images()
     load_image("alldash_4beat.png");
     load_image("options_btn.png");
     load_image("credits_btn.png");
-    load_image("forest_sidescroll.png");
-    load_image("cloud_sidescroll.png");
 }
 
 void release_images()
