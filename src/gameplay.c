@@ -740,7 +740,9 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
     render_objects(this, false, false, 0, 0, prot_disp_x, prot_disp_y);
 
-    texture prot_tex = this->rec->prot_tex;
+    int nf = this->simulator->cur_time < 0 ? 0 :
+        (int)this->simulator->cur_time % NORMAL_NF;
+    texture prot_tex = this->rec->prot_tex[nf];
     if (this->disp_state == DISP_FAILURE) {
         int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,
             0, FAILURE_NF - 1);
@@ -827,8 +829,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
     }
 
     /* Lead-in or modifier flashlight */
-    prot_disp_x += this->simulator->prot.w / 2 * UNIT_PX;
-    prot_disp_y += this->simulator->prot.h / 2 * UNIT_PX;
+    prot_disp_x += UNIT_PX / 2;
+    prot_disp_y += UNIT_PX / 2;
     if (this->disp_state == DISP_LEADIN) {
         double radius = 0, radius_o = 0;
         if (this->disp_time <= LEADIN_DUR) {

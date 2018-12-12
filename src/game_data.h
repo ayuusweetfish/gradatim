@@ -48,8 +48,9 @@ struct stage_rec {
     bekter(char *) strtab;
 
     /* Texture table */
-    texture prot_tex;
     texture grid_tex[256];
+#define NORMAL_NF 2
+    texture prot_tex[NORMAL_NF];
 #define FAILURE_NF 4
     texture prot_fail_tex[FAILURE_NF];
 
