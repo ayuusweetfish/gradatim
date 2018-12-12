@@ -269,6 +269,8 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
     ret->quit_time = -1;
     ret->menu_idx = ret->last_menu_idx = N_MODS;
     ret->menu_time = 0;
+    ret->is_in = false;
+    ret->since_enter = 0;
 
     char s[64];
     if (bg->cur_chap_idx == 0) strcpy(s, "Prelude - ");
