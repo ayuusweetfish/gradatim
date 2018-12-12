@@ -1,5 +1,6 @@
 216,240,192,255,255,192,216,234,255
 Echo
+ch1-endgame.png
 126,1
 xooo
 0.012,160
@@ -7,7 +8,7 @@ xooo
 -1,springday.ogg,-1
 2
 forest_sidescroll.png,8,1,6,0.1,0
-cloud_sidescroll.png,4,3,1,0.025,-0.1
+cloud_sidescroll.png,8,3,0,0.025,-0.1
 8
 1-1.csv
 1-2.csv
