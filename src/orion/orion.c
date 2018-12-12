@@ -127,9 +127,8 @@ unlock_ret:
 void orion_play_once(struct orion *o, int tid)
 {
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state != ORION_STOPPED) goto unlock_ret;
+    if (o->track[tid].state < ORION_STOPPED) goto unlock_ret;
     o->track[tid].play_pos = 0;
-    o->track[tid].volume = 1;
     o->track[tid].loop_start = -1;
     o->track[tid].loop_end = o->track[tid].len;
     o->track[tid].ramp_slope = 0;
@@ -143,7 +142,6 @@ void orion_play_loop(struct orion *o, int tid, int intro_pos, int start_pos, int
     SDL_AtomicLock(&o->lock);
     if (o->track[tid].state != ORION_STOPPED) goto unlock_ret;
     o->track[tid].play_pos = intro_pos;
-    o->track[tid].volume = 1;
     int l = o->track[tid].len;
     start_pos = ((start_pos % l) + l) % l;
     end_pos = ((end_pos % l) + l) % l;
@@ -204,7 +202,7 @@ int orion_tell(struct orion *o, int tid)
 void orion_ramp(struct orion *o, int tid, float secs, float dst)
 {
     SDL_AtomicLock(&o->lock);
-    if (o->track[tid].state <= ORION_STOPPED) goto unlock_ret;
+    if (o->track[tid].state <= ORION_STOPPED && secs > 0) goto unlock_ret;
     if (secs <= 0) {
         o->track[tid].volume = dst;
     } else {

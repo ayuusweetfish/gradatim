@@ -15,6 +15,13 @@
 #define TRACKID_MAIN_BGM        0
 #define TRACKID_MAIN_BGM_LP     1
 #define TRACKID_MAIN_BGM_CANON  2
+#define TRACKID_FX_FIRST        TRACKID_FX_SW1
+#define TRACKID_FX_SW1          3
+#define TRACKID_FX_SW2          4
+#define TRACKID_MENU_OPEN       5
+#define TRACKID_MENU_CLOSE      6
+#define TRACKID_MENU_CONFIRM    7
+#define TRACKID_FX_LAST         TRACKID_MENU_CONFIRM
 #define TRACKID_STAGE_BGM       8
 
 #define BGM_LOOP_A  (5.85 * 44100)

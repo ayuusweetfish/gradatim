@@ -3,6 +3,7 @@
 #include "profile_data.h"
 #include "transition.h"
 #include "label.h"
+#include "orion/orion.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -100,6 +101,9 @@ static inline void update_profile(options_scene *this)
     profile_save();
     orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, BGM_LP_VOL * profile.bgm_vol * VOL_VALUE);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, BGM_VOL * profile.bgm_vol * VOL_VALUE);
+    int i;
+    for (i = TRACKID_FX_FIRST; i <= TRACKID_FX_LAST; ++i)
+        orion_ramp(&g_orion, i, 0, profile.sfx_vol * VOL_VALUE);
     SDL_SetWindowFullscreen(g_window,
         profile.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
@@ -115,11 +119,13 @@ static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
             this->last_menu_idx = this->menu_idx;
             this->menu_idx = (this->menu_idx - 1 + N_MENU) % N_MENU;
             this->menu_time = this->time;
+            orion_play_once(&g_orion, TRACKID_FX_SW1);
             break;
         case SDLK_DOWN:
             this->last_menu_idx = this->menu_idx;
             this->menu_idx = (this->menu_idx + 1) % N_MENU;
             this->menu_time = this->time;
+            orion_play_once(&g_orion, TRACKID_FX_SW1);
             break;
         case SDLK_LEFT:
             this->menu_val[this->menu_idx] -= MENU_OFFS[this->menu_idx];
@@ -132,6 +138,7 @@ static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
             this->menu_val[this->menu_idx] += MENU_OFFS[this->menu_idx];
             update_label(this, this->menu_idx);
             update_profile(this);
+            orion_play_once(&g_orion, TRACKID_FX_SW2);
             break;
         case SDLK_RIGHT:
             this->menu_val[this->menu_idx] -= MENU_OFFS[this->menu_idx];
@@ -144,6 +151,7 @@ static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
             this->menu_val[this->menu_idx] += MENU_OFFS[this->menu_idx];
             update_label(this, this->menu_idx);
             update_profile(this);
+            orion_play_once(&g_orion, TRACKID_FX_SW2);
             break;
     }
 }

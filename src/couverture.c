@@ -203,6 +203,16 @@ couverture *couverture_create()
 
     orion_apply_lowpass(&g_orion, TRACKID_MAIN_BGM, TRACKID_MAIN_BGM_CANON, 22050);
 
+    orion_load_ogg(&g_orion, TRACKID_FX_SW1, "switch36.ogg");
+    orion_load_ogg(&g_orion, TRACKID_FX_SW2, "switch12.ogg");
+    orion_load_ogg(&g_orion, TRACKID_MENU_OPEN, "Menu1A.ogg");
+    orion_load_ogg(&g_orion, TRACKID_MENU_CLOSE, "Menu1B.ogg");
+    orion_load_ogg(&g_orion, TRACKID_MENU_CONFIRM, "Item2A.ogg");
+
+    int i;
+    for (i = TRACKID_FX_FIRST; i <= TRACKID_FX_LAST; ++i)
+        orion_ramp(&g_orion, i, 0, profile.sfx_vol * VOL_VALUE);
+
     orion_overall_play(&g_orion);
 
     this->canon_playing = false;

@@ -4,6 +4,7 @@
 #include "label.h"
 #include "loading.h"
 #include "gameplay.h"
+#include "orion/orion.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -118,12 +119,14 @@ static inline void pause_key_handler(pause_scene *this, SDL_KeyboardEvent *ev)
             this->last_menu_idx = this->menu_idx;
             this->menu_idx = (this->menu_idx - 1 + N_MENU) % N_MENU;
             this->menu_time = this->time;
+            orion_play_once(&g_orion, TRACKID_FX_SW1);
             break;
         case SDLK_DOWN:
         case SDLK_RIGHT:
             this->last_menu_idx = this->menu_idx;
             this->menu_idx = (this->menu_idx + 1) % N_MENU;
             this->menu_time = this->time;
+            orion_play_once(&g_orion, TRACKID_FX_SW2);
             break;
     }
 }

@@ -181,6 +181,7 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
                 this->bg->cam_targscale /= SCALE;
                 this->is_in = false;
                 this->since_enter = 0;
+                orion_play_once(&g_orion, TRACKID_MENU_CLOSE);
             }
             break;
         case SDLK_SPACE:
@@ -191,6 +192,7 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
                     (loading_routine)run_stage, (loading_postroutine)init_stage, this);
                 this->bg->cam_targx -= MOV_X;
                 this->bg->cam_targscale /= SCALE;
+                orion_play_once(&g_orion, TRACKID_MENU_CONFIRM);
             } else {
                 ev->keysym.sym = SDLK_RIGHT;
                 owm_key(this, ev);
@@ -200,17 +202,20 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
             this->last_menu_idx = this->menu_idx;
             this->menu_idx = (this->menu_idx + N_MODS) % (N_MODS + 1);
             this->menu_time = this->time;
+            orion_play_once(&g_orion, TRACKID_FX_SW1);
             break;
         case SDLK_DOWN:
             this->last_menu_idx = this->menu_idx;
             this->menu_idx = (this->menu_idx + 1) % (N_MODS + 1);
             this->menu_time = this->time;
+            orion_play_once(&g_orion, TRACKID_FX_SW1);
             break;
         case SDLK_LEFT:
             if (this->menu_idx != N_MODS) {
                 this->menu_val[this->menu_idx] =
                     (this->menu_val[this->menu_idx] - 1 + N_MODSTATES) % N_MODSTATES;
                 update_stats(this);
+                orion_play_once(&g_orion, TRACKID_FX_SW2);
             }
             break;
         case SDLK_RIGHT:
@@ -218,6 +223,7 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
                 this->menu_val[this->menu_idx] =
                     (this->menu_val[this->menu_idx] + 1) % N_MODSTATES;
                 update_stats(this);
+                orion_play_once(&g_orion, TRACKID_FX_SW2);
             }
             break;
     }

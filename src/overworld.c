@@ -192,17 +192,20 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
         case SDLK_SPACE:
         case SDLK_RETURN:
             g_stage = (scene *)overworld_menu_create(this);
+            orion_play_once(&g_orion, TRACKID_MENU_OPEN);
             break;
         case SDLK_LEFT:
             if (this->cur_stage_idx > 0) {
                 this->cur_stage_idx--;
                 move_camera(this);
+                orion_play_once(&g_orion, TRACKID_FX_SW1);
             }
             break;
         case SDLK_RIGHT:
             if (this->cur_stage_idx < this->cleared_stages) {
                 this->cur_stage_idx++;
                 move_camera(this);
+                orion_play_once(&g_orion, TRACKID_FX_SW1);
             }
             break;
         case SDLK_UP:
@@ -213,6 +216,7 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
                 this->cur_stage_idx = min(this->cur_stage_idx, this->cleared_stages);
                 move_camera(this);
                 this->since_chap_switch = 0;
+                orion_play_once(&g_orion, TRACKID_FX_SW1);
             }
             break;
         case SDLK_DOWN:
@@ -223,6 +227,7 @@ static void ow_key(overworld_scene *this, SDL_KeyboardEvent *ev)
                 this->cur_stage_idx = min(this->cur_stage_idx, this->cleared_stages);
                 move_camera(this);
                 this->since_chap_switch = 0;
+                orion_play_once(&g_orion, TRACKID_FX_SW1);
             }
             break;
     }
