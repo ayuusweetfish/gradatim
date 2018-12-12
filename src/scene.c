@@ -17,22 +17,10 @@ void scene_draw_children(scene *this)
     for bekter_each(this->children, i, e) element_draw(e);
 }
 
-static SDL_Point mouse_event_coordinate(SDL_Event *ev, int x, int y)
-{
-    SDL_Window *window =
-        SDL_GetWindowFromID(((SDL_MouseMotionEvent *)ev)->windowID);
-    int real_w, real_h;
-    SDL_GetWindowSize(window, &real_w, &real_h);
-    SDL_Point p;
-    p.x = iround((double)x / real_w * WIN_W);
-    p.y = iround((double)y / real_h * WIN_H);
-    return p;
-}
-
 void scene_handle_mousemove(scene *this, SDL_MouseMotionEvent *ev)
 {
     if (this->children == NULL) return;
-    SDL_Point p = mouse_event_coordinate((SDL_Event *)ev, ev->x, ev->y);
+    SDL_Point p = (SDL_Point){ev->x, ev->y};
     int i; element *e;
     for bekter_each(this->children, i, e)
         e->mouse_in = SDL_PointInRect(&p, &e->dim);
@@ -41,7 +29,7 @@ void scene_handle_mousemove(scene *this, SDL_MouseMotionEvent *ev)
 void scene_handle_mousebutton(scene *this, SDL_MouseButtonEvent *ev)
 {
     if (this->children == NULL) return;
-    SDL_Point p = mouse_event_coordinate((SDL_Event *)ev, ev->x, ev->y);
+    SDL_Point p = (SDL_Point){ev->x, ev->y};
     int i; element *e;
     if (ev->state == SDL_PRESSED) {
         for bekter_each(this->children, i, e)
