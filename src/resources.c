@@ -86,6 +86,7 @@ void load_images()
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
     load_image("qwq.png");
     load_image("uwu.png");
+    load_image("prot.png");
     load_image("block.png");
     load_image("fragile1.png");
     load_image("fragile2.png");

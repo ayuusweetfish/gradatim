@@ -749,11 +749,12 @@ static void gameplay_scene_draw(gameplay_scene *this)
          * No dialogue or stage transition
          * should be running during failure animation */
         render_objects(this, false, true, 0, 0, 0, 0);
-        prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
-        prot_disp_y -= (prot_tex.range.h * SPR_SCALE - prot_h) / 2;
-        prot_w = prot_tex.range.w * SPR_SCALE;
-        prot_h = prot_tex.range.h * SPR_SCALE;
     }
+
+    prot_disp_x -= (prot_tex.range.w * SPR_SCALE - prot_w) / 2;
+    prot_disp_y -= (prot_tex.range.h * SPR_SCALE - prot_h) / 2;
+    prot_w = prot_tex.range.w * SPR_SCALE;
+    prot_h = prot_tex.range.h * SPR_SCALE;
 
     render_texture_ex(prot_tex, &(SDL_Rect){
         prot_disp_x, prot_disp_y,
