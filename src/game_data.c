@@ -214,6 +214,11 @@ struct chap_rec *chap_read(const char *path)
     while (i >= 0 && isspace(measure[i])) measure[i--] = '\0';
     this->title = strdup(measure);
 
+    fgets(measure, sizeof measure, f);
+    i = strlen(measure) - 1;
+    while (i >= 0 && isspace(measure[i])) measure[i--] = '\0';
+    this->endgame_img = strdup(measure);
+
     fscanf(f, "%d,%d\n", &bpm, &beat_mul);
     if (bpm <= 0) { free(this); fclose(f); return NULL; }
     fgets(measure, sizeof measure, f);

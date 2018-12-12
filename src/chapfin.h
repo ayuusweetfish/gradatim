@@ -8,6 +8,7 @@
 #include "label.h"
 #include "gameplay.h"
 #include "mod.h"
+#include "resources.h"
 #include "unveil.h"
 #include "floue.h"
 
@@ -20,6 +21,8 @@ typedef struct _chapfin_scene {
 
     double time;
     double orig_cam_y;
+
+    texture bg_tex;
 
     unveil *u;
     floue *f;

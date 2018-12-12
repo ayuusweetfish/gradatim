@@ -94,7 +94,7 @@ void floue_tick(floue *this, double dt)
 void floue_draw(floue *this)
 {
     if (this->c0.a != 255) {
-        SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
+        SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, this->c0.a);
         SDL_RenderFillRect(g_renderer, NULL);
     }
     SDL_SetRenderDrawColor(g_renderer, this->c0.r, this->c0.g, this->c0.b, this->c0.a);

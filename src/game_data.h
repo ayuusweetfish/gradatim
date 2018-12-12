@@ -94,6 +94,8 @@ struct chap_rec {
     int idx;
     /* Title */
     char *title;
+    /* End-of-chapter image */
+    char *endgame_img;
     /* Beats per minute for all BG music */
     int bpm;
     /* Beat length in seconds; calculated from `bpm` */

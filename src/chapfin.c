@@ -55,7 +55,7 @@ static void chapfin_draw(chapfin_scene *this)
 {
     double u_opacity = 0;
     if (this->summary_shown) {
-        this->f->c0 = (SDL_Color){255, 192, 192, 255};
+        render_texture(this->bg_tex, NULL);
         floue_draw(this->f);
         int i;
         for (i = 0; i < N_MODS; ++i)
@@ -110,7 +110,7 @@ static void chapfin_draw(chapfin_scene *this)
         if (r > 1) r = 1;
         double s = (this->time - (D1 + F + D2 + T1 + D3)) / T2_TEXT_DUR;
         if (s > 1) s = 1;
-        this->f->c0 = (SDL_Color){255, 192, 192, 255};
+        render_texture(this->bg_tex, NULL);
         floue_draw(this->f);
         unveil_draw(this->u, r, 1);
         int grey = iround(s * 255);
@@ -123,8 +123,7 @@ static void chapfin_draw(chapfin_scene *this)
             WIN_W * (1 - LINE_X * 2), LINE_WIDTH
         });
     } else {
-        SDL_SetRenderDrawColor(g_renderer, 255, 192, 192, 255);
-        SDL_RenderClear(g_renderer);
+        render_texture(this->bg_tex, NULL);
         floue_draw(this->f);
         label_colour_mod(this->l_num, 255, 255, 255);
         label_colour_mod(this->l_title, 255, 255, 255);
@@ -227,6 +226,7 @@ chapfin_scene *chapfin_scene_create(gameplay_scene *g)
     this->g = g;
     this->time = 0;
     this->orig_cam_y = g->cam_y;
+    this->bg_tex = retrieve_texture(g->chap->endgame_img);
     this->u = unveil_create();
     this->f = floue_create((SDL_Color){0});
     this->summary_shown = false;

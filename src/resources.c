@@ -108,6 +108,7 @@ void load_images()
     load_grid("grid.png", "grid.csv");
     load_image("forest_sidescroll.png");
     load_image("cloud_sidescroll.png");
+    load_image("ch1-endgame.png");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     load_image("clock.png");
     load_image("retry_count.png");
