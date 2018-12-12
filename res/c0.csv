@@ -8,8 +8,8 @@ xooo
 0,lowpass,440
 0,lowpass,880
 2
-forest_sidescroll.png,8,1,5,0.1,0
-cloud_sidescroll.png,4,3,2,0.1,-0.1
+forest_sidescroll.png,8,1,4.5,0.1,0
+cloud_sidescroll.png,4,3,1,0,-0.1
 7
 0-1.csv
 0-2.csv
