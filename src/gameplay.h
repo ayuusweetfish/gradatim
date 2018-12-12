@@ -74,6 +74,9 @@ typedef struct _gameplay_scene {
     double mov_time;    /* Time remaining until movement state resets */
     double refill_time; /* Time until refill disappears; -1 if none persists */
 
+    /* Parallax sidescrollers */
+    texture ss_tex[MAX_SIDESCROLLERS];
+
     /* Hints */
     label *l_hints[MAX_HINTS];
 #define MAX_SIG 16

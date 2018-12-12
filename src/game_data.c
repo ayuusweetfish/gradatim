@@ -252,6 +252,21 @@ struct chap_rec *chap_read(const char *path)
     }
 
     fscanf(f, "%d", &m);
+    /* XXX: More things to free */
+    if (m > MAX_SIDESCROLLERS) { free(this); fclose(f); return NULL; }
+    this->n_ss = m;
+    for (i = 0; i < m; ++i) {
+        fgetc(f);
+        char str[64];
+        int p;
+        double y, ymul, vx;
+        for (p = 0; (str[p] = fgetc(f)) != ','; ++p) ;
+        str[p] = '\0';
+        fscanf(f, "%lf,%lf,%lf", &y, &ymul, &vx);
+        this->ss[i] = (struct _chap_ss){strdup(str), y, ymul, vx};
+    }
+
+    fscanf(f, "%d", &m);
     fgetc(f);   /* Skip the newline character */
     if (m > MAX_CHAP_STAGES) { free(this); fclose(f); return NULL; }
     this->n_stages = m;
@@ -278,6 +293,7 @@ void chap_drop(struct chap_rec *this)
 {
     free(this->title);
     int i;
+    for (i = 0; i < this->n_ss; ++i) free(this->ss[i].image);
     for (i = 0; i < this->n_tracks; ++i) free(this->tracks[i].str);
     for (i = 0; i < this->n_stages; ++i) stage_drop(this->stages[i]);
     free(this);

@@ -74,6 +74,11 @@ void stage_drop(struct stage_rec *this);
 
 /* For chapters */
 
+struct _chap_ss {
+    char *image;
+    double y, ymul, vx;
+};
+
 struct _chap_track {
     char src_id;    /* Index of source track; -1 if reading from file */
     char *str;      /* File name or filter name */
@@ -104,10 +109,17 @@ struct chap_rec {
     unsigned int dash_mask;
     /* Bitmask denoting availability of hop at each beat */
     unsigned int hop_mask;
+
     /* Tracks */
 #define MAX_CHAP_TRACKS 8
     struct _chap_track tracks[MAX_CHAP_TRACKS];
     int n_tracks;
+
+    /* Sidescrollers */
+#define MAX_SIDESCROLLERS 4
+    struct _chap_ss ss[MAX_SIDESCROLLERS];
+    int n_ss;
+
     /* Stages */
 #define MAX_CHAP_STAGES 64
     struct stage_rec *stages[MAX_CHAP_STAGES];

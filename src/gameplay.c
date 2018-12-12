@@ -676,8 +676,30 @@ static void gameplay_scene_draw(gameplay_scene *this)
 {
     update_sound(this);
 
-    SDL_SetRenderDrawColor(g_renderer, 216, 224, 255, 255);
-    SDL_RenderClear(g_renderer);
+    int i, j;
+
+    /* Background colour */
+    SDL_SetRenderDrawColor(g_renderer, this->chap->r1, this->chap->g1, this->chap->b1, 255);
+    SDL_RenderFillRect(g_renderer, NULL);
+
+    /* Parallax sidescrollers */
+    for (i = 0; i < this->chap->n_ss; ++i) {
+        double cx = this->cam_x + this->rec->world_c;
+        double cy = this->cam_y + this->rec->world_r;
+        double tx = -cx * this->chap->ss[i].ymul;
+        double ty = (this->chap->ss[i].y - cy * this->chap->ss[i].ymul);
+        int txi = align_pixel(tx * UNIT_PX);
+        int tyi = align_pixel(ty * UNIT_PX);
+        int w = this->ss_tex[i].range.w;
+        txi %= w;
+        if (txi > 0) txi -= w;  /* Take (remainder - modulus) */
+        while (txi < WIN_W) {
+            render_texture(this->ss_tex[i], &(SDL_Rect){
+                txi, tyi, w, this->ss_tex[i].range.h
+            });
+            txi += w;
+        }
+    }
 
     int cxi = align_pixel(this->cam_x * UNIT_PX),
         cyi = align_pixel(this->cam_y * UNIT_PX);
@@ -731,7 +753,6 @@ static void gameplay_scene_draw(gameplay_scene *this)
         render_objects(this, false, true, 0, 0, prot_disp_x, prot_disp_y);
 
     /* Display hints */
-    int i, j;
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 128);
     for (i = 0; i < this->rec->hint_ct; ++i) {
         int x, y, w, h;
@@ -1039,6 +1060,11 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
 void gameplay_init_textures(gameplay_scene *this)
 {
     int i, j;
+
+    for (i = 0; i < this->chap->n_ss; ++i) {
+        this->ss_tex[i] = retrieve_texture(this->chap->ss[i].image);
+    }
+
     for (i = 0; i < MAX_HINTS; ++i) {
         this->l_hints[i] = label_create(FONT_UPRIGHT, HINT_FONTSZ,
             (SDL_Color){255, 255, 255}, WIN_W, "");

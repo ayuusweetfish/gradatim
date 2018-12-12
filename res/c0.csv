@@ -7,6 +7,9 @@ xooo
 -1,periwinkle.ogg,-1
 0,lowpass,440
 0,lowpass,880
+2
+forest_sidescroll.png,40,0.5,0
+cloud_sidescroll.png,40,0.5,-3
 7
 0-1.csv
 0-2.csv

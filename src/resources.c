@@ -127,6 +127,8 @@ void load_images()
     load_image("alldash_4beat.png");
     load_image("options_btn.png");
     load_image("credits_btn.png");
+    load_image("forest_sidescroll.png");
+    load_image("cloud_sidescroll.png");
 }
 
 void release_images()
