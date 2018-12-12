@@ -46,9 +46,10 @@ static const int AV_OFFSET_INTV = 60;
 static const double CAM_MOV_FAC = 8;
 static const double STAGE_TRANSITION_DUR = 2;
 
-static const double LEADIN_INIT = 1;
+static const double LEADIN_INIT = 0.5;
 static const double LEADIN_DUR = 0.4; /* Seconds */
-static const double FAILURE_SPF = 0.1;
+static const double HOP_SPF = 0.03;
+static const double FAILURE_SPF = 0.03;
 static const double STRETTO_RANGE = 2.5;
 static const double DIALOGUE_ZOOM_DUR = 0.9;
 static const double DIALOGUE_ZOOM_SCALE = 1.5;
@@ -740,8 +741,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
 
     render_objects(this, false, false, 0, 0, prot_disp_x, prot_disp_y);
 
-    int nf = this->simulator->cur_time < 0 ? 0 :
-        (int)this->simulator->cur_time % NORMAL_NF;
+    int nf = (this->simulator->prot.vx != 0 || this->simulator->cur_time < 0) ?
+        0 : (int)this->simulator->cur_time % NORMAL_NF;
     texture prot_tex = this->rec->prot_tex[nf];
     if (this->disp_state == DISP_FAILURE) {
         int f_idx = clamp(FAILURE_NF - (int)(this->disp_time / FAILURE_SPF) - 1,

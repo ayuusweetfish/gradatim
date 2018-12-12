@@ -51,7 +51,7 @@ struct stage_rec {
     texture grid_tex[256];
 #define NORMAL_NF 2
     texture prot_tex[NORMAL_NF];
-#define FAILURE_NF 4
+#define FAILURE_NF 8
     texture prot_fail_tex[FAILURE_NF];
 
     /* Dialogues */

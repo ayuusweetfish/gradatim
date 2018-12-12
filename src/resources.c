@@ -87,7 +87,7 @@ void load_images()
     load_image("qwq.png");
     load_image("uwu.png");
     char s[16];
-    for (i = 1; i <= 2; ++i) {
+    for (i = 1; i <= 13; ++i) {
         sprintf(s, "prot%d.png", i);
         load_image(s);
         puts(s);
