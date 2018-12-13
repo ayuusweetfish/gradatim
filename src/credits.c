@@ -1,30 +1,90 @@
 #include "credits.h"
 #include "global.h"
 #include "profile_data.h"
+#include "transition.h"
+#include "label.h"
 #include "orion/orion.h"
 
 static const double BGM_VOL = 0.6;
 static const double BGM_LP_VOL = 0.1;
 
+static const double V0 = 50;
+static const double V = 480;
+static const double A = 720;
+static const int RANGE_W = WIN_W * 0.8;
+static const int RANGE_H = WIN_H * 0.6;
+static const int OFFS_X = (WIN_W - RANGE_W) / 2;
+static const int OFFS_Y = WIN_H * 0.232;
+
+#define T \
+    "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n" \
+    "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n" \
+    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\n" \
+    "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n"
+
+static const char *TEXT = T T T T T T T T T T;
+
 static void credits_tick(credits_scene *this, double dt)
 {
     floue_tick(this->f, dt);
+    double dv = dt * A;
+    if (this->v > dv) this->v -= dv;
+    else if (this->v < -dv) this->v += dv;
+    this->p += (V0 + this->v) * dt;
 }
 
 static void credits_draw(credits_scene *this)
 {
     floue_draw(this->f);
+
+    /* Draw the main text */
+    int h = this->text->_base.tex.range.h + RANGE_H;
+    int y = iround(this->p) % h;
+    if (y < 0) y += h;
+
+    int ww = this->text->_base.tex.range.w,
+        hh = RANGE_H,
+        offy = 0;
+    if (y > this->text->_base.tex.range.h) {
+        hh = y + RANGE_H - h;
+        offy = RANGE_H - hh;
+        y = 0;
+    } else if (y + RANGE_H > this->text->_base.tex.range.h) {
+        hh = this->text->_base.tex.range.h - y;
+    }
+
+    SDL_RenderCopy(
+        g_renderer, this->text->_base.tex.sdl_tex,
+        &(SDL_Rect){0, y, ww, hh},
+        &(SDL_Rect){OFFS_X, OFFS_Y + offy, ww, hh}
+    );
+
+    scene_draw_children((scene *)this);
 }
 
 static void credits_drop(credits_scene *this)
 {
     floue_drop(this->f);
+    element_drop((element *)this->text);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, profile.bgm_vol * VOL_VALUE);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, 0);
 }
 
 static void credits_key(credits_scene *this, SDL_KeyboardEvent *ev)
 {
+    if (ev->state != SDL_PRESSED) return;
+    switch (ev->keysym.sym) {
+        case SDLK_ESCAPE:
+            g_stage = transition_slidedown_create(&g_stage, this->bg, 0.5);
+            break;
+        case SDLK_LEFT:
+        case SDLK_UP:
+            this->v = -V - V0; break;
+        case SDLK_RIGHT:
+        case SDLK_DOWN:
+        case SDLK_RETURN:
+            this->v = +V - V0; break;
+    }
 }
 
 credits_scene *credits_create(scene *bg)
@@ -46,6 +106,24 @@ credits_scene *credits_create(scene *bg)
                 (SDL_Color){0xaa, 0x8d, 0x7a, 0xff},
             rand() % (WIN_W / 8) + WIN_W / 8,
             (double)rand() / RAND_MAX * 0.25 + 0.1);
+
+    label *header = label_create(FONT_UPRIGHT, 60,
+        (SDL_Color){0, 0, 0}, WIN_W, "CREDITS");
+    bekter_pushback(this->_base.children, header);
+    element_place_anchored((element *)header, WIN_W / 15, WIN_H / 7, 0, 0.5);
+
+    label *text = label_create(FONT_ITALIC, 32,
+        (SDL_Color){0, 0, 0}, RANGE_W, TEXT);
+    this->text = text;
+
+    this->v = -V0;
+    this->p = -RANGE_H / 2;
+
+    label *footer = label_create(FONT_UPRIGHT, 32, (SDL_Color){0}, WIN_H, "");
+    bekter_pushback(this->_base.children, footer);
+    label_set_keyed_text(footer,
+        " ..`.  ..`.  Scroll      ..`.  Back", "^v~");
+    element_place_anchored((element *)footer, WIN_W / 2, WIN_H * 0.9, 0.5, 0.5);
 
     orion_ramp(&g_orion, TRACKID_MAIN_BGM, 0.2, BGM_LP_VOL * profile.bgm_vol * VOL_VALUE * 2 / 3);
     orion_ramp(&g_orion, TRACKID_MAIN_BGM_LP, 0.2, BGM_VOL * profile.bgm_vol * VOL_VALUE);

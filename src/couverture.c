@@ -129,7 +129,7 @@ static void options_cb(couverture *this)
 
 static void credits_cb(couverture *this)
 {
-    g_stage = transition_slidedown_create(&g_stage,
+    g_stage = transition_slideup_create(&g_stage,
         (scene *)credits_create((scene *)this), 0.5);
     ((transition_scene *)g_stage)->preserves_a = true;
 }
