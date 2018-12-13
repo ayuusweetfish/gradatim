@@ -151,9 +151,9 @@ sim *stage_create_sim(struct stage_rec *this)
     sim *s = sim_create(this->n_rows, this->n_cols);
     s->worldr = this->world_r;
     s->worldc = this->world_c;
-    s->prot.x = this->spawn_c;
-    s->prot.y = this->spawn_r;
     s->prot.w = s->prot.h = 0.625;
+    s->prot.x = this->spawn_c;
+    s->prot.y = this->spawn_r + (1 - s->prot.h) * 15 / 16;
 
     int i, j;
 
