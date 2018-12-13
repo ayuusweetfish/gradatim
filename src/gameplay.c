@@ -599,17 +599,19 @@ static inline bool get_pos_in_bar(gameplay_scene *this, double ant, int mul,
     return true;
 }
 
-static inline void draw_overlay(gameplay_scene *this)
+static inline double dialogue_opacity_mul(gameplay_scene *this)
 {
-    double opacity_mul = 1;
     if (this->disp_state == DISP_DIALOGUE_IN) {
-        opacity_mul = (this->disp_time < 0 ?
+        return (this->disp_time < 0 ?
             0 : this->disp_time / DIALOGUE_ZOOM_DUR);
     } else if (this->disp_state == DISP_DIALOGUE_OUT) {
-        opacity_mul = 1 - (this->disp_time < 0 ?
+        return 1 - (this->disp_time < 0 ?
             0 : this->disp_time / DIALOGUE_ZOOM_DUR);
-    }
+    } else return 1;
+}
 
+static inline void draw_overlay(gameplay_scene *this)
+{
     int beats_i;
     double beats_d;
     if (!get_pos_in_bar(this, 1./24, 1, &beats_i, &beats_d)) return;
@@ -618,7 +620,8 @@ static inline void draw_overlay(gameplay_scene *this)
     if (!is_upbeat) return;
     int opacity = iround((
         beats_d < 0 ? (1 + beats_d * 24) :
-        beats_d < 0.5 ? (1 - beats_d * 2) : 0) * 255 * opacity_mul);
+        beats_d < 0.5 ? (1 - beats_d * 2) : 0)
+            * 255 * dialogue_opacity_mul(this));
     SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, opacity);
     if (is_downbeat)
@@ -792,7 +795,9 @@ static void gameplay_scene_draw(gameplay_scene *this)
         render_objects(this, false, true, 0, 0, prot_disp_x, prot_disp_y);
 
     /* Display hints */
-    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 128);
+    double dmul = dialogue_opacity_mul(this);
+    dmul = (dmul < 0.75 ? 0 : 1 - (1 - dmul) * 4);
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, round(128 * dmul));
     for (i = 0; i < this->rec->hint_ct; ++i) {
         int x, y, w, h;
         x = align_pixel((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi;
@@ -832,6 +837,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
             }
         }
         SDL_RenderFillRect(g_renderer, &(SDL_Rect){x, y, w, h});
+        SDL_SetTextureAlphaMod(
+            this->l_hints[i]->_base.tex.sdl_tex, round(255 * dmul));
         element_draw((element *)this->l_hints[i]);
         /* Display images */
         if (this->rec->hints[i].img != NULL) {
@@ -843,6 +850,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
                 double prog = (started && beats_i == j ? 1 - beats_d : 0);
                 if (this->rec->hints[i].mask & (1 << beats_i)) {
                     this->s_hints[i][j]->alpha = iround(96 + 159 * prog);
+                    SDL_SetTextureAlphaMod(this->s_hints[i][j]->tex.sdl_tex,
+                        round(255 * dmul));
                     SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex,
                         255, 255, iround((1 - prog) * 255));
                 } else {
