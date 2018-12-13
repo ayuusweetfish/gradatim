@@ -247,7 +247,7 @@ static inline void switch_stage_ctx(gameplay_scene *this)
                 sprite_reload(this->s_hints[i][j], this->rec->hints[i].img);
                 if (j == 0) w = this->s_hints[i][j]->_base.dim.w / sig;
                 /* The image should be horizontally sliced into `sig` pieces */
-                this->s_hints[i][j]->tex.range.x = w * j;
+                this->s_hints[i][j]->tex.range.x += w * j;
                 this->s_hints[i][j]->tex.range.w = w;
                 this->s_hints[i][j]->_base.dim.w = w;
             }
