@@ -9,18 +9,18 @@ static const double BGM_VOL = 0.6;
 static const double BGM_LP_VOL = 0.1;
 
 static const double V0 = 50;
-static const double V = 480;
-static const double A = 720;
+static const double V = 960;
+static const double A = 2880;
 static const int RANGE_W = WIN_W * 0.8;
 static const int RANGE_H = WIN_H * 0.6;
 static const int OFFS_X = (WIN_W - RANGE_W) / 2;
 static const int OFFS_Y = WIN_H * 0.232;
 
 static const char *TEXT =
-    "== Overall Design (in descending order of bounciness) ==\n"
+    "-   Overall Design (in descending order of bounciness)  -\n"
     "Shiqing\n\n"
 
-    "==== Artists (in alphabetical order) ====\n"
+    "-  Artists (in alphabetical order)  -\n"
     "axtoncrolley\n"
     "Calciumtrice\n"
     "David McKee (VIRiX Dreamcore)\n"
@@ -29,14 +29,14 @@ static const char *TEXT =
     "syncopika\n\n"
     "Unless otherwise noted, all artwork assets in this project are compatible with the CC BY-SA 4.0 International licence.\n\n"
 
-    "==== Tech fellows (in alphabetical order) ====\n"
+    "-  Tech fellows (in alphabetical order)  -\n"
     "IIR1 (https://github.com/berndporr/iir1), MIT licence\n"
     "Ogg Vorbis (https://xiph.org/vorbis/), BSD licence\n"
     "PortAudio (http://portaudio.com/), MIT licence\n"
     "SDL, SDL_image, SDL_ttf (http://libsdl.org/), zlib licence\n"
-    "SoundTouch (https://www.surina.net/soundtouch/index.html), LGPL v2.1\n\n"
+    "SoundTouch (https://www.surina.net/soundtouch/), LGPL v2.1\n\n"
 
-    "==== Tech helpers (in alphabetical order) ===\n"
+    "-  Tech helpers (in alphabetical order)  -\n"
     "Aseprite (https://www.aseprite.org/)\n"
     "Audacity (https://www.audacityteam.org/)\n"
     "FFmpeg (http://ffmpeg.org/)\n"
@@ -45,7 +45,7 @@ static const char *TEXT =
     "SpriteSheet Packer (https://amakaseev.github.io/sprite-sheet-packer/)\n"
     "Tiled (https://www.mapeditor.org/)\n\n"
 
-    "==== Shoutouts (in no particular order) ===\n"
+    "-  Shoutouts (in no particular order)  -\n"
     "Celeste (http://www.celestegame.com/)\n"
     "Teeworlds (https://teeworlds.com/)\n"
     "Zhiqian\n"
