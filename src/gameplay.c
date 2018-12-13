@@ -54,8 +54,8 @@ static const double STAGE_TRANSITION_DUR = 2;
 #define HOP_FRAME_LARGEVEL  2
 static const double HOP_LARGEVEL = 0.5;
 
-static const double LEADIN_INIT = 0.5;
 static const double LEADIN_DUR = 0.4; /* Seconds */
+#define LEADIN_INIT     (this->chap->offs - LEADIN_DUR)
 static const double HOP_SPF = 0.05;
 static const double FAILURE_SPF = 0.05;
 static const double STRETTO_RANGE = 2.5;
