@@ -862,6 +862,8 @@ static void gameplay_scene_draw(gameplay_scene *this)
                     this->s_hints[i][j]->alpha = iround(96 * (1 - prog));
                 }
                 element_draw((element *)this->s_hints[i][j]);
+                SDL_SetTextureAlphaMod(this->s_hints[i][j]->tex.sdl_tex, 255);
+                SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex, 255, 255, 255);
             }
         }
     }
