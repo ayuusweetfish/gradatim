@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     profile_load();
 
-    g_window = SDL_CreateWindow("",
+    g_window = SDL_CreateWindow("Gradatim Pre-Alpha",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         WIN_W, WIN_H, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
             (profile.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0));
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-#if defined(__GNUC__) && defined(__MINGW32__)
+#ifdef GRADATIM_MINGW
 int WinMain()
 {
     return main(0, NULL);
