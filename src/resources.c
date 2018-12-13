@@ -59,7 +59,7 @@ static void load_grid(const char *image, const char *csv)
     if (tex == NULL) return;
 
     FILE *f = fopen(csv, "r");
-    if (f == NULL) { SDL_DestroyTexture(tex); return; }
+    if (f == NULL) return;
 
     int i;
     for (i = 1; i < GRID_SZ; ++i) {
@@ -73,72 +73,42 @@ static void load_grid(const char *image, const char *csv)
     fclose(f);
 }
 
+static void load_spritesheet(const char *image, const char *csv)
+{
+    SDL_Texture *tex = texture_from_file(image, NULL, NULL);
+    if (tex == NULL) return;
+
+    FILE *f = fopen(csv, "r");
+    if (f == NULL) return;
+
+    char name[128];
+    int i, p;
+    while (!feof(f)) {
+        for (p = 0; (name[p] = fgetc(f)) != ',' && name[p] != EOF; ++p) ;
+        if (feof(f)) break;
+        name[p] = '\0';
+        int x, y, w, h;
+        fscanf(f, "%d,%d,%d,%d", &x, &y, &w, &h);
+        fgetc(f);
+
+        unsigned int hash = elf_hash(name) % RES_HASH_SZ;
+        _texture_kvpair p = {strdup(name), (texture){tex, (SDL_Rect){x, y, w, h}}};
+        bekter_pushback(res_map[hash], p);
+    }
+    fclose(f);
+}
+
 void load_images()
 {
     int i;
     sdl_tex_list = bekter_create();
     for (i = 0; i < RES_HASH_SZ; ++i)
         res_map[i] = bekter_create();
-    load_image("1.png");
-    load_image("2.png");
-    load_image("3.png");
-    load_image("4.png");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
-    load_image("qwq.png");
-    load_image("uwu.png");
-    char s[16];
-    for (i = 1; i <= 14; ++i) {
-        sprintf(s, "prot%d.png", i);
-        load_image(s);
-    }
-    for (i = 1; i <= 2; ++i) {
-        sprintf(s, "josephus%d.png", i);
-        load_image(s);
-    }
-    load_image("block.png");
-    load_image("fragile1.png");
-    load_image("fragile2.png");
-    load_image("fragile3.png");
-    load_image("fragile4.png");
-    load_image("cloud.png");
-    load_image("spring1.png");
-    load_image("spring2.png");
-    load_image("mushroom_t.png");
-    load_image("mushroom_b.png");
-    load_image("mushroom_tl.png");
-    load_image("refill1.png");
-    load_image("refill2.png");
-    load_image("refill3.png");
-    load_image("refill4.png");
-    load_image("puff_l.png");
-    load_image("puff_r.png");
-    load_image("rua1.png");
-    load_image("rua2.png");
     load_grid("grid.png", "grid.csv");
-    load_image("forest_sidescroll.png");
-    load_image("cloud_sidescroll.png");
-    load_image("ch1-endgame.png");
+    load_spritesheet("ss.png", "ss.csv");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-    load_image("clock.png");
-    load_image("retry_count.png");
-    load_image("minim.png");
-    load_image("crotchet.png");
-    load_image("quaver.png");
-    load_image("cantabile.png");
-    load_image("sotto_voco.png");
-    load_image("a_capella.png");
-    load_image("aria.png");
-    load_image("semplice.png");
-    load_image("stretto.png");
-    load_image("giusto.png");
-    load_image("rubato.png");
-    load_image("a_piacere.png");
-    load_image("hop_4beat.png");
-    load_image("dash_4beat.png");
-    load_image("hopdash_4beat.png");
-    load_image("alldash_4beat.png");
-    load_image("options_btn.png");
-    load_image("credits_btn.png");
+    /*load_spritesheet("ss-aa.png", "ss-aa.csv");*/
 }
 
 void release_images()

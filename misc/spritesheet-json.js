@@ -1,11 +1,8 @@
-var grid = require('./grid.json');
+var sheet = require('./ss.json');
 
-var f = grid.frames.map(x => x.frame);
-
-grid.meta.layers[0].cels.forEach(x => f[x.frame].str = x.data);
-
-var s = require('fs').createWriteStream('grid.csv');
+var s = require('fs').createWriteStream('ss.csv');
 s.once('open', () => {
-    f.forEach(x => s.write(`${x.x},${x.y},${x.w},${x.h},${x.str || '0,0'}\n`));
+    for (var key in sheet)
+        s.write(`${key.substr(2)}.png,${sheet[key].frame.x},${sheet[key].frame.y},${sheet[key].frame.width},${sheet[key].frame.height}\n`);
     s.end();
 });
