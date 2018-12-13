@@ -9,7 +9,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-static const int N_MENU = 3;
+#define N_MENU 3
 static const double ITEM_OFFSET_Y = 0.4;
 static const double ITEM_SKIP = 0.125;
 static const double ITEM_H = 0.1;

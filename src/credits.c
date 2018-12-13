@@ -11,8 +11,8 @@ static const double BGM_LP_VOL = 0.1;
 static const double V0 = 50;
 static const double V = 960;
 static const double A = 2880;
-static const int RANGE_W = WIN_W * 0.8;
-static const int RANGE_H = WIN_H * 0.6;
+#define RANGE_W (WIN_W * 0.8)
+#define RANGE_H (WIN_W * 0.6)
 static const int OFFS_X = (WIN_W - RANGE_W) / 2;
 static const int OFFS_Y = WIN_H * 0.232;
 

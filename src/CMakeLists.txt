@@ -6,6 +6,11 @@ add_subdirectory(orion)
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -fsanitize=address")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -fsanitize=address")
 
+if(MINGW)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
+    set(SDL2_BUILDING_LIBRARY)
+endif(MINGW)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})

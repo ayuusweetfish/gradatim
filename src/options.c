@@ -6,12 +6,13 @@
 #include "orion/orion.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 
 /* Repeat yourself */
-static const int N_MENU = OPTIONS_N_MENU;
+#define N_MENU OPTIONS_N_MENU
 static const double ITEM_OFFSET_Y = 0.29375;
 static const double ITEM_SKIP = 0.10625;
 static const double ITEM_H = 0.1;

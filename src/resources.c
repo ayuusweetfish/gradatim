@@ -4,6 +4,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include <stdio.h>
 #include <string.h>
 
 #define RES_HASH_SZ 997
@@ -108,7 +109,7 @@ void load_images()
     load_grid("grid.png", "grid.csv");
     load_spritesheet("ss.png", "ss.csv");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-    /*load_spritesheet("ss-aa.png", "ss-aa.csv");*/
+    load_spritesheet("ss-aa.png", "ss-aa.csv");
 }
 
 void release_images()

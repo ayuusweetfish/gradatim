@@ -1,6 +1,8 @@
 #include "unary_transition.h"
 #include "global.h"
 
+#include <stdlib.h>
+
 static void ut_fade_key_handler(utransition *this, SDL_KeyboardEvent *ev)
 {
     double p = this->_base.elapsed / this->_base.duration;

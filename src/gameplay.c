@@ -11,14 +11,16 @@
 #include "orion/orion.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define lerp(__x, __a, __b) ((__a) + (__x) * ((__b) - (__a)))
 
-static const double UNIT_PX = 64;
+#define UNIT_PX 64.0
 static const double WIN_W_UNITS = (double)WIN_W / UNIT_PX;
 static const double WIN_H_UNITS = (double)WIN_H / UNIT_PX;
-static const double SPR_PX = 16;
+#define SPR_PX 16.0
 static const double SPR_SCALE = UNIT_PX / SPR_PX;
 
 static const double VIVACE_MUL = 1.2;
@@ -26,18 +28,18 @@ static const double ANDANTE_MUL = 0.8;
 
 #define AUD_OFFSET  (-this->chap->offs / this->mul + 0.04)
 #define BEAT        (this->chap->beat / this->mul)
-#define HOP_SPD SIM_GRAVITY
-static const double HOP_PRED_DUR = 0.3;
-static const double HOP_GRACE_DUR = 0.2;
+#define HOP_SPD         SIM_GRAVITY
+#define HOP_PRED_DUR    0.3
+#define HOP_GRACE_DUR   0.2
 #define ANTHOP_DELUGE_SPD (10.0 * SIM_GRAVITY)
-static const double HOR_SPD = 4;
-static const double DASH_DUR = 1;
+#define HOR_SPD         4.0
+#define DASH_DUR        1.0
 #define DASH_HOR_V0     (6.5 * 1.414213562)
 #define DASH_HOR_ACCEL  (DASH_HOR_V0 * DASH_DUR)
 #define DASH_VER_V0     (5.5 * 1.414213562)
 #define DASH_VER_ACCEL  (DASH_VER_V0 * DASH_DUR - SIM_GRAVITY)
-static const double HOP_TOLERANCE = 1./4;
-static const double DASH_TOLERANCE = 1./3;
+#define HOP_TOLERANCE   (1./4)
+#define DASH_TOLERANCE  (1./3)
 static const double DASH_MIN_DUR = 1 - DASH_DUR * DASH_TOLERANCE;
 static const double DASH_DIAG_SCALE = 0.8;
 static const double REFILL_PERSISTENCE = 2; /* In beats */
@@ -68,8 +70,8 @@ static const int CLOCK_STG_FONTSZ = 32;
 static const double CLOCK_BLINK_DUR = 2;
 
 /* Short for metronome - too long! */
-static const int MT_PADDING = 8;
-static const int MT_WEIGHT = 8;
+#define MT_PADDING 8
+#define MT_WEIGHT  4
 static const SDL_Rect MT_DOWNBEAT[4] = {
     (SDL_Rect){
         MT_PADDING, MT_PADDING,

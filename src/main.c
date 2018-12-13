@@ -11,6 +11,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include <stdio.h>
 #include <stdbool.h>
 
 static void draw_loop()
@@ -26,7 +27,7 @@ static void draw_loop()
     last_time = cur_time;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) return 1;
     int img_init = IMG_INIT_PNG;
@@ -104,3 +105,10 @@ int main()
 
     return 0;
 }
+
+#if defined(__GNUC__) && defined(__MINGW32__)
+int WinMain()
+{
+    return main(0, NULL);
+}
+#endif

@@ -8,8 +8,8 @@
 
 #include <stdbool.h>
 
-extern const double SIM_GRAVITY;    /* Gravity in units/beat^2 */
-extern const double SIM_STEPLEN;    /* Step length in beats */
+#define SIM_GRAVITY (4 * 1.414213562)   /* Gravity in units/beat^2 */
+#define SIM_STEPLEN 0.001               /* Step length in beats */
 
 typedef struct _sim {
     sobj prot;          /* Protagonist */

@@ -4,7 +4,9 @@
 #include "loading.h"
 #include "profile_data.h"
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static const double D1 = 0.5;
 static const double F = 0.7;

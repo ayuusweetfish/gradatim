@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-static const double SCALE = 4;
+#define SCALE 4
 static const int W = WIN_W / SCALE;
 static const int H = WIN_H / SCALE;
 

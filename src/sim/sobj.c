@@ -73,8 +73,8 @@ static inline void bg_init(sobj *o)
     o->w = o->h = 0;
 }
 
-static const double TORCH_ANIMLEN = 2;
-static const int TORCH_NFRAMES = OBJID_TORCH_LAST - OBJID_TORCH_FIRST;
+#define TORCH_ANIMLEN 2.0
+#define TORCH_NFRAMES (OBJID_TORCH_LAST - OBJID_TORCH_FIRST)
 static const double TORCH_FRAMEFRAC = TORCH_NFRAMES / TORCH_ANIMLEN;
 
 static inline void torch_update_pred(sobj *o, double T, sobj *prot)
@@ -106,7 +106,7 @@ static inline void fragile_update_post(sobj *o, double T, sobj *prot)
 
 #define billow_sig(__o) ((int)(__o)->ay)
 #define billow_beatmask(__o) ((int)(__o)->ax)
-static const double BILLOW_ANIM = 0.25;
+#define BILLOW_ANIM 0.25
 static const double BILLOW_FRMLEN =
     BILLOW_ANIM / (OBJID_BILLOW_EMPTY - OBJID_BILLOW - 1);
 
@@ -287,9 +287,9 @@ static inline void mushroom_update_post(sobj *o, double T, sobj *prot)
     }
 }
 
-static const double REFILL_REGEN_DUR = 4;
-static const double REFILL_ANIMLEN = 2;
-static const int REFILL_NFRAMES = OBJID_REFILL_WAIT - OBJID_REFILL;
+#define REFILL_REGEN_DUR 4.0
+#define REFILL_ANIMLEN 2.0
+#define REFILL_NFRAMES (OBJID_REFILL_WAIT - OBJID_REFILL)
 static const double REFILL_FRAMEFRAC = REFILL_NFRAMES / REFILL_ANIMLEN;
 
 static inline void refill_init(sobj *o)

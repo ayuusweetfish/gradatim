@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 static const int PADDING = 2;

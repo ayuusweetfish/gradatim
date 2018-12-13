@@ -8,7 +8,9 @@
 #include "button.h"
 #include "orion/orion.h"
 
+#include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 static const double TINT_DUR = 1./2;  /* In beats */
 static const double POP_DUR = 1./3;

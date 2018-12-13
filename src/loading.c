@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 
-static const int N_STRIPS = 10;
-static const double STRIP_DELAY = 0.03;
-static const double STRIP_DUR = 0.3;
+#define N_STRIPS    10
+#define STRIP_DELAY 0.03
+#define STRIP_DUR   0.3
 static const double ANIM_TOT_DUR = STRIP_DELAY * (N_STRIPS - 1) + STRIP_DUR;
 
 static const double CHK_INTERVAL = 1;

@@ -7,6 +7,8 @@
 
 #include <SDL.h>
 
+#include <stdlib.h>
+
 struct _scene;
 typedef void (*scene_tick_func)(struct _scene *this, double dt);
 typedef void (*scene_draw_func)(struct _scene *this);

@@ -21,10 +21,10 @@
 #define MAX_RECTS   64
 
 #ifdef SCHNITT_TEST
-static const double SZ = 1;
+#define SZ 1
 #else
 /* TODO: Keep this updated with protagonist size */
-static const double SZ = 0.625;
+#define SZ 0.625
 #endif
 
 /* Global minimum & maximum coordinates */

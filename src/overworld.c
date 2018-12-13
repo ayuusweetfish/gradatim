@@ -7,6 +7,7 @@
 #include "profile_data.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #define min(_a, _b) ((_a) < (_b) ? (_a) : (_b))
 
