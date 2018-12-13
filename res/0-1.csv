@@ -60,16 +60,22 @@
 9,66,8,0,0,0,0,0
 9,67,9,0,0,0,0,0
 9,74,7,0,0,0,0,0
-8
+13
  ..`.  ..`.  = Move
 <>
  ..`.  = Jump
 C
 hop_4beat.png
-The beats will lead you.
+The beats will guide you.
  ..`.  + ..`..
 >C
-0
+prot1.png
+Alrescha
+...
+Where am I...?
+I'd better get out of here first.
+1
+6,10,9,10,1,8,9,10,8,9,11,8,9,12
 1
 1,0,0
 4

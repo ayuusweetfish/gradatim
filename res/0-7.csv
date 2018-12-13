@@ -68,7 +68,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,33,32,33,32,33,32,33,32,33,48,0,0,255,255,255,255,255,255,0,0,0,0,32
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,33,32,33,32,33,32,33,32,33,32,33,34,35,34,35,34,35,34,35,34,35,34,35,33
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,33,32,33,32,33,32,33,32,33,32,33,32,33,32,33,32,33,32,33,32,33,32,32
-32
+33
 3,6,3,0,0,0,0,0
 5,15,9,0,0,0,0,0
 11,9,9,0,0,0,0,0
@@ -101,12 +101,41 @@
 14,10,150,14,10,14,13,2
 23,13,151,23,13,23,10,2
 33,19,147,33,19,33,43,4
-3
-qwq.png
-QwQ
-Humans' essential lies in their ability to repeat.
+63,36,254,0,1,0,0,1
+31
+josephus1.png
+josephus2.png
+prot1.png
+prot2.png
+prot14.png
+Josephus
+Alrescha
+Awww... Who's that? You really frightened me.
+I was just about to ask the same.
+Oh, dear Alrescha... My bad. I'm Josephus, a student of Aloysius the Maestro. The same as you did.
+...
+Nice to meet you.
+Glad to hear that the Maestro's doing well.
+Not really, to be honest. The Maestro seems to have got into a nuisance.
+The reconstruction of our Land isn't done by artists, but they're obviously trying to do something.
+I don't know exactly either, but the Maestro requests that I come to find you dispersed musicians.
+Wait, wait, wait... Reconstruction?
+The Natural Disaster -- you don't know that?
+Not even a demisemihemidemisemiquaver.
+I woke up in this mystical cave and had no idea what happened.
+Maybe that's why -- you managed to get about even before you realize what you've undergone.
+...
+Hopping around indeed is kinda cakewalk for me...
+Really, you shall help us find the other musicians!
+They're all in this forest, but some of them are brought to precipitous places by the Disaster.
+...
+Too much information for me.
+I shall try anyways. I miss them.
+Aloysius the Maestro believes in you. I know there's a reason.
+Thanks, for taking me into account as a 'musician'.
+You're irreplaceable.
 1
-63,35,63,46,1,0,1,2,0,1,2,0,1,2
+63,35,63,46,0,1,5,7,4,6,8,0,5,9,2,6,10,3,6,11,2,6,12,0,5,13,0,5,14,0,5,15,3,6,16,0,5,17,2,6,18,2,6,19,0,5,20,2,6,21,2,6,22,0,5,23,0,5,24,3,6,25,2,6,26,2,6,27,0,5,28,3,6,29,0,5,30
 2
 2,-10,155
 0,0,308
