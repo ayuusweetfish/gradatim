@@ -60,6 +60,7 @@ static const double STRETTO_RANGE = 2.5;
 static const double DIALOGUE_ZOOM_DUR = 0.9;
 static const double DIALOGUE_ZOOM_SCALE = 1.5;
 static const double DIALOGUE_BGM_FADE = 0.3;
+static const double CHAPFIN_BGM_FADE = 0.6;
 static const int HINT_FONTSZ = 36;
 static const int HINT_PADDING = 12;
 static const int CLOCK_CHAP_FONTSZ = 44;
@@ -690,7 +691,8 @@ static inline void update_sound(gameplay_scene *this)
 #endif
             orion_ramp(&g_orion, TRACKID_STAGE_BGM + i,
                 0.03, val[i] / sum * profile.bgm_vol * VOL_VALUE *
-                    (is_dialogue ? DIALOGUE_BGM_FADE : 1));
+                    (is_dialogue ? DIALOGUE_BGM_FADE :
+                     this->disp_state == DISP_CHAPFIN ? CHAPFIN_BGM_FADE : 1));
         }
     }
 }
@@ -973,8 +975,9 @@ static void gameplay_scene_drop(gameplay_scene *this)
     if (this->prev_sim != NULL) sim_drop(this->prev_sim);
     if (this->simulator != NULL && this->simulator != this->prev_sim)
         sim_drop(this->simulator);
-    pause_sound(this);
     int i, j;
+    for (i = 0; i < this->chap->n_tracks; ++i)
+        orion_ramp(&g_orion, TRACKID_STAGE_BGM + i, 0.3, 0);
     for (i = 0; i < MAX_HINTS; ++i) {
         element_drop(this->l_hints[i]);
         for (j = 0; j < MAX_SIG; ++j)
