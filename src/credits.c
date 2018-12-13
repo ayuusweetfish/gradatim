@@ -16,13 +16,45 @@ static const int RANGE_H = WIN_H * 0.6;
 static const int OFFS_X = (WIN_W - RANGE_W) / 2;
 static const int OFFS_Y = WIN_H * 0.232;
 
-#define T \
-    "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n" \
-    "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n" \
-    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\n" \
-    "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n"
+static const char *TEXT =
+    "== Overall Design (in descending order of bounciness) ==\n"
+    "Shiqing\n\n"
 
-static const char *TEXT = T T T T T T T T T T;
+    "==== Artists (in alphabetical order) ====\n"
+    "axtoncrolley\n"
+    "Calciumtrice\n"
+    "David McKee (VIRiX Dreamcore)\n"
+    "Delfos\n"
+    "Kenney.nl\n"
+    "syncopika\n\n"
+    "Unless otherwise noted, all artwork assets in this project are compatible with the CC BY-SA 4.0 International licence.\n\n"
+
+    "==== Tech fellows (in alphabetical order) ====\n"
+    "IIR1 (https://github.com/berndporr/iir1), MIT licence\n"
+    "Ogg Vorbis (https://xiph.org/vorbis/), BSD licence\n"
+    "PortAudio (http://portaudio.com/), MIT licence\n"
+    "SDL, SDL_image, SDL_ttf (http://libsdl.org/), zlib licence\n"
+    "SoundTouch (https://www.surina.net/soundtouch/index.html), LGPL v2.1\n\n"
+
+    "==== Tech helpers (in alphabetical order) ===\n"
+    "Aseprite (https://www.aseprite.org/)\n"
+    "Audacity (https://www.audacityteam.org/)\n"
+    "FFmpeg (http://ffmpeg.org/)\n"
+    "LMMS (https://lmms.io/)\n"
+    "sfxr (http://www.drpetter.se/project_sfxr.html)\n"
+    "SpriteSheet Packer (https://amakaseev.github.io/sprite-sheet-packer/)\n"
+    "Tiled (https://www.mapeditor.org/)\n\n"
+
+    "==== Shoutouts (in no particular order) ===\n"
+    "Celeste (http://www.celestegame.com/)\n"
+    "Teeworlds (https://teeworlds.com/)\n"
+    "Zhiqian\n"
+    "Mr Liu & the TAs\n\n"
+    "The artists that bring humanity alive\n"
+    "The scientists that nourished the artists\n\n"
+    "The Muses\n\n"
+    "You\n"
+;
 
 static void credits_tick(credits_scene *this, double dt)
 {
