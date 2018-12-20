@@ -52,7 +52,7 @@ static const char *TEXT =
     "Zhiqian\n"
     "Mr Liu & the TAs\n\n"
     "The artists that bring humanity alive\n"
-    "The scientists that nourished the artists\n\n"
+    "The scientists that nourish the artists\n\n"
     "The Muses\n\n"
     "You\n"
 ;
