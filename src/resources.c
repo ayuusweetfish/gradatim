@@ -110,6 +110,9 @@ void load_images()
     load_spritesheet("ss.png", "ss.csv");
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     load_spritesheet("ss-aa.png", "ss-aa.csv");
+    load_image("options_btn_2.png");
+    load_image("credits_btn_2.png");
+    load_image("quit_btn.png");
     load_image("run_btn.png");
 }
 

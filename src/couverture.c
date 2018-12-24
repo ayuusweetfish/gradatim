@@ -226,12 +226,12 @@ void couverture_generate_dots(couverture *this)
     bekter_pushback(this->_base.children, title);
 
     button *options = button_create((button_callback)options_cb,
-        this, "options_btn.png", "options_btn.png", "options_btn.png", 1.03, 0.98);
+        this, "options_btn_2.png", "options_btn_2.png", "options_btn_2.png", 1.03, 0.98);
     element_place_anchored((element *)options, WIN_W * 0.23, WIN_H * 0.6, 0.5, 0.5);
     bekter_pushback(this->_base.children, options);
 
     button *credits = button_create((button_callback)credits_cb,
-        this, "credits_btn.png", "credits_btn.png", "credits_btn.png", 1.03, 0.98);
+        this, "credits_btn_2.png", "credits_btn_2.png", "credits_btn_2.png", 1.03, 0.98);
     element_place_anchored((element *)credits, WIN_W * 0.41, WIN_H * 0.6, 0.5, 0.5);
     bekter_pushback(this->_base.children, credits);
 
@@ -241,7 +241,7 @@ void couverture_generate_dots(couverture *this)
     bekter_pushback(this->_base.children, start);
 
     button *quit = button_create((button_callback)quit_cb,
-        this, "retry_count.png", "retry_count.png", "retry_count.png", 1.03, 0.98);
+        this, "quit_btn.png", "quit_btn.png", "quit_btn.png", 1.03, 0.98);
     element_place_anchored((element *)quit, WIN_W * 0.77, WIN_H * 0.6, 0.5, 0.5);
     bekter_pushback(this->_base.children, quit);
 
