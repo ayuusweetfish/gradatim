@@ -17,6 +17,10 @@ typedef struct _couverture {
     overworld_scene *ow;    /* Loaded at the start */
 
     bool canon_playing;
+
+    int menu_idx, last_menu_idx;
+    double time, menu_time;
+    bool menu_faded;
 } couverture;
 
 void couverture_generate_dots(couverture *this);

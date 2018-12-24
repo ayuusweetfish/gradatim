@@ -12,6 +12,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define N_MENU  4
+static const double MENU_TR_DUR = 0.2;  /* In seconds */
+static const double MENU_PERSIST_DUR = 3;
+static const int MENU_HL_W = WIN_H * 0.3;
+static const int MENU_HL_Y = WIN_H * 0.65;
+
 static const double TINT_DUR = 1./2;  /* In beats */
 static const double POP_DUR = 1./3;
 
@@ -37,6 +43,7 @@ static const SDL_Point P[NG] = {
 static void couverture_tick(couverture *this, double dt)
 {
     floue_tick(this->f, dt);
+    this->time += dt;
 }
 
 static inline SDL_Color get_colour(const SDL_Color C[], int nc, int bar, double beat)
@@ -114,6 +121,31 @@ static void couverture_draw(couverture *this)
     }
     floue_draw(this->f);
 
+    /* DRY? No. */
+    /* Draw highlight */
+    double cur_x = 0.23 + this->menu_idx * 0.18;
+    int opacity = 255;
+    if (this->time < this->menu_time + MENU_TR_DUR) {
+        double p = (this->time - this->menu_time) / MENU_TR_DUR;
+        if (this->menu_faded) opacity = iround(p * 255);
+        p = 1 - (1 - p) * (1 - p) * (1 - p);
+        double last_x = 0.23 + this->last_menu_idx * 0.18;
+        cur_x = last_x + p * (cur_x - last_x);
+    } else if (this->time > this->menu_time + MENU_PERSIST_DUR) {
+        double p = (this->time - (this->menu_time + MENU_PERSIST_DUR)) / MENU_TR_DUR;
+        opacity = p < 1 ? iround(255 * (1 - p)) : 0;
+        this->menu_faded = true;
+    } else {
+        this->menu_faded = false;
+    }
+    SDL_SetTextureColorMod(this->f->tex[0], 255, 255, 192);
+    SDL_SetTextureAlphaMod(this->f->tex[0], opacity);
+    for (i = 0; i < 4; ++i)
+        SDL_RenderCopy(g_renderer, this->f->tex[0], NULL, &(SDL_Rect){
+            iround(cur_x * WIN_W) - MENU_HL_W / 2, MENU_HL_Y - MENU_HL_W / 2,
+            MENU_HL_W, MENU_HL_W
+        });
+
     scene_draw_children((scene *)this);
 }
 
@@ -142,6 +174,40 @@ static void start_cb(couverture *this)
     ((transition_scene *)g_stage)->preserves_a = true;
 }
 
+static void quit_cb(couverture *this)
+{
+    SDL_PushEvent(&(SDL_Event){SDL_QUIT});
+}
+
+static void couverture_key(couverture *this, SDL_KeyboardEvent *ev)
+{
+    if (ev->state != SDL_PRESSED) return;
+
+    typedef void (*couverture_cb)(couverture *);
+    static const couverture_cb cbs[N_MENU] = {
+        options_cb, credits_cb, start_cb, quit_cb
+    };
+
+    switch (ev->keysym.sym) {
+        case SDLK_UP:
+        case SDLK_LEFT:
+            this->last_menu_idx = this->menu_idx;
+            this->menu_idx = (this->menu_idx - 1 + N_MENU) % N_MENU;
+            this->menu_time = this->time;
+            orion_play_once(&g_orion, TRACKID_FX_SW1);
+            break;
+        case SDLK_DOWN:
+        case SDLK_RIGHT:
+            this->last_menu_idx = this->menu_idx;
+            this->menu_idx = (this->menu_idx + 1) % N_MENU;
+            this->menu_time = this->time;
+            orion_play_once(&g_orion, TRACKID_FX_SW1);
+            break;
+        case SDLK_RETURN:
+            if (!this->menu_faded) cbs[this->menu_idx](this);
+    }
+}
+
 void couverture_generate_dots(couverture *this)
 {
     int i, j;
@@ -161,31 +227,39 @@ void couverture_generate_dots(couverture *this)
 
     button *options = button_create((button_callback)options_cb,
         this, "options_btn.png", "options_btn.png", "options_btn.png", 1.03, 0.98);
-    element_place_anchored((element *)options, WIN_W * 0.3, WIN_H * 0.6, 0.5, 0.5);
+    element_place_anchored((element *)options, WIN_W * 0.23, WIN_H * 0.6, 0.5, 0.5);
     bekter_pushback(this->_base.children, options);
 
     button *credits = button_create((button_callback)credits_cb,
         this, "credits_btn.png", "credits_btn.png", "credits_btn.png", 1.03, 0.98);
-    element_place_anchored((element *)credits, WIN_W * 0.5, WIN_H * 0.6, 0.5, 0.5);
+    element_place_anchored((element *)credits, WIN_W * 0.41, WIN_H * 0.6, 0.5, 0.5);
     bekter_pushback(this->_base.children, credits);
 
     button *start = button_create((button_callback)start_cb,
-        this, "retry_count.png", "retry_count.png", "retry_count.png", 1.03, 0.98);
-    element_place_anchored((element *)start, WIN_W * 0.7, WIN_H * 0.6, 0.5, 0.5);
+        this, "run_btn.png", "run_btn.png", "run_btn.png", 1.03, 0.98);
+    element_place_anchored((element *)start, WIN_W * 0.59, WIN_H * 0.6, 0.5, 0.5);
     bekter_pushback(this->_base.children, start);
 
+    button *quit = button_create((button_callback)quit_cb,
+        this, "retry_count.png", "retry_count.png", "retry_count.png", 1.03, 0.98);
+    element_place_anchored((element *)quit, WIN_W * 0.77, WIN_H * 0.6, 0.5, 0.5);
+    bekter_pushback(this->_base.children, quit);
+
     label *l = label_create(FONT_UPRIGHT, 36, (SDL_Color){0}, WIN_W, "Options");
-    element_place_anchored((element *)l, WIN_W * 0.3, WIN_H * 0.725, 0.5, 0.5);
+    element_place_anchored((element *)l, WIN_W * 0.23, WIN_H * 0.725, 0.5, 0.5);
     bekter_pushback(this->_base.children, l);
 
     l = label_create(FONT_UPRIGHT, 36, (SDL_Color){0}, WIN_W, "Credits");
-    element_place_anchored((element *)l, WIN_W * 0.5, WIN_H * 0.725, 0.5, 0.5);
+    element_place_anchored((element *)l, WIN_W * 0.41, WIN_H * 0.725, 0.5, 0.5);
     bekter_pushback(this->_base.children, l);
 
     l = label_create(FONT_UPRIGHT, 36, (SDL_Color){0}, WIN_W, "Run");
-    element_place_anchored((element *)l, WIN_W * 0.7, WIN_H * 0.725, 0.5, 0.5);
+    element_place_anchored((element *)l, WIN_W * 0.59, WIN_H * 0.725, 0.5, 0.5);
     bekter_pushback(this->_base.children, l);
 
+    l = label_create(FONT_UPRIGHT, 36, (SDL_Color){0}, WIN_W, "Quit");
+    element_place_anchored((element *)l, WIN_W * 0.77, WIN_H * 0.725, 0.5, 0.5);
+    bekter_pushback(this->_base.children, l);
 }
 
 couverture *couverture_create()
@@ -196,6 +270,7 @@ couverture *couverture_create()
     this->_base.tick = (scene_tick_func)couverture_tick;
     this->_base.draw = (scene_draw_func)couverture_draw;
     this->_base.drop = (scene_drop_func)couverture_drop;
+    this->_base.key_handler = (scene_key_func)couverture_key;
 
     this->f = floue_create((SDL_Color){255, 255, 255, 216});
 
@@ -222,6 +297,10 @@ couverture *couverture_create()
     orion_overall_play(&g_orion);
 
     this->canon_playing = false;
+
+    this->time = this->menu_time = 0;
+    this->menu_idx = this->last_menu_idx = 0;
+    this->menu_faded = true;
 
     return this;
 }
