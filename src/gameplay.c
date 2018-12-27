@@ -853,13 +853,11 @@ static void gameplay_scene_draw(gameplay_scene *this)
             for (j = 0; j < sig; ++j) {
                 double prog = (started && beats_i == j ? 1 - beats_d : 0);
                 if (this->rec->hints[i].mask & (1 << beats_i)) {
-                    this->s_hints[i][j]->alpha = iround(96 + 159 * prog);
-                    SDL_SetTextureAlphaMod(this->s_hints[i][j]->tex.sdl_tex,
-                        round(255 * dmul));
+                    this->s_hints[i][j]->alpha = iround((96 + 159 * prog) * dmul);
                     SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex,
                         255, 255, iround((1 - prog) * 255));
                 } else {
-                    this->s_hints[i][j]->alpha = iround(96 * (1 - prog));
+                    this->s_hints[i][j]->alpha = iround(96 * (1 - prog) * dmul);
                 }
                 element_draw((element *)this->s_hints[i][j]);
                 SDL_SetTextureAlphaMod(this->s_hints[i][j]->tex.sdl_tex, 255);
