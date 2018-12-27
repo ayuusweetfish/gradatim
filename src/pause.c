@@ -105,9 +105,13 @@ static inline void pause_key_handler(pause_scene *this, SDL_KeyboardEvent *ev)
     if (ev->state != SDL_PRESSED) return;
     switch (ev->keysym.sym) {
         case SDLK_ESCAPE:
+        case SDLK_v:
+        case SDLK_x:
             resume(this);
             break;
         case SDLK_RETURN:
+        case SDLK_c:
+        case SDLK_z:
             switch (this->menu_idx) {
                 case 0: resume(this); break;
                 case 1: retry(this); break;

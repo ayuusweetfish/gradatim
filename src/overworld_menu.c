@@ -176,6 +176,8 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
     if (ev->state != SDL_PRESSED) return;
     switch (ev->keysym.sym) {
         case SDLK_ESCAPE:
+        case SDLK_v:
+        case SDLK_x:
             if (this->quit_time < 0) {
                 this->quit_time = this->time;
                 this->bg->cam_targx -= MOV_X;
@@ -185,8 +187,10 @@ static inline void owm_key(overworld_menu *this, SDL_KeyboardEvent *ev)
                 orion_play_once(&g_orion, TRACKID_MENU_CLOSE);
             }
             break;
-        case SDLK_SPACE:
         case SDLK_RETURN:
+        case SDLK_SPACE:
+        case SDLK_c:
+        case SDLK_z:
             if (this->quit_time >= 0) break;
             if (this->menu_idx == N_MODS) {
                 g_stage = (scene *)loading_create(&g_stage,

@@ -138,7 +138,13 @@ static void dialogue_drop(dialogue_scene *this)
 
 static void dialogue_key_handler(dialogue_scene *this, SDL_KeyboardEvent *ev)
 {
-    if (ev->state != SDL_PRESSED || ev->keysym.sym != SDLK_RETURN) return;
+    if (ev->state != SDL_PRESSED ||
+        (ev->keysym.sym != SDLK_RETURN && ev->keysym.sym != SDLK_SPACE &&
+        ev->keysym.sym != SDLK_v && ev->keysym.sym != SDLK_c &&
+        ev->keysym.sym != SDLK_x && ev->keysym.sym != SDLK_z))
+    {
+        return;
+    }
     if (this->script_idx >= this->script_len) return;
     dialogue_entry entry =
         bekter_at(this->script, this->script_idx, dialogue_entry);

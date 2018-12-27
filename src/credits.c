@@ -108,6 +108,8 @@ static void credits_key(credits_scene *this, SDL_KeyboardEvent *ev)
     if (ev->state != SDL_PRESSED) return;
     switch (ev->keysym.sym) {
         case SDLK_ESCAPE:
+        case SDLK_v:
+        case SDLK_x:
             g_stage = transition_slidedown_create(&g_stage, this->bg, 0.5);
             break;
         case SDLK_LEFT:
@@ -116,6 +118,9 @@ static void credits_key(credits_scene *this, SDL_KeyboardEvent *ev)
         case SDLK_RIGHT:
         case SDLK_DOWN:
         case SDLK_RETURN:
+        case SDLK_SPACE:
+        case SDLK_c:
+        case SDLK_z:
             this->v = +V - V0; break;
     }
 }

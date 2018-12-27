@@ -1076,6 +1076,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
     if (ev->keysym.sym != SDLK_ESCAPE && get_audio_position(this) < 0) return;
     switch (ev->keysym.sym) {
         case SDLK_c:
+        case SDLK_z:
             if (!ev->repeat && ev->state == SDL_PRESSED) {
                 if (try_hop(this)) {
                     orion_play_once(&g_orion, TRACKID_FX_HOP);
@@ -1085,6 +1086,7 @@ static void gameplay_scene_key_handler(gameplay_scene *this, SDL_KeyboardEvent *
                 }
             }
             break;
+        case SDLK_v:
         case SDLK_x:
             if (!ev->repeat && ev->state == SDL_PRESSED) {
                 if (try_dash(this, false)) {

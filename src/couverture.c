@@ -204,6 +204,9 @@ static void couverture_key(couverture *this, SDL_KeyboardEvent *ev)
             orion_play_once(&g_orion, TRACKID_FX_SW1);
             break;
         case SDLK_RETURN:
+        case SDLK_SPACE:
+        case SDLK_c:
+        case SDLK_z:
             if (!this->menu_faded) cbs[this->menu_idx](this);
     }
 }

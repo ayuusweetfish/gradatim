@@ -114,6 +114,8 @@ static void options_key(options_scene *this, SDL_KeyboardEvent *ev)
     if (ev->state != SDL_PRESSED) return;
     switch (ev->keysym.sym) {
         case SDLK_ESCAPE:
+        case SDLK_v:
+        case SDLK_x:
             g_stage = transition_slideup_create(&g_stage, this->bg, 0.5);
             break;
         case SDLK_UP:
