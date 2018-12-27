@@ -154,8 +154,18 @@ static void couverture_drop(couverture *this)
     floue_drop(this->f);
 }
 
+static inline void move_menu_highlight(couverture *this, int idx)
+{
+    if (this->menu_idx != idx) {
+        this->last_menu_idx = this->menu_idx;
+        this->menu_idx = idx;
+        this->menu_time = this->time;
+    }
+}
+
 static void options_cb(couverture *this)
 {
+    move_menu_highlight(this, 0);
     g_stage = transition_slidedown_create(&g_stage,
         (scene *)options_create((scene *)this), 0.5);
     ((transition_scene *)g_stage)->preserves_a = true;
@@ -163,6 +173,7 @@ static void options_cb(couverture *this)
 
 static void credits_cb(couverture *this)
 {
+    move_menu_highlight(this, 1);
     g_stage = transition_slideup_create(&g_stage,
         (scene *)credits_create((scene *)this), 0.5);
     ((transition_scene *)g_stage)->preserves_a = true;
@@ -170,12 +181,14 @@ static void credits_cb(couverture *this)
 
 static void start_cb(couverture *this)
 {
+    move_menu_highlight(this, 2);
     g_stage = transition_slidedown_create(&g_stage, (scene *)this->ow, 0.5);
     ((transition_scene *)g_stage)->preserves_a = true;
 }
 
 static void quit_cb(couverture *this)
 {
+    move_menu_highlight(this, 3);
     SDL_PushEvent(&(SDL_Event){SDL_QUIT});
 }
 
@@ -191,16 +204,12 @@ static void couverture_key(couverture *this, SDL_KeyboardEvent *ev)
     switch (ev->keysym.sym) {
         case SDLK_UP:
         case SDLK_LEFT:
-            this->last_menu_idx = this->menu_idx;
-            this->menu_idx = (this->menu_idx - 1 + N_MENU) % N_MENU;
-            this->menu_time = this->time;
+            move_menu_highlight(this, (this->menu_idx - 1 + N_MENU) % N_MENU);
             orion_play_once(&g_orion, TRACKID_FX_SW1);
             break;
         case SDLK_DOWN:
         case SDLK_RIGHT:
-            this->last_menu_idx = this->menu_idx;
-            this->menu_idx = (this->menu_idx + 1) % N_MENU;
-            this->menu_time = this->time;
+            move_menu_highlight(this, (this->menu_idx + 1) % N_MENU);
             orion_play_once(&g_orion, TRACKID_FX_SW1);
             break;
         case SDLK_RETURN:
@@ -302,7 +311,7 @@ couverture *couverture_create()
     this->canon_playing = false;
 
     this->time = this->menu_time = 0;
-    this->menu_idx = this->last_menu_idx = 0;
+    this->menu_idx = this->last_menu_idx = 2;
     this->menu_faded = true;
 
     return this;
