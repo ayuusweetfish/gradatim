@@ -156,11 +156,9 @@ static void couverture_drop(couverture *this)
 
 static inline void move_menu_highlight(couverture *this, int idx)
 {
-    if (this->menu_idx != idx) {
-        this->last_menu_idx = this->menu_idx;
-        this->menu_idx = idx;
-        this->menu_time = this->time;
-    }
+    this->last_menu_idx = this->menu_idx;
+    this->menu_idx = idx;
+    this->menu_time = this->time;
 }
 
 static void options_cb(couverture *this)
