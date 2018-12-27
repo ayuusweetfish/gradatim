@@ -21,8 +21,9 @@ static const double MENU_TR_DUR = 0.15;
 static const double BLINK_DUR = 0.75;
 
 static const double ITEM_H = 0.1;
-static const double START_Y = 0.82;
-static const double ITEM_OFFSET_Y = 0.325;
+static const double START_Y = 0.825;
+static const double ITEM_OFFSET_Y = 0.375;
+static const double OPT_LABEL_Y = 0.3125;
 
 static int glob_menu_val[N_MODS] = { 0 };
 
@@ -298,6 +299,12 @@ overworld_menu *overworld_menu_create(overworld_scene *bg)
         (SDL_Color){255, 255, 255}, WIN_W, "");
     bekter_pushback(ret->_base.children, l);
     ret->l_timer_dec = l;
+
+    l = label_create(FONT_UPRIGHT, 32,
+        (SDL_Color){255, 255, 255}, WIN_W, "Mod options");
+    element_place_anchored((element *)l,
+        WIN_W - MENU_W + 12, WIN_H * OPT_LABEL_Y, 0, 1);
+    bekter_pushback(ret->_base.children, l);
 
     int i;
     for (i = 0; i < N_MODS; ++i) {
