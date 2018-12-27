@@ -699,6 +699,73 @@ static inline void update_sound(gameplay_scene *this)
     }
 }
 
+static inline void draw_hint(gameplay_scene *this, int i, double dmul, int cxi, int cyi)
+{
+    int x, y, w, h;
+    x = align_pixel((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi;
+    y = align_pixel((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi;
+    if (this->rec->hints[i].str != NULL) {
+        element_place_anchored((element *)this->l_hints[i], x, y, 0.5, 0.5);
+        x = this->l_hints[i]->_base._base.dim.x - HINT_PADDING;
+        y = this->l_hints[i]->_base._base.dim.y - HINT_PADDING;
+        w = this->l_hints[i]->_base._base.dim.w + HINT_PADDING * 2;
+        h = this->l_hints[i]->_base._base.dim.h + HINT_PADDING * 2;
+    } else {
+        w = h = 0;
+    }
+    int sig;
+    if (this->rec->hints[i].img != NULL) {
+        /* Expand horizontally if necessary */
+        sig = this->chap->sig * this->rec->hints[i].mul;
+        int w1 = this->w_hints[i] * sig + HINT_PADDING * 2;
+        int xoff = 0;   /* Offset of sprites, in order to centre-align */
+        if (w < w1) {
+            x -= (w1 - w) / 2;
+            w = w1;
+        } else {
+            xoff = (w - w1) / 2;
+        }
+        /* Display all sprites */
+        int j;
+        for (j = 0; j < sig; ++j) {
+            element_place((element *)this->s_hints[i][j],
+                x + HINT_PADDING + this->w_hints[i] * j + xoff,
+                y + h - HINT_PADDING);
+        }
+        /* Update height */
+        h += this->s_hints[i][0]->_base.dim.h - HINT_PADDING;
+        if (this->rec->hints[i].str == NULL) {
+            y -= HINT_PADDING;
+            h += HINT_PADDING;
+        }
+    }
+    SDL_RenderFillRect(g_renderer, &(SDL_Rect){x, y, w, h});
+    SDL_SetTextureAlphaMod(
+        this->l_hints[i]->_base.tex.sdl_tex, round(255 * dmul));
+    element_draw((element *)this->l_hints[i]);
+    /* Display images */
+    if (this->rec->hints[i].img != NULL) {
+        int beats_i;
+        double beats_d;
+        bool started = get_pos_in_bar(this, 0,
+            this->rec->hints[i].mul, &beats_i, &beats_d);
+        int j;
+        for (j = 0; j < sig; ++j) {
+            double prog = (started && beats_i == j ? 1 - beats_d : 0);
+            if (this->rec->hints[i].mask & (1 << beats_i)) {
+                this->s_hints[i][j]->alpha = iround((96 + 159 * prog) * dmul);
+                SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex,
+                    255, 255, iround((1 - prog) * 255));
+            } else {
+                this->s_hints[i][j]->alpha = iround(96 * (1 - prog) * dmul);
+            }
+            element_draw((element *)this->s_hints[i][j]);
+            SDL_SetTextureAlphaMod(this->s_hints[i][j]->tex.sdl_tex, 255);
+            SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex, 255, 255, 255);
+        }
+    }
+}
+
 /* XXX: This is too long, hopefully it can be split into smaller methods */
 static void gameplay_scene_draw(gameplay_scene *this)
 {
@@ -790,6 +857,18 @@ static void gameplay_scene_draw(gameplay_scene *this)
         }
     }
 
+    /* Display background hints */
+    double dmul = dialogue_opacity_mul(this);
+    dmul = (dmul < 0.75 ? 0 : 1 - (1 - dmul) * 4);
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, round(128 * dmul));
+
+    for (i = 0; i < this->rec->hint_ct; ++i) {
+        int u = this->rec->hints[i].r * this->rec->n_cols + this->rec->hints[i].c;
+        if (this->rec->grid[u] < OBJID_DRAW_AFTER)
+            draw_hint(this, i, dmul, cxi, cyi);
+    }
+
+    /* Display protagonist */
     render_texture_ex(prot_tex, &(SDL_Rect){
         prot_disp_x, prot_disp_y,
         iround(prot_w * this->scale), iround(prot_h * this->scale),
@@ -798,72 +877,11 @@ static void gameplay_scene_draw(gameplay_scene *this)
     if (this->disp_state != DISP_FAILURE)
         render_objects(this, false, true, 0, 0, prot_disp_x, prot_disp_y);
 
-    /* Display hints */
-    double dmul = dialogue_opacity_mul(this);
-    dmul = (dmul < 0.75 ? 0 : 1 - (1 - dmul) * 4);
-    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, round(128 * dmul));
+    /* Display foreground hints */
     for (i = 0; i < this->rec->hint_ct; ++i) {
-        int x, y, w, h;
-        x = align_pixel((this->rec->hints[i].c + 0.5) * UNIT_PX) - cxi;
-        y = align_pixel((this->rec->hints[i].r + 0.5) * UNIT_PX) - cyi;
-        if (this->rec->hints[i].str != NULL) {
-            element_place_anchored((element *)this->l_hints[i], x, y, 0.5, 0.5);
-            x = this->l_hints[i]->_base._base.dim.x - HINT_PADDING;
-            y = this->l_hints[i]->_base._base.dim.y - HINT_PADDING;
-            w = this->l_hints[i]->_base._base.dim.w + HINT_PADDING * 2;
-            h = this->l_hints[i]->_base._base.dim.h + HINT_PADDING * 2;
-        } else {
-            w = h = 0;
-        }
-        int sig;
-        if (this->rec->hints[i].img != NULL) {
-            /* Expand horizontally if necessary */
-            sig = this->chap->sig * this->rec->hints[i].mul;
-            int w1 = this->w_hints[i] * sig + HINT_PADDING * 2;
-            int xoff = 0;   /* Offset of sprites, in order to centre-align */
-            if (w < w1) {
-                x -= (w1 - w) / 2;
-                w = w1;
-            } else {
-                xoff = (w - w1) / 2;
-            }
-            /* Display all sprites */
-            for (j = 0; j < sig; ++j) {
-                element_place((element *)this->s_hints[i][j],
-                    x + HINT_PADDING + this->w_hints[i] * j + xoff,
-                    y + h - HINT_PADDING);
-            }
-            /* Update height */
-            h += this->s_hints[i][0]->_base.dim.h - HINT_PADDING;
-            if (this->rec->hints[i].str == NULL) {
-                y -= HINT_PADDING;
-                h += HINT_PADDING;
-            }
-        }
-        SDL_RenderFillRect(g_renderer, &(SDL_Rect){x, y, w, h});
-        SDL_SetTextureAlphaMod(
-            this->l_hints[i]->_base.tex.sdl_tex, round(255 * dmul));
-        element_draw((element *)this->l_hints[i]);
-        /* Display images */
-        if (this->rec->hints[i].img != NULL) {
-            int beats_i;
-            double beats_d;
-            bool started = get_pos_in_bar(this, 0,
-                this->rec->hints[i].mul, &beats_i, &beats_d);
-            for (j = 0; j < sig; ++j) {
-                double prog = (started && beats_i == j ? 1 - beats_d : 0);
-                if (this->rec->hints[i].mask & (1 << beats_i)) {
-                    this->s_hints[i][j]->alpha = iround((96 + 159 * prog) * dmul);
-                    SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex,
-                        255, 255, iround((1 - prog) * 255));
-                } else {
-                    this->s_hints[i][j]->alpha = iround(96 * (1 - prog) * dmul);
-                }
-                element_draw((element *)this->s_hints[i][j]);
-                SDL_SetTextureAlphaMod(this->s_hints[i][j]->tex.sdl_tex, 255);
-                SDL_SetTextureColorMod(this->s_hints[i][j]->tex.sdl_tex, 255, 255, 255);
-            }
-        }
+        int u = this->rec->hints[i].r * this->rec->n_cols + this->rec->hints[i].c;
+        if (this->rec->grid[u] >= OBJID_DRAW_AFTER)
+            draw_hint(this, i, dmul, cxi, cyi);
     }
 
     /* Lead-in or modifier flashlight */
