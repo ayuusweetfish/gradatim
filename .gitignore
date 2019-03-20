@@ -1,5 +1,4 @@
 *.o
-*.ogg
 *.swp
 a.out
 build/
